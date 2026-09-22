@@ -1,0 +1,99 @@
+{
+  "agents": {
+    "chat": {
+      "id": "chat",
+      "name": "Chat Agent",
+      "description": "General purpose conversational agent",
+      "capabilities": ["conversation", "qa", "brainstorming"],
+      "defaultModel": "llama3.2",
+      "systemPrompt": "You are a helpful AI assistant. Provide clear, accurate, and helpful responses to user queries.",
+      "maxTokens": 4096,
+      "temperature": 0.7,
+      "priority": 1
+    },
+    "code": {
+      "id": "code",
+      "name": "Code Agent",
+      "description": "Specialized in code generation and analysis",
+      "capabilities": ["code-generation", "code-review", "debugging", "refactoring"],
+      "defaultModel": "codellama",
+      "systemPrompt": "You are an expert programmer. Write clean, efficient, well-documented code. Follow best practices and industry standards.",
+      "maxTokens": 8192,
+      "temperature": 0.3,
+      "priority": 2
+    },
+    "reasoning": {
+      "id": "reasoning",
+      "name": "Reasoning Agent",
+      "description": "Complex problem solving and analysis",
+      "capabilities": ["analysis", "problem-solving", "planning", "research"],
+      "defaultModel": "deepseek-r1:14b",
+      "systemPrompt": "You are an analytical AI that excels at breaking down complex problems, thinking step by step, and providing well-reasoned solutions.",
+      "maxTokens": 8192,
+      "temperature": 0.5,
+      "priority": 3
+    },
+    "file": {
+      "id": "file",
+      "name": "File Agent",
+      "description": "File processing and analysis",
+      "capabilities": ["file-analysis", "summarization", "extraction", "transformation"],
+      "defaultModel": "llama3.2",
+      "systemPrompt": "You are a document analysis expert. Analyze files, extract key information, and provide comprehensive summaries.",
+      "maxTokens": 4096,
+      "temperature": 0.4,
+      "priority": 4
+    },
+    "automation": {
+      "id": "automation",
+      "name": "Automation Agent",
+      "description": "Task automation and workflow execution",
+      "capabilities": ["automation", "scripting", "workflow", "integration"],
+      "defaultModel": "llama3.2",
+      "systemPrompt": "You are an automation specialist. Create scripts, workflows, and automate repetitive tasks efficiently.",
+      "maxTokens": 4096,
+      "temperature": 0.3,
+      "priority": 5
+    },
+    "builder": {
+      "id": "builder",
+      "name": "Builder Agent",
+      "description": "Application builder and project generator",
+      "capabilities": ["app-generation", "project-scaffolding", "code-generation", "architecture"],
+      "defaultModel": "codellama",
+      "systemPrompt": "You are a software architect and full-stack developer. Generate complete, production-ready applications with proper structure and best practices.",
+      "maxTokens": 8192,
+      "temperature": 0.4,
+      "priority": 6
+    }
+  },
+  "taskRouting": {
+    "rules": [
+      {
+        "pattern": "(?i)(code|program|function|class|debug|error|bug|fix|implement)",
+        "agent": "code",
+        "confidence": 0.8
+      },
+      {
+        "pattern": "(?i)(analyze|research|compare|evaluate|strategy|plan|design)",
+        "agent": "reasoning",
+        "confidence": 0.75
+      },
+      {
+        "pattern": "(?i)(file|document|pdf|text|extract|summarize|content)",
+        "agent": "file",
+        "confidence": 0.7
+      },
+      {
+        "pattern": "(?i)(automate|script|schedule|workflow|batch|cron)",
+        "agent": "automation",
+        "confidence": 0.75
+      },
+      {
+        "pattern": "(?i)(build|create app|generate project|scaffold|template)",
+        "agent": "builder",
+        "confidence": 0.8
+      }
+    ]
+  }
+}

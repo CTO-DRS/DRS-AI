@@ -1,0 +1,32 @@
+{
+  "name": "drs-cli",
+  "version": "1.0.0",
+  "description": "CLI Tool for DRS AI OS",
+  "main": "dist/index.js",
+  "bin": {
+    "drs": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node-dev --respawn src/index.ts"
+  },
+  "dependencies": {
+    "commander": "^11.1.0",
+    "axios": "^1.6.2",
+    "chalk": "^4.1.2",
+    "ora": "^5.4.1",
+    "inquirer": "^8.2.6",
+    "fs-extra": "^11.2.0",
+    "conf": "^10.2.0",
+    "ws": "^8.16.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.4",
+    "@types/inquirer": "^8.2.10",
+    "@types/ws": "^8.5.10",
+    "@types/fs-extra": "^11.0.4",
+    "typescript": "^5.3.3",
+    "ts-node-dev": "^2.0.0"
+  }
+}

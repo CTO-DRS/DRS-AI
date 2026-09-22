@@ -1,0 +1,98 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+.next/
+.nuxt/
+.cache/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+data/
+volumes/
+
+# Test coverage
+coverage/
+*.lcov
+.nyc_output
+
+# Temp files
+*.tmp
+*.bak
+*.orig
+tmp/
+temp/
+
+# Compiled files
+*.compiled.js
+*.min.js
+*.min.css
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv
+.pytest_cache/
+
+# Minio / Storage
+minio_data/
+storage/
+uploads/
+
+# Secrets
+secrets/
+*.key
+*.pem
+*.crt

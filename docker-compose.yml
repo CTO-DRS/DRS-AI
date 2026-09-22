@@ -1,0 +1,894 @@
+version: '3.8'
+
+services:
+  # ============================================
+  # Core Infrastructure
+  # ============================================
+
+  postgres:
+    image: ankane/pgvector:latest
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-drs_ai}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - drs-network
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - drs-network
+
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    environment:
+      - OLLAMA_ORIGINS=*
+      - OLLAMA_HOST=0.0.0.0:11434
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - drs-network
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  # ============================================
+  # Core Services (Original 8)
+  # ============================================
+
+  gateway:
+    build: ./gateway
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - JWT_SECRET=${JWT_SECRET}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - AUTH_SERVICE_URL=http://auth:3001
+      - MODEL_ROUTER_URL=http://model-router:3002
+      - AGENT_ORCHESTRATOR_URL=http://agent-orchestrator:3003
+      - MEMORY_SERVICE_URL=http://memory:3004
+      - FILES_SERVICE_URL=http://files:3005
+      - VOICE_SERVICE_URL=http://voice:3006
+      - DASHBOARD_SERVICE_URL=http://dashboard:3007
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  auth:
+    build: ./auth
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - JWT_SECRET=${JWT_SECRET}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  model-router:
+    build: ./router
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_MODEL=llama3.2:3b
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - ollama
+      - redis
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  agent-orchestrator:
+    build: ./orchestrator
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=production
+      - PORT=3003
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - OLLAMA_HOST=http://ollama:11434
+    depends_on:
+      - redis
+      - postgres
+      - ollama
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  memory:
+    build: ./memory
+    ports:
+      - "3004:3004"
+    environment:
+      - NODE_ENV=production
+      - PORT=3004
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - OLLAMA_HOST=http://ollama:11434
+    depends_on:
+      - postgres
+      - redis
+      - ollama
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  files:
+    build: ./files
+    ports:
+      - "3005:3005"
+    environment:
+      - NODE_ENV=production
+      - PORT=3005
+      - UPLOAD_DIR=/app/uploads
+      - MAX_FILE_SIZE=100MB
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      - redis
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  voice:
+    build: ./voice
+    ports:
+      - "3006:3006"
+    environment:
+      - NODE_ENV=production
+      - PORT=3006
+      - OLLAMA_HOST=http://ollama:11434
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - ollama
+      - redis
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  dashboard:
+    build: ./dashboard
+    ports:
+      - "3007:3007"
+    environment:
+      - NODE_ENV=production
+      - PORT=3007
+      - GATEWAY_URL=http://gateway:3000
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - gateway
+      - redis
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # ============================================
+  # New AI OS Services (12 New Systems)
+  # ============================================
+
+  # Telegram Integration Service
+  telegram-bot:
+    build: ./telegram-bot
+    ports:
+      - "3010:3010"
+    environment:
+      - NODE_ENV=production
+      - PORT=3010
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - GATEWAY_URL=http://gateway:3000
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - OLLAMA_HOST=http://ollama:11434
+    depends_on:
+      - gateway
+      - redis
+      - ollama
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # Workflow Automation Engine
+  workflow-engine:
+    build: ./workflow-engine
+    ports:
+      - "3011:3011"
+    environment:
+      - NODE_ENV=production
+      - PORT=3011
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - GATEWAY_URL=http://gateway:3000
+    depends_on:
+      - redis
+      - postgres
+      - gateway
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # Plugin System
+  plugin-system:
+    build: ./plugin-system
+    ports:
+      - "3012:3012"
+    environment:
+      - NODE_ENV=production
+      - PORT=3012
+      - PLUGINS_DIR=/app/plugins
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - GATEWAY_URL=http://gateway:3000
+    volumes:
+      - plugins_data:/app/plugins
+    depends_on:
+      - redis
+      - gateway
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # Auto Agent System
+  auto-agent:
+    build: ./auto-agent
+    ports:
+      - "3013:3013"
+    environment:
+      - NODE_ENV=production
+      - PORT=3013
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - GATEWAY_URL=http://gateway:3000
+      - OLLAMA_HOST=http://ollama:11434
+    depends_on:
+      - redis
+      - postgres
+      - gateway
+      - ollama
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # Code Interpreter
+  code-interpreter:
+    build: ./code-interpreter
+    ports:
+      - "3014:3014"
+    environment:
+      - NODE_ENV=production
+      - PORT=3014
+      - EXECUTION_TIMEOUT=30000
+      - MAX_MEMORY=512
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    volumes:
+      - code_executions:/app/executions
+    depends_on:
+      - redis
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # Cybersecurity Module
+  cybersecurity:
+    build: ./cybersecurity
+    ports:
+      - "3015:3015"
+    environment:
+      - NODE_ENV=production
+      - PORT=3015
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - GATEWAY_URL=http://gateway:3000
+    depends_on:
+      - redis
+      - gateway
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # Advanced Memory & RAG
+  advanced-memory:
+    build: ./advanced-memory
+    ports:
+      - "3016:3016"
+    environment:
+      - NODE_ENV=production
+      - PORT=3016
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - OLLAMA_HOST=http://ollama:11434
+    depends_on:
+      - postgres
+      - redis
+      - ollama
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # Multi-Model Intelligence
+  multi-model:
+    build: ./multi-model
+    ports:
+      - "3017:3017"
+    environment:
+      - NODE_ENV=production
+      - PORT=3017
+      - OLLAMA_HOST=http://ollama:11434
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - ollama
+      - redis
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # Auto App Builder
+  auto-builder:
+    build: ./auto-builder
+    ports:
+      - "3018:3018"
+    environment:
+      - NODE_ENV=production
+      - PORT=3018
+      - BUILD_OUTPUT_DIR=/app/builds
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - OLLAMA_HOST=http://ollama:11434
+    volumes:
+      - builds_data:/app/builds
+    depends_on:
+      - redis
+      - ollama
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # ============================================
+  # Advanced Infrastructure Services (5 New Modules)
+  # ============================================
+
+  # Security Sandbox - Docker-in-Docker with syscall monitoring
+  security-sandbox:
+    build: ./security-sandbox
+    ports:
+      - "3020:3020"
+    environment:
+      - NODE_ENV=production
+      - PORT=3020
+      - DOCKER_SOCKET=/var/run/docker.sock
+      - LOG_LEVEL=info
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - sandbox_logs:/var/log/drs
+    depends_on:
+      - redis
+    networks:
+      - drs-network
+    restart: unless-stopped
+    privileged: true
+
+  # LLM Guardrail & WAF - Prompt Injection Protection
+  llm-guardrail:
+    build: ./llm-guardrail
+    ports:
+      - "3021:3021"
+    environment:
+      - NODE_ENV=production
+      - PORT=3021
+      - LOG_LEVEL=info
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - GATEWAY_URL=http://gateway:3000
+    depends_on:
+      - redis
+      - gateway
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # Hybrid RAG Engine - Vector + Full-text Search
+  hybrid-rag:
+    build: ./hybrid-rag
+    ports:
+      - "3022:3022"
+    environment:
+      - NODE_ENV=production
+      - PORT=3022
+      - LOG_LEVEL=info
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - OLLAMA_HOST=http://ollama:11434
+    depends_on:
+      - postgres
+      - redis
+      - ollama
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # Polyglot Interpreter - Multi-language Code Execution
+  polyglot-interpreter:
+    build: ./polyglot-interpreter
+    ports:
+      - "3023:3023"
+    environment:
+      - NODE_ENV=production
+      - PORT=3023
+      - LOG_LEVEL=info
+      - DOCKER_SOCKET=/var/run/docker.sock
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - redis
+    networks:
+      - drs-network
+    restart: unless-stopped
+    privileged: true
+
+  # Git Automator - Secure Git Operations
+  git-automator:
+    build: ./git-automator
+    ports:
+      - "3024:3024"
+    environment:
+      - NODE_ENV=production
+      - PORT=3024
+      - LOG_LEVEL=info
+      - REPOS_DIR=/tmp/drs-repos
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    volumes:
+      - git_repos:/tmp/drs-repos
+    depends_on:
+      - redis
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # Edge Optimizer - Auto-Quantization & Resource Budgeting
+  edge-optimizer:
+    build: ./edge-optimizer
+    ports:
+      - "3025:3025"
+    environment:
+      - NODE_ENV=production
+      - PORT=3025
+      - LOG_LEVEL=info
+      - OLLAMA_HOST=http://ollama:11434
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - ollama
+      - redis
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # ============================================
+  # Phase 22: Cognitive AI Service
+  # Evolving Persona & Visual Reasoning Engine
+  # ============================================
+
+  cognitive-ai:
+    build: ./cognitive-ai
+    ports:
+      - "3030:3030"
+    environment:
+      - NODE_ENV=production
+      - COGNITIVE_AI_PORT=3030
+      - LOG_LEVEL=info
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - MINIO_HOST=minio
+      - MINIO_PORT=9000
+      - MINIO_USE_SSL=false
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
+      - QDRANT_URL=http://qdrant:6333
+      - OLLAMA_URL=http://ollama:11434
+      - VISUAL_MODEL_PATH=Qwen/Qwen-VL-Chat
+      - USE_GPU=false
+      - JWT_SECRET=${JWT_SECRET}
+      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8080
+    depends_on:
+      - redis
+      - ollama
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # ============================================
+  # Phase 23: Web3 + AI Distributed Mesh
+  # ============================================
+
+  web3-mesh:
+    build: ./web3-mesh
+    ports:
+      - "3031:3031"
+      - "4001:4001"
+      - "4002:4002/udp"
+      - "5001:5001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3031
+      - IPFS_SWARM_PORT=4001
+      - IPFS_API_PORT=5001
+      - LIBP2P_BOOTSTRAP=/dns4/bootstrap.libp2p.io/tcp/443/wss/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    volumes:
+      - ipfs_data:/data/ipfs
+    depends_on:
+      - redis
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # ============================================
+  # Phase 24: Post-Quantum Security Service
+  # ============================================
+
+  quantum-security:
+    build: ./quantum-security
+    ports:
+      - "3032:3032"
+    environment:
+      - NODE_ENV=production
+      - PORT=3032
+      - KYBER_MODE=768
+      - DILITHIUM_MODE=3
+      - HONEYPOT_ENABLED=true
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # ============================================
+  # Phase 25: Ultra Efficiency Service
+  # ============================================
+
+  ultra-efficiency:
+    build: ./ultra-efficiency
+    ports:
+      - "3033:3033"
+    environment:
+      - NODE_ENV=production
+      - PORT=3033
+      - HIBERNATION_ENABLED=true
+      - MODEL_DISTILLATION_ENABLED=true
+      - SGX_ENABLED=false
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - OLLAMA_URL=http://ollama:11434
+    depends_on:
+      - redis
+      - ollama
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # ============================================
+  # Phase 26: Human-Centric Interaction
+  # ============================================
+
+  human-interaction:
+    build: ./human-interaction
+    ports:
+      - "3034:3034"
+    environment:
+      - NODE_ENV=production
+      - PORT=3034
+      - AR_ENABLED=true
+      - SMART_GLASSES_SUPPORT=rayban-meta
+      - DUAL_BRAIN_UI=true
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # ============================================
+  # Phase 27: Self-Healing & Evolution
+  # ============================================
+
+  self-healing:
+    build: ./self-healing
+    ports:
+      - "3035:3035"
+    environment:
+      - NODE_ENV=production
+      - PORT=3035
+      - SELF_CODING_ENABLED=true
+      - CODE_TELEPATHY_ENABLED=true
+      - AUTO_PR_ENABLED=true
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - GITLAB_TOKEN=${GITLAB_TOKEN}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # ============================================
+  # Phase 28: Deep Cultural Localization
+  # ============================================
+
+  cultural-localization:
+    build: ./cultural-localization
+    ports:
+      - "3036:3036"
+    environment:
+      - NODE_ENV=production
+      - PORT=3036
+      - RTL_SUPPORT=true
+      - ARABIC_DIALECTS=moroccan,gulf,egyptian,levantine
+      - CULTURAL_CONTEXT_ENABLED=true
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - OLLAMA_URL=http://ollama:11434
+    depends_on:
+      - redis
+      - ollama
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # ============================================
+  # Phase 29: Self-Awareness & Transparency
+  # ============================================
+
+  self-awareness:
+    build: ./self-awareness
+    ports:
+      - "3037:3037"
+    environment:
+      - NODE_ENV=production
+      - PORT=3037
+      - HEALTH_REPORTING_ENABLED=true
+      - EPISTEMIC_UNCERTAINTY=true
+      - TRANSPARENCY_LEVEL=high
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # ============================================
+  # Supporting Services
+  # ============================================
+
+  # MinIO Object Storage
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ACCESS_KEY:-minioadmin}
+      - MINIO_ROOT_PASSWORD=${MINIO_SECRET_KEY:-minioadmin}
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # Qdrant Vector Database
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # ============================================
+  # Frontend
+  # ============================================
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    environment:
+      - REACT_APP_API_URL=http://localhost:3000
+      - REACT_APP_WS_URL=ws://localhost:3000
+    depends_on:
+      - gateway
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # ============================================
+  # Monitoring
+  # ============================================
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3008:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    depends_on:
+      - prometheus
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # ============================================
+  # Load Balancer / Reverse Proxy
+  # ============================================
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - gateway
+      - frontend
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+# ============================================
+# Volumes
+# ============================================
+
+volumes:
+  postgres_data:
+  redis_data:
+  ollama_data:
+  uploads_data:
+  plugins_data:
+  code_executions:
+  builds_data:
+  prometheus_data:
+  grafana_data:
+  sandbox_logs:
+  git_repos:
+  ipfs_data:
+  minio_data:
+  qdrant_data:
+
+# ============================================
+# Networks
+# ============================================
+
+networks:
+  drs-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
