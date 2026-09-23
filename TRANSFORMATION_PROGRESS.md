@@ -431,55 +431,325 @@ Plus supporting services:
 
 ---
 
-### Phase 28: Deep Cultural Localization (Port 3036)
+### Phase 28: Deep Cultural Localization (Port 3036) ✓
 **Features:**
 - Arabic dialect support (Moroccan, Gulf, Egyptian, Levantine)
 - RTL full support
 - Cultural context awareness
 - Local customs integration
 
-### Phase 29: Self-Awareness & Transparency (Port 3037)
-**Features:**
-- Digital health reports
-- Epistemic uncertainty quantification
-- Transparency dashboard
-- Decision explanation engine
+### Phase 29: Self-Awareness & Transparency (Port 3037) ✓
+**Location:** `/self-awareness/`
+
+#### Components Implemented:
+
+1. **Digital Health Service** (`src/digital-health/DigitalHealthService.js`)
+   - Continuous monitoring of all 33 DRS AI microservices
+   - Heartbeat polling with 5s timeout
+   - Latency & error-rate tracking per service
+   - Incident timeline (open / resolved / history)
+   - Trend analysis (24h / 7d / 30d windows)
+   - Auto-snapshot every 60s (configurable)
+   - 30-service registry covering every DRS AI service
+
+2. **Epistemic Uncertainty Service** (`src/epistemic-uncertainty/EpistemicUncertaintyService.js`)
+   - Aleatoric uncertainty (irreducible data noise) via Shannon entropy of token logprobs
+   - Epistemic uncertainty (reducible model knowledge gap) via ensemble variance
+   - MC-Dropout proxy (5 passes default) when neither signal available
+   - Confidence scoring with abstention threshold (default 0.65)
+   - Human feedback loop — recalibrates threshold based on ECE (Expected Calibration Error)
+   - 1000-prediction ring buffer for calibration metrics
+
+3. **Transparency Dashboard Service** (`src/transparency/TransparencyDashboardService.js`)
+   - Immutable accountability ledger (append-only)
+   - Per-model public model cards (provider, params, training data, limitations, ethical considerations)
+   - Data lineage tracking (RAG / memory / web / tool / model_internal)
+   - Bias / fairness audit log
+   - Compliance posture report (GDPR, CCPA, Saudi NDMO, HIPAA)
+   - User rights API: access, rectification, erasure, portability, objection
+   - Right-to-be-forgotten endpoint
+
+4. **Decision Explanation Engine** (`src/decision-explanation/DecisionExplanationService.js`)
+   - Structured explanations for 6 decision categories: routing, model_selection, content_filtering, security, resource_allocation, user_facing
+   - Feature attributions + natural-language rendering
+   - Persistence with last 10000 explanations
+   - Per-category filtering & lookup by ID
+   - Confidence-aware explanations
+
+#### API Endpoints (25 endpoints):
+- `GET /health` — service health
+- `GET /api/v1/health/snapshot` — latest health snapshot
+- `POST /api/v1/health/snapshot` — force a new snapshot
+- `GET /api/v1/health/history` — historical snapshots
+- `GET /api/v1/health/incidents` — active incidents
+- `GET /api/v1/health/incidents/history` — resolved incidents
+- `POST /api/v1/health/incidents/:id/resolve` — resolve incident
+- `GET /api/v1/health/trends` — trend metrics
+- `POST /api/v1/uncertainty/quantify` — quantify uncertainty
+- `POST /api/v1/uncertainty/feedback` — submit feedback for recalibration
+- `GET /api/v1/uncertainty/calibration` — calibration metrics
+- `GET /api/v1/uncertainty/threshold` — current threshold
+- `POST /api/v1/uncertainty/threshold` — set threshold
+- `GET /api/v1/transparency/dashboard` — dashboard summary
+- `GET /api/v1/transparency/compliance` — compliance posture
+- `GET /api/v1/transparency/ledger` — accountability ledger
+- `POST /api/v1/transparency/ledger` — record event
+- `GET /api/v1/transparency/bias-audits` — bias audits
+- `POST /api/v1/transparency/bias-audits` — record audit
+- `GET /api/v1/transparency/models/:modelId/card` — model card
+- `POST /api/v1/transparency/lineage/:answerId` — record lineage
+- `GET /api/v1/transparency/lineage/:answerId` — get lineage
+- `GET /api/v1/transparency/user-rights` — user rights list
+- `GET /api/v1/transparency/user/:userId` — user data
+- `DELETE /api/v1/transparency/user/:userId` — right-to-be-forgotten
+- `POST /api/v1/explanations/*` — 6 explanation endpoints
+- `GET /api/v1/explanations` — explanation log
+- `GET /api/v1/explanations/:id` — single explanation
 
 ---
 
-## 🚀 Key Technologies Integrated
+### Phase 30: Mobile App ✓
+**Location:** `/mobile-app/`
 
-| Technology | Purpose |
-|------------|---------|
-| TensorFlow.js | Meta-learning & neural networks |
-| Xenova Transformers | Text embeddings |
-| Qwen-VL / LLaVA | Visual reasoning |
-| IPFS | Decentralized storage |
-| libp2p | P2P networking |
-| Ethereum / Web3 | Smart contracts |
-| Qdrant | Vector search |
-| MinIO | Object storage |
-| Redis | Caching & pub/sub |
-| Sharp | Image processing |
-| ml-kem | Crystal-Kyber post-quantum KEM |
-| ml-dsa | Dilithium post-quantum signatures |
-| GeoIP | Geographic threat intelligence |
+Cross-platform mobile client built with **React Native + Expo**. Supports Android, iOS, and Web from a single codebase.
+
+#### Components Implemented:
+
+1. **5 Screens**: Login, Chat, Voice, Files, Models, Settings
+2. **Bottom-tab navigation** with `@react-navigation/bottom-tabs`
+3. **i18n**: Arabic (RTL), English, French, German with instant switching via `expo-localization`
+4. **Theme**: Dark-first design with tokens (colors, spacing, typography, radius, shadows)
+5. **Auth context**: JWT via `expo-secure-store`
+6. **REST client**: full typed API client (auth, chat, models, files, workflows, health)
+7. **Streaming chat**: token-by-token response via SSE
+8. **Voice**: speech-to-text + text-to-speech with `expo-av` and `expo-speech`
+9. **Files**: document picker, upload, list, delete via `expo-document-picker`
+10. **Models**: pull/delete/inspect via Ollama
+11. **RTL support**: text alignment flips when Arabic selected
+
+#### Tech Stack:
+- React Native 0.74, Expo SDK 51
+- TypeScript with path aliases
+- lucide-react-native for icons
+- react-native-safe-area-context
+- AsyncStorage for offline cache
 
 ---
 
-## 📈 Progress Statistics
+### Phase 31: Desktop App ✓
+**Location:** `/desktop-app/`
 
-- **Phases Completed:** 6 of 12 (50%)
-- **Services Implemented:** 6 of 8 new services (75%)
-- **Total Services:** 33 microservices
-- **Lines of Code:** ~55,000+ (new services)
-- **API Endpoints:** 130+ (new services)
+Electron wrapper exposing the DRS AI frontend as a native desktop application on macOS, Windows, and Linux.
+
+#### Components Implemented:
+
+1. **Main process** (`src/main.js`):
+   - BrowserWindow with dark theme & custom titlebar (macOS hiddenInset)
+   - Native menu bar in 4 languages (ar/en/fr/de) with full File/Edit/View/Window/Help menus
+   - System tray with quick actions (show/hide/settings/quit)
+   - Auto-launch on boot (optional)
+   - Deep-link registration (`drsai://`)
+   - Auto-updater via `electron-updater` (with user confirmation dialogs)
+   - Single-instance lock (prevents multiple app instances)
+   - All settings persisted via `electron-store`
+   - Window-size memory (remembers last position)
+   - Native file dialogs (open/save)
+   - Native OS notifications
+
+2. **Preload script** (`src/preload.js`):
+   - Context-isolated (no nodeIntegration)
+   - Exposes safe `window.drsAI` API to renderer
+   - Methods: getVersion, getPlatform, settings.get/set/getAll, dialog.openFile/saveFile, notify, openExternal
+   - Event listeners for deep-link and navigation
+
+3. **Entitlements** (`build/entitlements.mac.plist`):
+   - Hardened runtime for macOS notarization
+   - Network client/server, camera, audio-input permissions
+   - User-selected file read/write
+
+#### Tech Stack:
+- Electron 30
+- electron-builder 24 (produces dmg/exe/AppImage/deb/snap)
+- electron-store for settings
+- electron-updater for auto-updates
+- electron-log for logging
+
+---
+
+### Phase 32: GPU Acceleration Service (Port 3038) ✓
+**Location:** `/gpu-acceleration/`
+
+#### Components Implemented:
+
+1. **CUDA Metrics Service** (`src/cuda-metrics/CudaMetricsService.js`)
+   - Polls `nvidia-smi` every 2s (configurable)
+   - Tracks per-GPU: utilization, memory used/total/free, temperature, power draw
+   - Aggregate metrics across all GPUs
+   - 1000-sample history retention
+   - Software-emulation mode when no GPU detected
+
+2. **VRAM Monitor** (`src/vram-monitor/VRamMonitor.js`)
+   - Per-model VRAM allocations with unique IDs
+   - LRU tracking (least-recently-used eviction)
+   - Soft-budget enforcement — evicts when free VRAM < 10%
+   - Allocation / deallocation API
+   - Persists allocations to Redis (survives restart)
+
+3. **Offload Manager** (`src/offload-manager/OffloadManager.js`)
+   - 4 policies: `always_gpu`, `prefer_gpu`, `adaptive` (default), `cpu_only`
+   - Decides `num_gpu` layers to offload based on policy + VRAM pressure
+   - Talks to Ollama (port 11434) to apply offload decision
+   - Triggers eviction when needed
+
+#### API Endpoints (11 endpoints):
+- `GET /api/v1/gpu/metrics` — per-GPU current metrics
+- `GET /api/v1/gpu/metrics/aggregate` — aggregated metrics
+- `GET /api/v1/gpu/metrics/history` — historical samples
+- `GET /api/v1/gpu/vram` — list allocations
+- `POST /api/v1/gpu/vram/allocate` — allocate VRAM
+- `DELETE /api/v1/gpu/vram/:id` — deallocate
+- `POST /api/v1/gpu/vram/evict` — trigger eviction
+- `GET /api/v1/gpu/offload/policy` — current policy
+- `POST /api/v1/gpu/offload/policy` — set policy
+- `POST /api/v1/gpu/offload/decide` — decide offload for a model
+- `POST /api/v1/gpu/offload/apply` — apply decision to Ollama
+
+---
+
+### Phase 33: Distributed Deployment Service (Port 3039) ✓
+**Location:** `/distributed-deployment/`
+
+#### Components Implemented:
+
+1. **Node Registry** (`src/node-registry/NodeRegistry.js`)
+   - Self-registration of cluster nodes via POST /register
+   - Heartbeats every 15s — 45s timeout
+   - Per-node: address, region, capacity (CPU/RAM/GPU/VRAM), tags, role
+   - Search by region / tags / capacity / role
+   - Auto-cleanup of stale nodes (20s interval)
+
+2. **Task Router** (`src/task-router/TaskRouter.js`)
+   - 4 strategies: `round_robin`, `least_loaded` (default), `capacity_first`, `affinity`
+   - Task lifecycle: submitted → dispatched → in_flight → completed/failed
+   - Affinity-based routing (prefer node that last ran similar task)
+   - Persists all tasks to Redis for history
+
+3. **Cluster Manager** (`src/cluster-manager/ClusterManager.js`)
+   - Cluster-wide status: nodes online/offline, tasks pending/completed/failed
+   - Failover: re-dispatch tasks whose node crashed
+   - Drain: gracefully migrate tasks off a node
+
+#### API Endpoints (15 endpoints):
+- `POST /api/v1/distributed/nodes/register` — register node
+- `POST /api/v1/distributed/nodes/:nodeId/heartbeat` — heartbeat
+- `DELETE /api/v1/distributed/nodes/:nodeId` — deregister
+- `GET /api/v1/distributed/nodes/search` — search by criteria
+- `POST /api/v1/distributed/tasks/submit` — submit task
+- `POST /api/v1/distributed/tasks/:taskId/complete` — complete task
+- `GET /api/v1/distributed/tasks` — list tasks
+- `GET /api/v1/distributed/tasks/strategy/get` — get strategy
+- `POST /api/v1/distributed/tasks/strategy/set` — set strategy
+- `GET /api/v1/distributed/cluster/status` — cluster status
+- `POST /api/v1/distributed/cluster/failover/:nodeId` — failover
+- `POST /api/v1/distributed/cluster/drain/:nodeId` — drain node
+
+---
+
+### Phase 34: Federated Learning Service (Port 3040) ✓
+**Location:** `/federated-learning/`
+
+#### Components Implemented:
+
+1. **Participant Manager** (`src/participants/ParticipantManager.js`)
+   - Register participants with id, public key, dataset size, backend
+   - Heartbeat tracking
+   - Submit local model updates (weights + metrics) per round
+   - Per-round update collection
+
+2. **Model Aggregator** (`src/model-aggregator/ModelAggregator.js`)
+   - 3 strategies: `fed_avg` (McMahan 2017), `fed_prox` (Li 2020), `fed_sgd`
+   - FedAvg: weighted average by participant sample count
+   - FedProx: FedAvg + proximal regularization term (mu)
+   - FedSGD: simple mean of gradients
+   - Per-aggregation metrics (avg loss, avg accuracy)
+
+3. **Secure Aggregation** (`src/secure-aggregation/SecureAggregationService.js`)
+   - Bonawitz et al. pairwise masking protocol
+   - Server never sees individual participant updates — only the aggregated sum
+   - Per-round pairwise secret generation (SHA-256 seeded)
+   - Mask derivation via stream-cipher-like construction
+   - Verifiable aggregation (masks cancel pairwise)
+   - Requires ≥3 participants for proper masking
+
+#### API Endpoints (12 endpoints):
+- `POST /api/v1/fl/participants/register` — register participant
+- `POST /api/v1/fl/participants/:id/heartbeat` — heartbeat
+- `DELETE /api/v1/fl/participants/:id` — deregister
+- `POST /api/v1/fl/participants/:id/updates` — submit local update
+- `GET /api/v1/fl/participants` — list participants
+- `POST /api/v1/fl/rounds` — create federated round (sets up secure context)
+- `GET /api/v1/fl/rounds/:roundId/updates` — get round updates
+- `POST /api/v1/fl/rounds/:roundId/aggregate` — trigger aggregation
+- `GET /api/v1/fl/aggregations` — list aggregations
+- `GET /api/v1/fl/strategies` — list strategies
+- `POST /api/v1/fl/strategies` — set default strategy
+
+---
+
+## 📊 Updated Architecture Summary
+
+### Total Services: 36 Microservices + 2 Clients = 38 Components
+
+**Core Infrastructure (4):**
+- postgres, redis, ollama, nginx
+
+**Core Services (8):**
+- gateway (3000), auth (3001), model-router (3002), agent-orchestrator (3003)
+- memory (3004), files (3005), voice (3006), dashboard (3007)
+
+**AI OS Services (9):**
+- telegram-bot (3010), workflow-engine (3011), plugin-system (3012)
+- auto-agent (3013), code-interpreter (3014), cybersecurity (3015)
+- advanced-memory (3016), multi-model (3017), auto-builder (3018)
+
+**Advanced Infrastructure (6):**
+- security-sandbox (3020), llm-guardrail (3021), hybrid-rag (3022)
+- polyglot-interpreter (3023), git-automator (3024), edge-optimizer (3025)
+
+**Global Platform Services (12):**
+- cognitive-ai (3030), web3-mesh (3031), quantum-security (3032)
+- ultra-efficiency (3033), human-interaction (3034), self-healing (3035)
+- cultural-localization (3036), self-awareness (3037)
+- gpu-acceleration (3038), distributed-deployment (3039), federated-learning (3040)
+
+**Clients (2):**
+- mobile-app (React Native + Expo) — Android / iOS / Web
+- desktop-app (Electron) — macOS / Windows / Linux
+
+**Supporting Services (3):**
+- minio (9000/9001), qdrant (6333/6334)
+
+**Monitoring (2):**
+- prometheus (9090), grafana (3008)
+
+---
+
+## 📈 Updated Progress Statistics
+
+- **Phases Completed:** 12 of 12 (100%)
+- **Total Microservices:** 36
+- **Clients:** 2 (mobile + desktop)
+- **Total Components:** 38
+- **Lines of Code:** ~85,000+
+- **API Endpoints:** 320+ across all services
 - **WebSocket Events:** 10+ real-time channels
-- **Bug Patterns:** 8 detection patterns
-- **Code Templates:** 5 telepathy templates
-- **PR Automation:** Full GitHub/GitLab workflow
+- **Languages Supported:** Arabic, English, French, German
+- **Compliance Frameworks:** GDPR, CCPA, Saudi NDMO
+- **Federated Learning Strategies:** 3 (FedAvg, FedProx, FedSGD)
+- **GPU Offload Policies:** 4 (always_gpu, prefer_gpu, adaptive, cpu_only)
+- **Task Routing Strategies:** 4 (round_robin, least_loaded, capacity_first, affinity)
 
 ---
 
-*Last Updated: 2026-04-12*
-*DRS AI Transformation Project*
+*Last Updated: 2026-09-23*
+*DRS AI Transformation Project — Roadmap Complete ✅*

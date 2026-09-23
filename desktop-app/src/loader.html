@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>DRS AI</title>
+  <style>
+    html, body { margin: 0; padding: 0; background: #0a0a0a; color: #f5f5f5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; height: 100%; }
+    #loader { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
+    .logo { font-size: 36px; font-weight: 700; color: #6366f1; letter-spacing: -0.02em; }
+    .spinner { width: 36px; height: 36px; border: 3px solid rgba(255,255,255,0.1); border-top-color: #6366f1; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .msg { color: #a0a0a0; font-size: 14px; }
+    .err { color: #ef4444; font-size: 13px; max-width: 600px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div id="loader">
+    <div class="logo">DRS AI</div>
+    <div class="spinner"></div>
+    <div class="msg">Connecting to your DRS AI platform…</div>
+    <div class="err" id="err"></div>
+  </div>
+  <script>
+    // This loader is only shown if the BrowserWindow failed to load
+    // the actual frontend. It's never displayed during normal operation.
+    window.addEventListener('error', (e) => {
+      document.getElementById('err').textContent = e.message;
+    });
+  </script>
+</body>
+</html>

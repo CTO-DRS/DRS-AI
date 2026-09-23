@@ -84,6 +84,14 @@ DRS AI is a comprehensive, locally-hosted AI Operating System that runs entirely
 | Frontend | 8080 | React Web UI |
 | Grafana | 3008 | Monitoring Dashboard |
 | Prometheus | 9090 | Metrics Collection |
+| **Global Platform Services** |||
+| Self-Awareness | 3037 | Digital Health, Uncertainty, Transparency, Decision Explanation |
+| GPU Acceleration | 3038 | CUDA Metrics, VRAM Monitor, Offload Manager |
+| Distributed Deployment | 3039 | Cluster Manager, Node Registry, Task Router |
+| Federated Learning | 3040 | Participant Manager, Model Aggregator, Secure Aggregation |
+| **Clients** |||
+| Mobile App | - | React Native + Expo (Android/iOS/Web) |
+| Desktop App | - | Electron (macOS/Windows/Linux) |
 
 ## 🚀 Quick Start
 
@@ -192,6 +200,12 @@ drs-ai/
 ├── frontend/             # React UI
 ├── termux/               # Android Scripts
 ├── monitoring/           # Prometheus/Grafana
+├── self-awareness/       # Self-Awareness & Transparency (Phase 29)
+├── gpu-acceleration/     # GPU Acceleration (Phase 32)
+├── distributed-deployment/ # Distributed Deployment (Phase 33)
+├── federated-learning/   # Federated Learning (Phase 34)
+├── mobile-app/           # React Native + Expo mobile client
+├── desktop-app/          # Electron desktop client
 └── docker-compose.yml
 ```
 
@@ -328,11 +342,16 @@ This project is licensed under the MIT License - see [LICENSE](./LICENSE) file.
 - [x] Plugin system
 - [x] Auto app builder
 - [x] Termux support
-- [ ] Mobile app (React Native)
-- [ ] Desktop app (Electron)
-- [ ] GPU acceleration
-- [ ] Distributed deployment
-- [ ] Federated learning
+- [x] **Mobile app (React Native + Expo)** — `mobile-app/` — multilingual (ar/en/fr/de), Chat/Voice/Files/Models/Settings screens, RTL
+- [x] **Desktop app (Electron)** — `desktop-app/` — macOS/Windows/Linux with native menus, system tray, auto-updater
+- [x] **GPU acceleration** — `gpu-acceleration/` (port 3038) — CUDA metrics, VRAM monitor, offload manager (always_gpu / prefer_gpu / adaptive / cpu_only)
+- [x] **Distributed deployment** — `distributed-deployment/` (port 3039) — node registry, task router (round_robin / least_loaded / capacity_first / affinity), cluster manager with failover
+- [x] **Federated learning** — `federated-learning/` (port 3040) — participant manager, model aggregator (FedAvg / FedProx / FedSGD), secure aggregation (pairwise masking)
+- [x] **Self-awareness & transparency** — `self-awareness/` (port 3037) — digital health, epistemic uncertainty, transparency dashboard, decision explanation engine
+- [ ] Multi-region active-active replication
+- [ ] OAuth2 / OIDC integration (Keycloak, Auth0)
+- [ ] Kubernetes Helm charts
+- [ ] GPU sharing via MIG / time-slicing
 
 ---
 

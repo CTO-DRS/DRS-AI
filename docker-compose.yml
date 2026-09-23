@@ -761,6 +761,71 @@ services:
     restart: unless-stopped
 
   # ============================================
+  # Phase 32: GPU Acceleration Service
+  # ============================================
+
+  gpu-acceleration:
+    build: ./gpu-acceleration
+    ports:
+      - "3038:3038"
+    environment:
+      - NODE_ENV=production
+      - PORT=3038
+      - GPU_OFFLOAD_POLICY=adaptive
+      - GPU_POLL_INTERVAL=2000
+      - GPU_EVICTION_THRESHOLD=0.1
+      - OLLAMA_URL=http://ollama:11434
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # ============================================
+  # Phase 33: Distributed Deployment Service
+  # ============================================
+
+  distributed-deployment:
+    build: ./distributed-deployment
+    ports:
+      - "3039:3039"
+    environment:
+      - NODE_ENV=production
+      - PORT=3039
+      - DRS_NODE_ID=master
+      - TASK_ROUTER_STRATEGY=least_loaded
+      - NODE_HEARTBEAT_TIMEOUT=45000
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # ============================================
+  # Phase 34: Federated Learning Service
+  # ============================================
+
+  federated-learning:
+    build: ./federated-learning
+    ports:
+      - "3040:3040"
+    environment:
+      - NODE_ENV=production
+      - PORT=3040
+      - FL_STRATEGY=fed_avg
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # ============================================
   # Supporting Services
   # ============================================
 

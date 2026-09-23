@@ -1,0 +1,58 @@
+{
+  "expo": {
+    "name": "DRS AI",
+    "slug": "drs-ai-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "drsai",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0a0a0a"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.drsai.mobile",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "DRS AI uses the microphone for voice commands and speech-to-text.",
+        "NSCameraUsageDescription": "DRS AI uses the camera for AR features and document scanning.",
+        "NSPhotoLibraryUsageDescription": "DRS AI accesses your photos for file uploads and image analysis."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0a0a0a"
+      },
+      "package": "com.drsai.mobile",
+      "permissions": [
+        "RECORD_AUDIO",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-localization"
+    ],
+    "experiments": {
+      "tsconfigPaths": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "drs-ai-mobile"
+      },
+      "defaultApiUrl": "http://localhost:3000",
+      "supportedLocales": ["ar", "en", "fr", "de"]
+    }
+  }
+}

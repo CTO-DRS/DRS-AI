@@ -11,14 +11,14 @@ RUN npm ci --only=production && npm cache clean --force
 
 COPY . .
 
-RUN groupadd -r aware && useradd -r -g aware aware
-RUN mkdir -p logs && chown -R aware:aware logs
+RUN groupadd -r gpu && useradd -r -g gpu gpu
+RUN mkdir -p logs && chown -R gpu:gpu logs
 
-USER aware
+USER gpu
 
-EXPOSE 3037
+EXPOSE 3038
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:3037/health/live || exit 1
+    CMD curl -f http://localhost:3038/health/live || exit 1
 
 CMD ["node", "src/server.js"]

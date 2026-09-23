@@ -1,12 +1,11 @@
 {
-  "name": "self-awareness-service",
+  "name": "distributed-deployment-service",
   "version": "1.0.0",
-  "description": "DRS AI Self-Awareness & Transparency Service - Digital health, epistemic uncertainty, transparency dashboard, and decision explanation engine",
+  "description": "DRS AI Distributed Deployment Service - cluster manager, node registry, task routing across multiple nodes",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node src/server.js",
-    "test": "jest"
+    "dev": "node src/server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
@@ -19,12 +18,7 @@
     "swagger-ui-express": "^5.0.0",
     "swagger-jsdoc": "^6.2.8",
     "uuid": "^9.0.0",
-    "axios": "^1.6.0",
-    "decimal.js": "^10.4.3",
-    "lodash": "^4.17.21"
-  },
-  "devDependencies": {
-    "jest": "^29.7.0"
+    "axios": "^1.6.0"
   },
   "engines": {
     "node": ">=18"

@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+dist/
+out/
+*.app
+*.dmg
+*.exe
+*.AppImage
+*.deb
+*.snap
+
+# Logs
+logs/
+*.log
+
+# macOS
+.DS_Store
+
+# Build artifacts
+build/icon.icns
+build/icon.ico
+build/icon.png
