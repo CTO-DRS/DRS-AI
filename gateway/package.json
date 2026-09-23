@@ -22,7 +22,7 @@
     "winston-daily-rotate-file": "^4.7.1",
     "ioredis": "^5.3.2",
     "dotenv": "^16.3.1",
-    "uuid": "^9.0.1",
+    "uuid": "^14.0.2",
     "express-validator": "^7.0.1",
     "ws": "^8.16.0"
   },
