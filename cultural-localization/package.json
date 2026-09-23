@@ -27,7 +27,7 @@
     "compromise": "^14.10.1",
     "transliteration": "^2.3.5",
     "@vitalets/google-translate-api": "^9.2.0",
-    "rtl-detect": "^0.0.3",
+    "rtl-detect": "^1.0.0",
     "striptags": "^3.2.0",
     "emoji-regex": "^10.3.0"
   },

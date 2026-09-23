@@ -4,9 +4,8 @@ Core microservices: gateway, auth, router, orchestrator, memory, files, voice, d
 {{- $core := list "gateway" "auth" "router" "orchestrator" "memory" "files" "voice" "dashboard" -}}
 {{- range $name := $core -}}
 {{- $svc := index $.Values.coreServices $name -}}
-{{- if $svc.enabled -}}
-{{- $portField := "port" -}}
+{{- if $svc.enabled }}
 ---
-{{ include "drs-ai.microservice" (dict "name" $name "port" (get $svc $portField) "replicas" (default 1 $svc.replicas) "resources" $svc.resources "env" $svc.env "gpu" false "root" $) }}
+{{ include "drs-ai.microservice" (dict "name" $name "port" $svc.port "replicas" (default 1 $svc.replicas) "resources" $svc.resources "env" $svc.env "gpu" false "root" $) }}
 {{- end -}}
 {{- end -}}

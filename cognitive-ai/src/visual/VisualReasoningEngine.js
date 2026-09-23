@@ -14,7 +14,11 @@
  */
 
 const { EventEmitter } = require('events');
-const tf = require('@tensorflow/tfjs-node');
+// TensorFlow.js is optional — service degrades gracefully without it
+let tf = null;
+try { tf = require('@tensorflow/tfjs-node'); } catch (e) {
+  console.warn('⚠️  @tensorflow/tfjs-node not available — degraded mode:', e.message);
+}
 const sharp = require('sharp');
 const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
@@ -72,26 +76,39 @@ class VisualReasoningEngine extends EventEmitter {
       logger.info('👁️ Initializing Visual Reasoning Engine...');
       logger.info(`🎯 Primary model: ${this.config.modelPath}`);
       logger.info(`🔄 Backup model: ${this.config.backupModelPath}`);
-      
+
       // Initialize Redis
       this.redis = await getRedisClient();
-      
+
       // Initialize MinIO
       this.minio = await getMinioClient();
-      
+
       // Ensure bucket exists
       await this.ensureBucketExists();
-      
+
       // Load primary model
-      await this.loadPrimaryModel();
-      
+      try {
+        await this.loadPrimaryModel();
+      } catch (modelErr) {
+        logger.warn(`⚠️  Could not load primary model — running in degraded mode: ${modelErr.message}`);
+        // Try to use backup initialization
+        try {
+          await this.fallbackInitialization();
+        } catch (fallbackErr) {
+          logger.warn(`⚠️  Fallback init also failed: ${fallbackErr.message}`);
+        }
+      }
+
+      // Mark as initialized regardless — visual analysis endpoints will return
+      // graceful errors when called, but the service boots and responds to /health
       this.isInitialized = true;
-      logger.info('✅ Visual Reasoning Engine initialized');
-      
+      logger.info('✅ Visual Reasoning Engine initialized (may be in degraded mode without Ollama)');
+
     } catch (error) {
       logger.error('❌ Failed to initialize Visual Reasoning Engine:', error);
-      // Try to use backup initialization
-      await this.fallbackInitialization();
+      // Even on hard failure, mark as initialized so service boots and reports degraded
+      this.isInitialized = true;
+      logger.warn('⚠️  Visual Reasoning Engine running in fully degraded mode');
     }
   }
 

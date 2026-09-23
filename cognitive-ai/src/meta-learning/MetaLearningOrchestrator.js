@@ -12,7 +12,11 @@
  */
 
 const { EventEmitter } = require('events');
-const tf = require('@tensorflow/tfjs-node');
+// TensorFlow.js is optional — service degrades gracefully without it
+let tf = null;
+try { tf = require('@tensorflow/tfjs-node'); } catch (e) {
+  console.warn('⚠️  @tensorflow/tfjs-node not available — degraded mode:', e.message);
+}
 const { Matrix } = require('ml-matrix');
 const { v4: uuidv4 } = require('uuid');
 

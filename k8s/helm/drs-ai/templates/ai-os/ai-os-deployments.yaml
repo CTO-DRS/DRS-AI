@@ -5,7 +5,7 @@ code-interpreter, cybersecurity, advanced-memory, multi-model, auto-builder
 {{- $aiOs := list "telegramBot" "workflowEngine" "pluginSystem" "autoAgent" "codeInterpreter" "cybersecurity" "advancedMemory" "multiModel" "autoBuilder" -}}
 {{- range $name := $aiOs -}}
 {{- $svc := index $.Values.aiOsServices $name -}}
-{{- if $svc.enabled -}}
+{{- if $svc.enabled }}
 ---
 {{- $hyphen := regexReplaceAll "([A-Z])" $name "-${1}" | lower -}}
 {{ include "drs-ai.microservice" (dict "name" $hyphen "port" $svc.port "replicas" (default 1 $svc.replicas) "resources" $svc.resources "env" $svc.env "gpu" false "root" $) }}

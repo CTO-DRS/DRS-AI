@@ -10,7 +10,7 @@
  * @version 1.0.0
  */
 
-const { ml_kem512, ml_kem768, ml_kem1024 } = require('ml-kem');
+const { ml_kem512, ml_kem768, ml_kem1024 } = require('./pq-compat');
 const { logger } = require('../utils/logger');
 const { getRedisClient } = require('../utils/redis');
 const { v4: uuidv4 } = require('uuid');

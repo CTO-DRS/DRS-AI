@@ -3,6 +3,12 @@ node_modules/
 .pnp
 .pnp.js
 
+# Lock files (intentionally not committed — kept per-environment)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+Chart.lock
+
 # Build outputs
 dist/
 build/
@@ -96,3 +102,4 @@ secrets/
 *.key
 *.pem
 *.crt
+charts/

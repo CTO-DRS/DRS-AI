@@ -35,7 +35,8 @@ apiVersion: v1
 kind: Service
 metadata:
   name: frontend
-  labels: { {{- include "drs-ai.labels" . | nindent 4 }} }
+  labels:
+    {{- include "drs-ai.labels" . | nindent 4 }}
 spec:
   type: ClusterIP
   ports:
@@ -53,10 +54,10 @@ metadata:
   name: drs-ai-ingress
   labels:
     {{- include "drs-ai.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
   annotations:
-    {{- with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
-    {{- end }}
+  {{- end }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   {{- with .Values.ingress.tls }}
@@ -75,7 +76,11 @@ spec:
               service:
                 name: {{ .service }}
                 port:
-                  number: {{ if eq .service "frontend }}80{{ else }}{{ index $.Values.coreServices.gateway "port" }}{{ end }}
+                  {{- if eq .service "frontend" }}
+                  number: 80
+                  {{- else }}
+                  number: {{ $.Values.coreServices.gateway.port | default 3000 }}
+                  {{- end }}
           {{- end }}
     {{- end }}
 {{- end }}

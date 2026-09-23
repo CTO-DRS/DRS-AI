@@ -25,8 +25,6 @@
     "ws": "^8.14.2",
     "multer": "^1.4.5-lts.1",
     "sharp": "^0.33.1",
-    "onnxruntime-node": "^1.16.3",
-    "@tensorflow/tfjs-node": "^4.15.0",
     "natural": "^6.10.0",
     "compromise": "^14.10.1",
     "uuid": "^9.0.1",
@@ -45,7 +43,13 @@
     "brain.js": "^2.0.0-beta.23",
     "synaptic": "^1.1.4",
     "openai": "^4.24.1",
-    "@xenova/transformers": "^2.14.0"
+    "@xenova/transformers": "^2.14.0",
+    "minio": "^8.0.0",
+    "@qdrant/js-client-rest": "^1.10.0"
+  },
+  "optionalDependencies": {
+    "@tensorflow/tfjs-node": "^4.15.0",
+    "onnxruntime-node": "^1.16.3"
   },
   "devDependencies": {
     "nodemon": "^3.0.2",
