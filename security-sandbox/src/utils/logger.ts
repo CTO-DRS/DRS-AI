@@ -39,12 +39,12 @@ export function createLogger(service: string) {
   if (!isDevelopment) {
     transports.push(
       new winston.transports.File({
-        filename: '/var/log/drs/security-sandbox-error.log',
+        filename: './logs/error.log',
         level: 'error',
         format: combine(timestamp(), json(), errors({ stack: true }))
       }),
       new winston.transports.File({
-        filename: '/var/log/drs/security-sandbox.log',
+        filename: './logs/combined.log',
         format: combine(timestamp(), json())
       })
     );

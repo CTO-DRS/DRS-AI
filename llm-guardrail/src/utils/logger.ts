@@ -27,12 +27,12 @@ export function createLogger(service: string) {
   if (!isDevelopment) {
     transports.push(
       new winston.transports.File({
-        filename: '/var/log/drs/llm-guardrail-error.log',
+        filename: './logs/error.log',
         level: 'error',
         format: combine(timestamp(), json())
       }),
       new winston.transports.File({
-        filename: '/var/log/drs/llm-guardrail.log',
+        filename: './logs/combined.log',
         format: combine(timestamp(), json())
       })
     );

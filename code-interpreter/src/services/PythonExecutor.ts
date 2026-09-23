@@ -4,7 +4,7 @@ import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import logger from '../utils/logger';
 
-const WORKSPACE_DIR = '/app/workspace';
+const WORKSPACE_DIR = process.env.WORKSPACE_DIR || './workspace';
 const MAX_EXECUTION_TIME = 30000; // 30 seconds
 const MAX_OUTPUT_SIZE = 100000; // 100KB
 

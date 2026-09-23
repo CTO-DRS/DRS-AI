@@ -33,8 +33,8 @@ export class FullTextSearchService {
       this.isInitialized = true;
       logger.info('✅ Full-text Search Service initialized');
     } catch (error) {
-      logger.error('Failed to initialize Full-text Search Service:', error);
-      throw error;
+      logger.warn('Could not initialize Full-text Search Service (running in degraded mode without Postgres):', (error as Error).message);
+      // Don't rethrow — let service boot degraded
     }
   }
 

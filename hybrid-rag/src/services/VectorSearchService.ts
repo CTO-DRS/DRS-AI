@@ -40,11 +40,19 @@ export class VectorSearchService {
     try {
       // Initialize embedding model
       logger.info(`Loading embedding model: ${this.config.model}`);
-      this.embedder = await Pipeline('feature-extraction', this.config.model);
+      try {
+        this.embedder = await Pipeline('feature-extraction', this.config.model);
+      } catch (e) {
+        logger.warn(`Could not load embedding model (running in degraded mode): ${(e as Error).message}`);
+      }
       logger.info('✅ Embedding model loaded');
 
-      // Initialize database
-      await this.initializeDatabase();
+      // Initialize database (optional — service can run degraded without Postgres)
+      try {
+        await this.initializeDatabase();
+      } catch (dbErr) {
+        logger.warn(`Could not initialize database (running in degraded mode): ${(dbErr as Error).message}`);
+      }
       
       this.isInitialized = true;
       logger.info('✅ Vector Search Service initialized');

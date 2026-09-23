@@ -1,7 +1,7 @@
 {
   "name": "@cto-drs/security-sandbox",
   "version": "2.0.0",
-  "description": "𝑫𝑹𝑺.𝑽𝑰𝑷. Advanced Security Sandbox - Docker-in-Docker Isolated Execution Environment",
+  "description": "\ud835\udc6b\ud835\udc79\ud835\udc7a.\ud835\udc7d\ud835\udc70\ud835\udc77. Advanced Security Sandbox - Docker-in-Docker Isolated Execution Environment",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -21,12 +21,7 @@
     "winston": "^3.11.0",
     "ioredis": "^5.3.2",
     "bull": "^4.12.0",
-    "node-pty": "^1.0.0",
     "systeminformation": "^5.21.20",
-    "tcpdump-parser": "^1.0.0",
-    "seccomp": "^0.2.0",
-    "pidusage": "^3.0.2",
-    "tree-kill": "^1.2.2",
     "axios": "^1.6.2",
     "jsonwebtoken": "^9.0.2",
     "rate-limiter-flexible": "^4.0.1",
@@ -52,6 +47,9 @@
     "isolated-execution",
     "cybersecurity"
   ],
-  "author": "𝑫𝑹𝑺.𝑽𝑰𝑷. Architect",
-  "license": "MIT"
+  "author": "\ud835\udc6b\ud835\udc79\ud835\udc7a.\ud835\udc7d\ud835\udc70\ud835\udc77. Architect",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
 }

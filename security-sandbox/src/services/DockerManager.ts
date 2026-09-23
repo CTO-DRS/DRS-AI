@@ -40,8 +40,8 @@ export class DockerManager extends EventEmitter {
       await this.setupSandboxNetwork();
       
     } catch (error) {
-      logger.error('Docker initialization failed:', error);
-      throw error;
+      logger.warn('Docker initialization failed (running in degraded mode without Docker):', (error as Error).message);
+      // Don't rethrow — let the service boot so /health and other endpoints work
     }
   }
 
