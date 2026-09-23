@@ -1,0 +1,18 @@
+{{- if .Values.podDisruptionBudget.enabled }}
+{{- range $name, $svc := .Values.coreServices -}}
+{{- if $svc.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ $name }}-pdb
+  labels: { {{- include "drs-ai.labels" $ | nindent 4 }} }
+spec:
+  minAvailable: {{ $.Values.podDisruptionBudget.minAvailable | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "drs-ai.selectorLabels" $ | nindent 6 }}
+      app.kubernetes.io/component: {{ $name }}
+{{- end -}}
+{{- end -}}
+{{- end }}

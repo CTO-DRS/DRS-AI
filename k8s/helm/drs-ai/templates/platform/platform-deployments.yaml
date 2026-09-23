@@ -1,0 +1,29 @@
+{{/*
+Advanced infrastructure services: security-sandbox, llm-guardrail, hybrid-rag,
+polyglot-interpreter, git-automator, edge-optimizer
+*/}}
+{{- $adv := list "securitySandbox" "llmGuardrail" "hybridRag" "polyglotInterpreter" "gitAutomator" "edgeOptimizer" -}}
+{{- range $name := $adv -}}
+{{- $svc := index $.Values.advInfraServices $name -}}
+{{- if $svc.enabled -}}
+---
+{{- $hyphen := regexReplaceAll "([A-Z])" $name "-${1}" | lower -}}
+{{ include "drs-ai.microservice" (dict "name" $hyphen "port" $svc.port "replicas" (default 1 $svc.replicas) "resources" $svc.resources "env" $svc.env "gpu" false "root" $) }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Global platform services: cognitive-ai, web3-mesh, quantum-security, ultra-efficiency,
+human-interaction, self-healing, cultural-localization, self-awareness,
+gpu-acceleration, distributed-deployment, federated-learning,
+multi-region-replication, oauth-oidc, gpu-mig
+*/}}
+{{- $plat := list "cognitiveAi" "web3Mesh" "quantumSecurity" "ultraEfficiency" "humanInteraction" "selfHealing" "culturalLocalization" "selfAwareness" "gpuAcceleration" "distributedDeployment" "federatedLearning" "multiRegionReplication" "oauthOidc" "gpuMig" -}}
+{{- range $name := $plat -}}
+{{- $svc := index $.Values.platformServices $name -}}
+{{- if $svc.enabled -}}
+---
+{{- $hyphen := regexReplaceAll "([A-Z])" $name "-${1}" | lower -}}
+{{ include "drs-ai.microservice" (dict "name" $hyphen "port" $svc.port "replicas" (default 1 $svc.replicas) "resources" $svc.resources "env" $svc.env "gpu" (default false $svc.gpu) "root" $) }}
+{{- end -}}
+{{- end -}}

@@ -1,0 +1,112 @@
+# Production-grade values for DRS AI Helm chart
+# Use: helm install drs-ai k8s/helm/drs-ai -f k8s/examples/production.yaml
+
+global:
+  imageRegistry: "ghcr.io"           # Use a private registry for prod
+  imagePullSecrets:
+    - name: ghcr-pull-secret
+  storageClass: "fast-ssd"
+  imageTag: "1.0.0"
+  environment: production
+  nodeSelector:
+    workload: drs-ai
+  tolerations:
+    - key: "dedicated"
+      operator: "Equal"
+      value: "drs-ai"
+      effect: "NoSchedule"
+
+postgres:
+  enabled: true
+  password: "REPLACE_VIA_SECRETS"
+  persistence:
+    size: 100Gi
+    storageClass: "fast-ssd"
+  resources:
+    requests: { cpu: 500m, memory: 1Gi }
+    limits: { cpu: 2000m, memory: 4Gi }
+
+redis:
+  enabled: true
+  persistence:
+    size: 10Gi
+    storageClass: "fast-ssd"
+
+ollama:
+  enabled: true
+  gpu:
+    enabled: true
+    count: 1
+  persistence:
+    size: 200Gi
+    storageClass: "fast-ssd"
+  resources:
+    requests: { cpu: 1000m, memory: 4Gi }
+    limits:
+      cpu: 4000m
+      memory: 16Gi
+      nvidia.com/gpu: 1
+
+frontend:
+  replicas: 3
+  ingress:
+    enabled: true
+    className: nginx
+    host: drs-ai.example.com
+    tls:
+      enabled: true
+      secretName: drs-ai-tls
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 100m
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: drs-ai.example.com
+      paths:
+        - { path: /, pathType: Prefix, service: frontend }
+        - { path: /api, pathType: Prefix, service: gateway }
+  tls:
+    - hosts: [drs-ai.example.com]
+      secretName: drs-ai-tls
+
+coreServices:
+  gateway:      { enabled: true, port: 3000, replicas: 3 }
+  auth:         { enabled: true, port: 3001, replicas: 3 }
+  router:       { enabled: true, port: 3002, replicas: 3 }
+  orchestrator: { enabled: true, port: 3003, replicas: 2 }
+  memory:       { enabled: true, port: 3004, replicas: 2 }
+  files:        { enabled: true, port: 3005, replicas: 2 }
+  voice:        { enabled: true, port: 3006, replicas: 1 }
+  dashboard:    { enabled: true, port: 3007, replicas: 1 }
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+
+networkPolicy:
+  enabled: true
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 20
+  targetCPUUtilizationPercentage: 70
+
+prometheus:
+  enabled: true
+  retention: 30d
+  storage: 50Gi
+
+grafana:
+  enabled: true
+  adminPassword: "REPLACE_VIA_SECRETS"
+  storage: 10Gi
+
+secrets:
+  jwtSecret: "REPLACE_VIA_SECRETS"
+  postgresPassword: "REPLACE_VIA_SECRETS"
+  oauthMasterKey: "REPLACE_VIA_SECRETS"

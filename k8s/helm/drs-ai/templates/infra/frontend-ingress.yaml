@@ -1,0 +1,81 @@
+{{- if .Values.frontend.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  labels:
+    {{- include "drs-ai.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+spec:
+  replicas: {{ .Values.frontend.replicas | default 2 }}
+  selector:
+    matchLabels:
+      {{- include "drs-ai.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: frontend
+  template:
+    metadata:
+      labels:
+        {{- include "drs-ai.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: {{ include "drs-ai.image" (dict "registry" .Values.global.imageRegistry "repository" "drs-ai/frontend" "tag" .Values.global.imageTag "Values" .Values) }}
+          ports:
+            - name: http
+              containerPort: 80
+          resources:
+            {{- toYaml .Values.frontend.resources | nindent 12 }}
+          livenessProbe:
+            httpGet: { path: /, port: http }
+          readinessProbe:
+            httpGet: { path: /, port: http }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  labels: { {{- include "drs-ai.labels" . | nindent 4 }} }
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.frontend.port | default 80 }}
+      targetPort: http
+  selector:
+    {{- include "drs-ai.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+{{- end }}
+---
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: drs-ai-ingress
+  labels:
+    {{- include "drs-ai.labels" . | nindent 4 }}
+  annotations:
+    {{- with .Values.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- with .Values.ingress.tls }}
+  tls:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  rules:
+    {{- range .Values.ingress.hosts }}
+    - host: {{ .host }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                name: {{ .service }}
+                port:
+                  number: {{ if eq .service "frontend }}80{{ else }}{{ index $.Values.coreServices.gateway "port" }}{{ end }}
+          {{- end }}
+    {{- end }}
+{{- end }}

@@ -1,0 +1,83 @@
+# Minimal values for DRS AI Helm chart — single-node / dev deployment
+# Use: helm install drs-ai k8s/helm/drs-ai -f k8s/examples/dev.yaml
+
+global:
+  imageTag: "1.0.0"
+  environment: development
+
+postgres:
+  persistence:
+    size: 5Gi
+
+redis:
+  persistence:
+    size: 1Gi
+
+ollama:
+  gpu:
+    enabled: false
+  persistence:
+    size: 20Gi
+
+# Disable all non-essential services for a lean dev install
+aiOsServices:
+  telegramBot:    { enabled: false, port: 3010 }
+  workflowEngine: { enabled: true,  port: 3011 }
+  pluginSystem:   { enabled: false, port: 3012 }
+  autoAgent:      { enabled: false, port: 3013 }
+  codeInterpreter: { enabled: true, port: 3014 }
+  cybersecurity:  { enabled: false, port: 3015 }
+  advancedMemory: { enabled: false, port: 3016 }
+  multiModel:     { enabled: true,  port: 3017 }
+  autoBuilder:    { enabled: false, port: 3018 }
+
+advInfraServices:
+  securitySandbox:    { enabled: false, port: 3020 }
+  llmGuardrail:       { enabled: true,  port: 3021 }
+  hybridRag:          { enabled: true,  port: 3022 }
+  polyglotInterpreter: { enabled: false, port: 3023 }
+  gitAutomator:       { enabled: false, port: 3024 }
+  edgeOptimizer:      { enabled: false, port: 3025 }
+
+platformServices:
+  cognitiveAi:           { enabled: false, port: 3030 }
+  web3Mesh:              { enabled: false, port: 3031 }
+  quantumSecurity:       { enabled: false, port: 3032 }
+  ultraEfficiency:       { enabled: false, port: 3033 }
+  humanInteraction:      { enabled: false, port: 3034 }
+  selfHealing:           { enabled: false, port: 3035 }
+  culturalLocalization:  { enabled: false, port: 3036 }
+  selfAwareness:         { enabled: true,  port: 3037 }
+  gpuAcceleration:       { enabled: false, port: 3038 }
+  distributedDeployment: { enabled: false, port: 3039 }
+  federatedLearning:     { enabled: false, port: 3040 }
+  multiRegionReplication: { enabled: false, port: 3041 }
+  oauthOidc:             { enabled: false, port: 3042 }
+  gpuMig:                { enabled: false, port: 3043 }
+
+frontend:
+  replicas: 1
+  ingress:
+    enabled: false
+
+ingress:
+  enabled: false
+
+podDisruptionBudget:
+  enabled: false
+
+networkPolicy:
+  enabled: false
+
+autoscaling:
+  enabled: false
+
+prometheus:
+  enabled: false
+
+grafana:
+  enabled: false
+
+secrets:
+  jwtSecret: "dev-jwt-secret-not-for-production"
+  postgresPassword: "dev-password"

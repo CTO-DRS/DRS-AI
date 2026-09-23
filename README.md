@@ -89,9 +89,14 @@ DRS AI is a comprehensive, locally-hosted AI Operating System that runs entirely
 | GPU Acceleration | 3038 | CUDA Metrics, VRAM Monitor, Offload Manager |
 | Distributed Deployment | 3039 | Cluster Manager, Node Registry, Task Router |
 | Federated Learning | 3040 | Participant Manager, Model Aggregator, Secure Aggregation |
+| Multi-Region Replication | 3041 | Active-Active Replication, Conflict Resolver |
+| OAuth2 / OIDC | 3042 | Keycloak, Auth0, Google, GitHub, Azure AD, Okta |
+| GPU MIG / Time-Slicing | 3043 | MIG Partitioning + Time-Slicing with Fairness |
 | **Clients** |||
 | Mobile App | - | React Native + Expo (Android/iOS/Web) |
 | Desktop App | - | Electron (macOS/Windows/Linux) |
+| **Kubernetes** |||
+| Helm Chart | - | `k8s/helm/drs-ai/` with HPA, PDB, NetworkPolicy, Ingress |
 
 ## 🚀 Quick Start
 
@@ -204,6 +209,10 @@ drs-ai/
 ├── gpu-acceleration/     # GPU Acceleration (Phase 32)
 ├── distributed-deployment/ # Distributed Deployment (Phase 33)
 ├── federated-learning/   # Federated Learning (Phase 34)
+├── multi-region-replication/ # Multi-Region Replication (Phase 35)
+├── oauth-oidc/           # OAuth2 / OIDC Integration (Phase 36)
+├── gpu-mig/              # GPU MIG / Time-Slicing (Phase 38)
+├── k8s/                  # Kubernetes Helm charts (Phase 37)
 ├── mobile-app/           # React Native + Expo mobile client
 ├── desktop-app/          # Electron desktop client
 └── docker-compose.yml
@@ -348,10 +357,13 @@ This project is licensed under the MIT License - see [LICENSE](./LICENSE) file.
 - [x] **Distributed deployment** — `distributed-deployment/` (port 3039) — node registry, task router (round_robin / least_loaded / capacity_first / affinity), cluster manager with failover
 - [x] **Federated learning** — `federated-learning/` (port 3040) — participant manager, model aggregator (FedAvg / FedProx / FedSGD), secure aggregation (pairwise masking)
 - [x] **Self-awareness & transparency** — `self-awareness/` (port 3037) — digital health, epistemic uncertainty, transparency dashboard, decision explanation engine
-- [ ] Multi-region active-active replication
-- [ ] OAuth2 / OIDC integration (Keycloak, Auth0)
-- [ ] Kubernetes Helm charts
-- [ ] GPU sharing via MIG / time-slicing
+- [x] **Multi-region active-active replication** — `multi-region-replication/` (port 3041) — region manager, replication engine (async/sync/quorum), conflict resolver (LWW/vector-clock/merge)
+- [x] **OAuth2 / OIDC integration** — `oauth-oidc/` (port 3042) — Keycloak, Auth0, Google, GitHub, Azure AD, Okta with PKCE + encrypted token store
+- [x] **Kubernetes Helm charts** — `k8s/helm/drs-ai/` — production-ready chart with HPA, PDB, NetworkPolicy, Ingress
+- [x] **GPU sharing via MIG / time-slicing** — `gpu-mig/` (port 3043) — MIG partitioning for Ampere/Hopper + time-slicing with fairness tracking for non-MIG GPUs
+- [ ] Multi-cloud federation (AWS / GCP / Azure)
+- [ ] GPU multi-tenant quota with billing
+- [ ] Edge / IoT gateway service
 
 ---
 

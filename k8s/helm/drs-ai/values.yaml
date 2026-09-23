@@ -1,0 +1,263 @@
+# ============================================
+# DRS AI Helm Chart - Default Values
+# ============================================
+
+# Global settings shared across all services
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  imageTag: "1.0.0"
+  environment: production
+
+# ============================================
+# Core Infrastructure
+# ============================================
+
+postgres:
+  enabled: true
+  image: ankane/pgvector:latest
+  port: 5432
+  database: drs_ai
+  user: postgres
+  password: ""  # set via --set or values.yaml override
+  persistence:
+    size: 20Gi
+    storageClass: ""
+  resources:
+    requests: { cpu: 250m, memory: 512Mi }
+    limits: { cpu: 1000m, memory: 2Gi }
+
+redis:
+  enabled: true
+  image: redis:7-alpine
+  port: 6379
+  password: ""
+  persistence:
+    size: 5Gi
+    storageClass: ""
+  resources:
+    requests: { cpu: 100m, memory: 128Mi }
+    limits: { cpu: 500m, memory: 512Mi }
+
+ollama:
+  enabled: true
+  image: ollama/ollama:latest
+  port: 11434
+  gpu:
+    enabled: false
+    count: 1
+  models:
+    - llama3.2:3b
+    - nomic-embed-text
+  persistence:
+    size: 50Gi
+    storageClass: ""
+  resources:
+    requests: { cpu: 500m, memory: 2Gi }
+    limits: { cpu: 4000m, memory: 16Gi }
+
+# ============================================
+# Core Services (8)
+# ============================================
+
+coreServices:
+  gateway:
+    enabled: true
+    port: 3000
+    replicas: 2
+    resources: { requests: { cpu: 200m, memory: 256Mi }, limits: { cpu: 1000m, memory: 1Gi } }
+  auth:
+    enabled: true
+    port: 3001
+    replicas: 2
+  router:
+    enabled: true
+    port: 3002
+    replicas: 2
+  orchestrator:
+    enabled: true
+    port: 3003
+    replicas: 2
+  memory:
+    enabled: true
+    port: 3004
+    replicas: 2
+  files:
+    enabled: true
+    port: 3005
+    replicas: 2
+  voice:
+    enabled: true
+    port: 3006
+    replicas: 1
+  dashboard:
+    enabled: true
+    port: 3007
+    replicas: 1
+
+# ============================================
+# AI OS Services (9)
+# ============================================
+
+aiOsServices:
+  telegramBot:    { enabled: true,  port: 3010, replicas: 1 }
+  workflowEngine: { enabled: true,  port: 3011, replicas: 1 }
+  pluginSystem:   { enabled: true,  port: 3012, replicas: 1 }
+  autoAgent:      { enabled: true,  port: 3013, replicas: 1 }
+  codeInterpreter: { enabled: true, port: 3014, replicas: 1 }
+  cybersecurity:  { enabled: true,  port: 3015, replicas: 1 }
+  advancedMemory: { enabled: true,  port: 3016, replicas: 1 }
+  multiModel:     { enabled: true,  port: 3017, replicas: 1 }
+  autoBuilder:    { enabled: true,  port: 3018, replicas: 1 }
+
+# ============================================
+# Advanced Infrastructure (6)
+# ============================================
+
+advInfraServices:
+  securitySandbox:    { enabled: true, port: 3020, replicas: 1 }
+  llmGuardrail:       { enabled: true, port: 3021, replicas: 1 }
+  hybridRag:          { enabled: true, port: 3022, replicas: 1 }
+  polyglotInterpreter: { enabled: true, port: 3023, replicas: 1 }
+  gitAutomator:       { enabled: true, port: 3024, replicas: 1 }
+  edgeOptimizer:      { enabled: true, port: 3025, replicas: 1 }
+
+# ============================================
+# Global Platform Services (12)
+# ============================================
+
+platformServices:
+  cognitiveAi:           { enabled: true, port: 3030, replicas: 1 }
+  web3Mesh:              { enabled: true, port: 3031, replicas: 1 }
+  quantumSecurity:       { enabled: true, port: 3032, replicas: 1 }
+  ultraEfficiency:       { enabled: true, port: 3033, replicas: 1 }
+  humanInteraction:      { enabled: true, port: 3034, replicas: 1 }
+  selfHealing:           { enabled: true, port: 3035, replicas: 1 }
+  culturalLocalization:  { enabled: true, port: 3036, replicas: 1 }
+  selfAwareness:         { enabled: true, port: 3037, replicas: 1 }
+  gpuAcceleration:       { enabled: true, port: 3038, replicas: 1, gpu: true }
+  distributedDeployment: { enabled: true, port: 3039, replicas: 1 }
+  federatedLearning:     { enabled: true, port: 3040, replicas: 1 }
+  multiRegionReplication: { enabled: true, port: 3041, replicas: 1 }
+  oauthOidc:             { enabled: true, port: 3042, replicas: 1 }
+  gpuMig:                 { enabled: true, port: 3043, replicas: 1, gpu: true }
+
+# ============================================
+# Frontend
+# ============================================
+
+frontend:
+  enabled: true
+  port: 80
+  replicas: 2
+  ingress:
+    enabled: true
+    className: nginx
+    host: drs-ai.local
+    tls:
+      enabled: false
+      secretName: ""
+  resources:
+    requests: { cpu: 100m, memory: 128Mi }
+    limits: { cpu: 500m, memory: 512Mi }
+
+# ============================================
+# Monitoring
+# ============================================
+
+prometheus:
+  enabled: true
+  retention: 15d
+  storage: 10Gi
+
+grafana:
+  enabled: true
+  adminPassword: admin
+  storage: 5Gi
+
+# ============================================
+# Ingress
+# ============================================
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 100m
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+  hosts:
+    - host: drs-ai.local
+      paths:
+        - path: /
+          pathType: Prefix
+          service: frontend
+        - path: /api
+          pathType: Prefix
+          service: gateway
+  tls: []
+
+# ============================================
+# Persistence
+# ============================================
+
+persistence:
+  storageClass: ""
+  size: 20Gi
+
+# ============================================
+# Resource defaults
+# ============================================
+
+defaultResources:
+  requests: { cpu: 100m, memory: 128Mi }
+  limits: { cpu: 500m, memory: 512Mi }
+
+# ============================================
+# Autoscaling
+# ============================================
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+# ============================================
+# Pod disruption budget
+# ============================================
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# ============================================
+# Network policy
+# ============================================
+
+networkPolicy:
+  enabled: false
+
+# ============================================
+# Service account
+# ============================================
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+# ============================================
+# Secrets — pull from external secrets manager in production
+# ============================================
+
+secrets:
+  jwtSecret: "change-me-in-production"
+  postgresPassword: "change-me"
+  redisPassword: ""
+  oauthMasterKey: ""  # 64-char hex string (32 bytes)

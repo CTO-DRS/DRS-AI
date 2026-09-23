@@ -826,6 +826,71 @@ services:
     restart: unless-stopped
 
   # ============================================
+  # Phase 35: Multi-Region Replication Service
+  # ============================================
+
+  multi-region-replication:
+    build: ./multi-region-replication
+    ports:
+      - "3041:3041"
+    environment:
+      - NODE_ENV=production
+      - PORT=3041
+      - DRS_REGION=${DRS_REGION:-default}
+      - REPLICATION_MODE=async
+      - CONFLICT_POLICY=lww
+      - REGION_LATENCY_INTERVAL=30000
+      - LOCAL_GATEWAY_URL=http://gateway:3000
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # ============================================
+  # Phase 36: OAuth2 / OIDC Service
+  # ============================================
+
+  oauth-oidc:
+    build: ./oauth-oidc
+    ports:
+      - "3042:3042"
+    environment:
+      - NODE_ENV=production
+      - PORT=3042
+      - OAUTH_REDIRECT_URI=http://localhost:8080/auth/callback
+      - OAUTH_MASTER_KEY=${OAUTH_MASTER_KEY:-}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # ============================================
+  # Phase 38: GPU MIG / Time-Slicing Service
+  # ============================================
+
+  gpu-mig:
+    build: ./gpu-mig
+    ports:
+      - "3043:3043"
+    environment:
+      - NODE_ENV=production
+      - PORT=3043
+      - GPU_TS_MAX_CLIENTS=4
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # ============================================
   # Supporting Services
   # ============================================
 
