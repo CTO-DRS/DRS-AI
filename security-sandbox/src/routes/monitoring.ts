@@ -219,7 +219,10 @@ export class MonitoringController {
     });
 
     // WebSocket upgrade endpoint for real-time monitoring
-    this.router.ws('/live/:sessionId', (ws: any, req: Request) => {
+    // Note: requires express-ws middleware to be installed. Wrapped in try/catch
+    // so the service boots even if express-ws is not configured.
+    try {
+      (this.router as any).ws('/live/:sessionId', (ws: any, req: Request) => {
       const { sessionId } = req.params;
       logger.info(`WebSocket connection established for session ${sessionId}`);
 
@@ -261,5 +264,8 @@ export class MonitoringController {
         logger.error(`WebSocket error for session ${sessionId}:`, error);
       });
     });
+    } catch (err) {
+      logger.warn('WebSocket route not registered — install express-ws to enable /live/:sessionId');
+    }
   }
 }

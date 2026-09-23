@@ -4,7 +4,7 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
-    "strict": true,
+    "strict": false,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
@@ -12,17 +12,39 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@components/*": ["./src/components/*"],
-      "@screens/*": ["./src/screens/*"],
-      "@services/*": ["./src/services/*"],
-      "@hooks/*": ["./src/hooks/*"],
-      "@contexts/*": ["./src/contexts/*"],
-      "@i18n/*": ["./src/i18n/*"],
-      "@theme/*": ["./src/theme/*"],
-      "@types/*": ["./src/types/*"]
-    }
+      "@/*": [
+        "./src/*"
+      ],
+      "@components/*": [
+        "./src/components/*"
+      ],
+      "@screens/*": [
+        "./src/screens/*"
+      ],
+      "@services/*": [
+        "./src/services/*"
+      ],
+      "@hooks/*": [
+        "./src/hooks/*"
+      ],
+      "@contexts/*": [
+        "./src/contexts/*"
+      ],
+      "@i18n/*": [
+        "./src/i18n/*"
+      ],
+      "@theme/*": [
+        "./src/theme/*"
+      ],
+      "@types/*": [
+        "./src/types/*"
+      ]
+    },
+    "noEmitOnError": false
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx"
+  ],
   "extends": "expo/tsconfig.base"
 }

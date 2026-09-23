@@ -71,7 +71,7 @@ export class ResourceMonitor extends EventEmitter {
     const [cpu, mem, load, temp, disk] = await Promise.all([
       si.currentLoad(),
       si.mem(),
-      si.load(),
+      si.currentLoad(),
       si.cpuTemperature().catch(() => ({ main: 0 })),
       si.fsSize()
     ]);

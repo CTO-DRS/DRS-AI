@@ -44,7 +44,7 @@ export class AutoBuilderService {
 
     this.buildQueue = new Queue('app-build', { connection: this.redis });
     this.logger = new Logger('AutoBuilderService');
-    this.outputDir = process.env.BUILD_OUTPUT_DIR || '/app/builds';
+    this.outputDir = process.env.BUILD_OUTPUT_DIR || './builds';
 
     // Register Handlebars helpers
     this.registerHelpers();

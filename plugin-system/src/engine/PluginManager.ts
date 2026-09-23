@@ -8,7 +8,7 @@ import redis from '../utils/redis';
 import logger from '../utils/logger';
 
 const PLUGIN_PREFIX = 'plugin:';
-const PLUGINS_DIR = '/app/plugins';
+const PLUGINS_DIR = process.env.PLUGINS_DIR || './plugins';
 
 export class PluginManager {
   private sandbox: PluginSandbox;

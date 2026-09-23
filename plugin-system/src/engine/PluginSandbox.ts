@@ -8,7 +8,7 @@ import logger from '../utils/logger';
 export class PluginSandbox {
   private pluginsDir: string;
 
-  constructor(pluginsDir: string = '/app/plugins') {
+  constructor(pluginsDir: string = process.env.PLUGINS_DIR || './plugins') {
     this.pluginsDir = pluginsDir;
   }
 
