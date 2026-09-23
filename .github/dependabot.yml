@@ -1,0 +1,124 @@
+version: 2
+updates:
+  # Root package.json (if any)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "npm"
+    commit-message:
+      prefix: "chore(deps)"
+    reviewers:
+      - "CTO-DRS"
+    groups:
+      eslint:
+        patterns:
+          - "eslint*"
+      types:
+        patterns:
+          - "@types/*"
+      react:
+        patterns:
+          - "react*"
+
+  # Per-service npm dependencies — check every week
+  - package-ecosystem: "npm"
+    directory: "/gateway"
+    schedule: { interval: "weekly" }
+    labels: ["dependencies", "npm", "gateway"]
+
+  - package-ecosystem: "npm"
+    directory: "/auth"
+    schedule: { interval: "weekly" }
+    labels: ["dependencies", "npm", "auth"]
+
+  - package-ecosystem: "npm"
+    directory: "/router"
+    schedule: { interval: "weekly" }
+    labels: ["dependencies", "npm", "router"]
+
+  - package-ecosystem: "npm"
+    directory: "/orchestrator"
+    schedule: { interval: "weekly" }
+    labels: ["dependencies", "npm", "orchestrator"]
+
+  - package-ecosystem: "npm"
+    directory: "/memory"
+    schedule: { interval: "weekly" }
+    labels: ["dependencies", "npm", "memory"]
+
+  - package-ecosystem: "npm"
+    directory: "/self-awareness"
+    schedule: { interval: "weekly" }
+    labels: ["dependencies", "npm", "self-awareness"]
+
+  - package-ecosystem: "npm"
+    directory: "/gpu-acceleration"
+    schedule: { interval: "weekly" }
+    labels: ["dependencies", "npm", "gpu-acceleration"]
+
+  - package-ecosystem: "npm"
+    directory: "/distributed-deployment"
+    schedule: { interval: "weekly" }
+    labels: ["dependencies", "npm", "distributed-deployment"]
+
+  - package-ecosystem: "npm"
+    directory: "/federated-learning"
+    schedule: { interval: "weekly" }
+    labels: ["dependencies", "npm", "federated-learning"]
+
+  - package-ecosystem: "npm"
+    directory: "/multi-region-replication"
+    schedule: { interval: "weekly" }
+    labels: ["dependencies", "npm", "multi-region-replication"]
+
+  - package-ecosystem: "npm"
+    directory: "/oauth-oidc"
+    schedule: { interval: "weekly" }
+    labels: ["dependencies", "npm", "oauth-oidc"]
+
+  - package-ecosystem: "npm"
+    directory: "/gpu-mig"
+    schedule: { interval: "weekly" }
+    labels: ["dependencies", "npm", "gpu-mig"]
+
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule: { interval: "weekly" }
+    labels: ["dependencies", "npm", "frontend"]
+
+  - package-ecosystem: "npm"
+    directory: "/mobile-app"
+    schedule: { interval: "monthly" }
+    labels: ["dependencies", "npm", "mobile-app"]
+
+  # Docker base images
+  - package-ecosystem: "docker"
+    directory: "/gateway"
+    schedule: { interval: "monthly" }
+    labels: ["dependencies", "docker"]
+
+  - package-ecosystem: "docker"
+    directory: "/auth"
+    schedule: { interval: "monthly" }
+    labels: ["dependencies", "docker"]
+
+  - package-ecosystem: "docker"
+    directory: "/self-awareness"
+    schedule: { interval: "monthly" }
+    labels: ["dependencies", "docker"]
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore(ci)"

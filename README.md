@@ -1,13 +1,63 @@
-# DRS AI 🤖
+<p align="center">
+  <img src="assets/banners/banner.svg" alt="DRS AI Banner" width="100%" />
+</p>
 
-## AI Operating System - Enterprise AI Platform
+<h1 align="center">DRS AI</h1>
 
-DRS AI is a comprehensive, locally-hosted AI Operating System that runs entirely offline. Built on microservices architecture with 20+ integrated services, it provides a complete enterprise AI solution without requiring internet connectivity or cloud dependencies.
+<p align="center">
+  <strong>Enterprise AI Operating System</strong>
+  <br/>
+  <sub>40+ microservices · Self-hosted · 100% offline · Multi-region</sub>
+</p>
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
-![Docker](https://img.shields.io/badge/docker-ready-blue)
-![Ollama](https://img.shields.io/badge/ollama-integrated-orange)
+<p align="center">
+  <a href="https://github.com/CTO-DRS/DRS-AI/releases"><img alt="Version" src="https://img.shields.io/badge/version-1.0.0-6366f1?style=flat-square"></a>
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-22c55e?style=flat-square"></a>
+  <a href="https://github.com/CTO-DRS/DRS-AI/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/CTO-DRS/DRS-AI/ci.yml?branch=main&style=flat-square&label=CI"></a>
+  <a href="https://github.com/CTO-DRS/DRS-AI/actions/workflows/docker.yml"><img alt="Docker" src="https://img.shields.io/github/actions/workflow/status/CTO-DRS/DRS-AI/docker.yml?branch=main&style=flat-square&label=Docker"></a>
+  <a href="https://github.com/CTO-DRS/DRS-AI/actions/workflows/codeql.yml"><img alt="CodeQL" src="https://img.shields.io/github/actions/workflow/status/CTO-DRS/DRS-AI/codeql.yml?branch=main&style=flat-square&label=CodeQL"></a>
+  <img alt="Node.js" src="https://img.shields.io/badge/Node.js-%E2%89%A518-339933?style=flat-square&logo=node.js&logoColor=white">
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.x-3178c6?style=flat-square&logo=typescript&logoColor=white">
+  <img alt="Docker" src="https://img.shields.io/badge/Docker-Ready-2496ed?style=flat-square&logo=docker&logoColor=white">
+  <img alt="Kubernetes" src="https://img.shields.io/badge/Kubernetes-Helm%20Chart-326ce5?style=flat-square&logo=kubernetes&logoColor=white">
+  <img alt="Ollama" src="https://img.shields.io/badge/Ollama-Integrated-fd7e14?style=flat-square">
+  <img alt="Services" src="https://img.shields.io/badge/services-40+-8b5cf6?style=flat-square">
+  <img alt="API endpoints" src="https://img.shields.io/badge/API%20endpoints-400+-10b981?style=flat-square">
+  <img alt="Languages" src="https://img.shields.io/badge/UI%20languages-ar%20%7C%20en%20%7C%20fr%20%7C%20de-f59e0b?style=flat-square">
+</p>
+
+<p align="center">
+  <a href="#-quick-start">🚀 Quick Start</a> ·
+  <a href="#-architecture">🏗️ Architecture</a> ·
+  <a href="docs/">📚 Docs</a> ·
+  <a href="CONTRIBUTING.md">🤝 Contributing</a> ·
+  <a href="SECURITY.md">🔒 Security</a> ·
+  <a href="CHANGELOG.md">🔄 Changelog</a>
+</p>
+
+---
+
+## 📖 Overview
+
+DRS AI is a comprehensive, **locally-hosted AI Operating System** that runs entirely offline. Built on a microservices architecture with **40+ integrated services**, it provides a complete enterprise AI solution without requiring internet connectivity or cloud dependencies.
+
+### 🎯 Why DRS AI?
+
+- 🏠 **100% On-Premise** — No cloud dependencies, no data leaves your network
+- 🔒 **Privacy-First** — GDPR / CCPA / Saudi NDMO compliant by design
+- 🧠 **Multi-Model** — Supports any LLM via Ollama (Llama, Qwen, Mistral, etc.)
+- 🌍 **Multilingual** — Arabic (RTL), English, French, German with instant switching
+- 🚀 **Production-Ready** — Kubernetes Helm chart, HPA, NetworkPolicy, monitoring
+- 🔐 **Secure by Default** — Post-quantum crypto, LLM guardrails, sandboxed code execution
+- 📊 **Self-Aware** — Every AI decision explained, audited, and accountable
+
+### 🏗️ Architecture at a Glance
+
+<p align="center">
+  <img src="assets/diagrams/architecture.svg" alt="DRS AI Architecture" width="100%" />
+</p>
+
+DRS AI is organized into 5 tiers: **Clients** → **Gateway** → **AI OS Services** → **Global Platform Services** → **Infrastructure**. See [`docs/architecture.md`](docs/architecture.md) for full details.
 
 ## 🌟 Features
 
@@ -299,11 +349,16 @@ curl -X POST http://localhost:3018/api/builder/build \
 
 ## 📚 Documentation
 
-- [API Documentation](./docs/api.md)
+- [API Reference](./docs/api-reference.md)
 - [Architecture Guide](./docs/architecture.md)
-- [Plugin Development](./docs/plugins.md)
+- [Plugin Development](./docs/plugin-development.md)
 - [Termux Setup](./termux/README.md)
 - [Troubleshooting](./docs/troubleshooting.md)
+- [Quick Start Guide](./docs/quick-start.md)
+- [Deployment Guide](./docs/deployment.md)
+- [Security](./docs/security.md)
+- [Code of Conduct](./CODE_OF_CONDUCT.md)
+- [Changelog](./CHANGELOG.md)
 
 ## 🤝 Contributing
 
@@ -313,17 +368,28 @@ We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for gu
 
 ```bash
 # Fork and clone
-git clone https://github.com/your-username/drs-ai.git
+git clone https://github.com/your-username/DRS-AI.git
+cd DRS-AI
 
 # Create branch
 git checkout -b feature/your-feature
 
-# Make changes and commit
-git commit -m "Add your feature"
+# Make changes and commit (conventional commits)
+git commit -m "feat(auth): add refresh token rotation"
 
 # Push and create PR
 git push origin feature/your-feature
 ```
+
+### Good First Issues
+
+Looking for a way to contribute? Check issues labeled [`good first issue`](https://github.com/CTO-DRS/DRS-AI/labels/good%20first%20issue) — they're hand-picked for new contributors.
+
+### Community
+
+- 💬 [GitHub Discussions](https://github.com/CTO-DRS/DRS-AI/discussions) — questions & ideas
+- 📱 [Telegram group](https://t.me/drs_ai)
+- 📧 Email: support@drs-ai.com
 
 ## 📄 License
 
@@ -331,16 +397,26 @@ This project is licensed under the MIT License - see [LICENSE](./LICENSE) file.
 
 ## 🙏 Acknowledgments
 
-- [Ollama](https://ollama.ai) - Local LLM inference
-- [LangChain](https://langchain.com) - AI orchestration patterns
-- [BullMQ](https://bullmq.io) - Job queues
-- [ReactFlow](https://reactflow.dev) - Workflow visualization
+- [Ollama](https://ollama.ai) — Local LLM inference runtime
+- [LangChain](https://langchain.com) — AI orchestration patterns
+- [BullMQ](https://bullmq.io) — Job queues
+- [ReactFlow](https://reactflow.dev) — Workflow visualization
+- [pgvector](https://github.com/pgvector/pgvector) — PostgreSQL vector extension
+- [Qdrant](https://qdrant.tech) — Vector database
+- [MinIO](https://min.io) — Object storage
+- [Prometheus](https://prometheus.io) + [Grafana](https://grafana.com) — Monitoring
+- [Expo](https://expo.dev) — React Native tooling
+- [Electron](https://electronjs.org) — Cross-platform desktop framework
+- All our [contributors](https://github.com/CTO-DRS/DRS-AI/graphs/contributors) 🙌
 
 ## 📞 Support
 
-- GitHub Issues: [github.com/drs-ai/drs-ai/issues](https://github.com/drs-ai/drs-ai/issues)
-- Telegram Group: [@drs_ai](https://t.me/drs_ai)
-- Email: support@drs-ai.com
+- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/CTO-DRS/DRS-AI/issues/new?template=bug_report.yml)
+- 💡 **Feature Requests**: [GitHub Issues](https://github.com/CTO-DRS/DRS-AI/issues/new?template=feature_request.yml)
+- 💬 **Questions**: [GitHub Discussions](https://github.com/CTO-DRS/DRS-AI/discussions)
+- 🔒 **Security Reports**: [Security Advisories](https://github.com/CTO-DRS/DRS-AI/security/advisories/new)
+- 📱 **Telegram Group**: [@drs_ai](https://t.me/drs_ai)
+- 📧 **Email**: support@drs-ai.com
 
 ## 🗺️ Roadmap
 
@@ -368,7 +444,11 @@ This project is licensed under the MIT License - see [LICENSE](./LICENSE) file.
 ---
 
 <p align="center">
-  <strong>DRS AI</strong> - Your Local AI Operating System
-  <br>
-  Made with ❤️ by the DRS Team
+  <img src="assets/logo/logo.svg" alt="DRS AI Logo" width="80" height="80" />
+  <br/>
+  <strong>DRS AI</strong> — Your Local AI Operating System
+  <br/>
+  Made with ❤️ by the <a href="https://github.com/CTO-DRS">DRS Team</a>
+  <br/>
+  <sub>© 2026 DRS AI. MIT Licensed.</sub>
 </p>

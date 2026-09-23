@@ -1,0 +1,34 @@
+# Configuration for welcome bot
+# https://github.com/behaviorbot/welcome
+
+# Comment to post when a user opens their first issue
+newIssueWelcomeComment: |
+  👋 Thanks for opening your first issue on **DRS AI**!
+
+  We'll triage this as soon as possible. While you wait:
+  - 📖 Check the [docs](https://github.com/CTO-DRS/DRS-AI/tree/main/docs) — your answer might already be there
+  - 💬 Join our [Telegram group](https://t.me/drs_ai) for live help
+  - 🔍 Search [existing issues](https://github.com/CTO-DRS/DRS-AI/issues?q=is%3Aissue) to see if it's been discussed before
+
+# Comment to post when a user opens their first PR
+newPRWelcomeComment: |
+  🎉 Welcome, and thanks for your first Pull Request to **DRS AI**!
+
+  A maintainer will review it soon. In the meantime, please make sure you've:
+  - [ ] Run `npm start` for the affected service and verified `/health` returns 200
+  - [ ] Followed the [coding standards](https://github.com/CTO-DRS/DRS-AI/blob/main/CONTRIBUTING.md#coding-standards)
+  - [ ] Used [conventional commit messages](https://github.com/CTO-DRS/DRS-AI/blob/main/CONTRIBUTING.md#commit-message-convention)
+  - [ ] Not committed any secrets or `node_modules/`
+
+  Feel free to ask questions in our [Telegram dev group](https://t.me/drs_ai_dev)!
+
+# Comment to post when a user's first PR is merged
+firstPRMergeComment: |
+  🚀 Congratulations! Your first PR to **DRS AI** has been merged!
+
+  You're now officially a [DRS AI contributor](https://github.com/CTO-DRS/DRS-AI/graphs/contributors). Welcome to the community!
+
+  🌟 What's next?
+  - ⭐ Star the repo if you haven't already
+  - 💬 Tell us what you want to work on next in our [Discussions](https://github.com/CTO-DRS/DRS-AI/discussions)
+  - 🐛 Pick up an issue labelled [`good first issue`](https://github.com/CTO-DRS/DRS-AI/labels/good%20first%20issue)

@@ -1,0 +1,84 @@
+name: ✨ Feature Request
+description: Suggest a new feature or enhancement
+title: "[FEAT] <short description>"
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a feature! ✨
+
+        Before submitting:
+        - Search existing issues / discussions for similar ideas
+        - Check the [roadmap](https://github.com/CTO-DRS/DRS-AI#-roadmap) — it might already be planned
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: |
+        A clear description of the problem. E.g. "I'm frustrated when [...]"
+      placeholder: "I need a way to ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: Describe what you want to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What alternatives have you considered?
+
+  - type: dropdown
+    id: service
+    attributes:
+      label: Which service should this feature be added to?
+      options:
+        - New service (specify in description)
+        - Gateway (3000)
+        - Auth (3001)
+        - Orchestrator (3003)
+        - Self-Awareness (3037)
+        - Mobile App
+        - Desktop App
+        - Frontend
+        - Kubernetes / Helm chart
+        - Other / not sure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: How important is this for you?
+      options:
+        - Nice to have
+        - Would significantly improve my workflow
+        - Blocking — I cannot use DRS AI without this
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: willing
+    attributes:
+      label: Willingness to contribute
+      options:
+        - label: I am willing to submit a PR for this feature
+        - label: I am willing to test a PR for this feature
+        - label: I can help with documentation for this feature
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this feature request, you agree to follow our [Code of Conduct](https://github.com/CTO-DRS/DRS-AI/blob/main/CODE_OF_CONDUCT.md)
+      options:
+        - label: I agree to follow the Code of Conduct
+          required: true

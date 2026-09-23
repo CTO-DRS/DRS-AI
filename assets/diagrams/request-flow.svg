@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 700" width="1400" height="700">
+  <rect width="1400" height="700" fill="#0a0a0a"/>
+
+  <text x="700" y="40" text-anchor="middle" font-family="system-ui" font-size="22" font-weight="700" fill="#fff">DRS AI — Request Flow</text>
+  <text x="700" y="65" text-anchor="middle" font-family="system-ui" font-size="13" fill="#94a3b8">How a chat request travels through the platform</text>
+
+  <!-- Vertical flow -->
+
+  <!-- Client -->
+  <g transform="translate(550, 100)">
+    <rect width="300" height="60" rx="8" fill="#1f1f1f" stroke="#6366f1" stroke-width="2"/>
+    <text x="150" y="25" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="600" fill="#a5b4fc">Client (Web / Mobile / Desktop / CLI)</text>
+    <text x="150" y="45" text-anchor="middle" font-family="monospace" font-size="10" fill="#94a3b8">POST /api/chat { message }</text>
+  </g>
+
+  <!-- Arrow -->
+  <g stroke="#6366f1" stroke-width="2" marker-end="url(#arr)">
+    <defs><marker id="arr" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#6366f1"/>
+    </marker></defs>
+    <line x1="700" y1="160" x2="700" y2="200"/>
+  </g>
+
+  <!-- Gateway -->
+  <g transform="translate(550, 200)">
+    <rect width="300" height="60" rx="8" fill="#1e293b" stroke="#3b82f6" stroke-width="2"/>
+    <text x="150" y="25" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="600" fill="#60a5fa">API Gateway :3000</text>
+    <text x="150" y="45" text-anchor="middle" font-family="monospace" font-size="10" fill="#94a3b8">Auth · Rate-limit · Routing</text>
+  </g>
+
+  <!-- Branches -->
+  <g stroke="#6366f1" stroke-width="2" fill="none">
+    <path d="M 700 260 L 700 280 L 350 280 L 350 310"/>
+    <path d="M 700 280 L 700 310"/>
+    <path d="M 700 280 L 1050 280 L 1050 310"/>
+  </g>
+
+  <!-- Auth check -->
+  <g transform="translate(200, 310)">
+    <rect width="300" height="60" rx="8" fill="#1e293b" stroke="#10b981" stroke-width="2"/>
+    <text x="150" y="25" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="600" fill="#34d399">Auth :3001</text>
+    <text x="150" y="45" text-anchor="middle" font-family="monospace" font-size="10" fill="#94a3b8">JWT verify · RBAC check</text>
+  </g>
+
+  <!-- LLM Guardrail -->
+  <g transform="translate(550, 310)">
+    <rect width="300" height="60" rx="8" fill="#312e81" stroke="#818cf8" stroke-width="2"/>
+    <text x="150" y="25" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="600" fill="#c7d2fe">LLM Guardrail :3021</text>
+    <text x="150" y="45" text-anchor="middle" font-family="monospace" font-size="10" fill="#94a3b8">Prompt injection · Content mod</text>
+  </g>
+
+  <!-- Orchestrator -->
+  <g transform="translate(900, 310)">
+    <rect width="300" height="60" rx="8" fill="#312e81" stroke="#818cf8" stroke-width="2"/>
+    <text x="150" y="25" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="600" fill="#c7d2fe">Orchestrator :3003</text>
+    <text x="150" y="45" text-anchor="middle" font-family="monospace" font-size="10" fill="#94a3b8">Multi-agent routing</text>
+  </g>
+
+  <!-- Converge -->
+  <g stroke="#6366f1" stroke-width="2" fill="none">
+    <path d="M 350 370 L 350 400 L 700 400 L 700 430"/>
+    <path d="M 700 370 L 700 430"/>
+    <path d="M 1050 370 L 1050 400 L 700 400"/>
+  </g>
+
+  <!-- Memory + RAG -->
+  <g transform="translate(380, 430)">
+    <rect width="300" height="60" rx="8" fill="#312e81" stroke="#818cf8" stroke-width="2"/>
+    <text x="150" y="25" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="600" fill="#c7d2fe">Memory + Hybrid-RAG :3004 :3022</text>
+    <text x="150" y="45" text-anchor="middle" font-family="monospace" font-size="10" fill="#94a3b8">Vector search · Context retrieval</text>
+  </g>
+
+  <!-- Router -->
+  <g transform="translate(720, 430)">
+    <rect width="300" height="60" rx="8" fill="#312e81" stroke="#818cf8" stroke-width="2"/>
+    <text x="150" y="25" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="600" fill="#c7d2fe">Model Router :3002</text>
+    <text x="150" y="45" text-anchor="middle" font-family="monospace" font-size="10" fill="#94a3b8">Multi-model selection</text>
+  </g>
+
+  <!-- Down arrow to Ollama -->
+  <g stroke="#6366f1" stroke-width="2" marker-end="url(#arr)">
+    <line x1="700" y1="490" x2="700" y2="540"/>
+  </g>
+
+  <!-- Ollama -->
+  <g transform="translate(550, 540)">
+    <rect width="300" height="60" rx="8" fill="#064e3b" stroke="#10b981" stroke-width="2"/>
+    <text x="150" y="25" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="600" fill="#34d399">Ollama :11434</text>
+    <text x="150" y="45" text-anchor="middle" font-family="monospace" font-size="10" fill="#94a3b8">GPU inference (Llama · Qwen · Mistral)</text>
+  </g>
+
+  <!-- Response arrow back -->
+  <g stroke="#22c55e" stroke-width="2" stroke-dasharray="5 5" marker-end="url(#arrOk)">
+    <defs><marker id="arrOk" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#22c55e"/>
+    </marker></defs>
+    <path d="M 850 570 L 1300 570 L 1300 130 L 850 130" fill="none"/>
+  </g>
+  <text x="1320" y="350" font-family="system-ui" font-size="11" fill="#22c55e" transform="rotate(90 1320 350)">Response stream (with confidence score &amp; sources)</text>
+
+  <!-- Self-Awareness logging -->
+  <g transform="translate(50, 430)">
+    <rect width="280" height="180" rx="8" fill="#7c2d12" stroke="#fb923c" stroke-width="2"/>
+    <text x="140" y="25" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="700" fill="#fed7aa">Self-Awareness :3037</text>
+    <text x="140" y="50" text-anchor="middle" font-family="monospace" font-size="10" fill="#94a3b8">Logs every decision in parallel:</text>
+    <text x="20" y="80" font-family="monospace" font-size="10" fill="#fcd34d">• Decision explanation</text>
+    <text x="20" y="100" font-family="monospace" font-size="10" fill="#fcd34d">• Epistemic uncertainty</text>
+    <text x="20" y="120" font-family="monospace" font-size="10" fill="#fcd34d">• Data lineage</text>
+    <text x="20" y="140" font-family="monospace" font-size="10" fill="#fcd34d">• Confidence calibration</text>
+    <text x="20" y="160" font-family="monospace" font-size="10" fill="#fcd34d">• Accountability ledger</text>
+  </g>
+
+  <!-- Arrow to self-awareness -->
+  <g stroke="#fb923c" stroke-width="2" stroke-dasharray="5 5">
+    <path d="M 550 460 L 330 460" fill="none" marker-end="url(#arrOrange)"/>
+    <defs><marker id="arrOrange" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#fb923c"/>
+    </marker></defs>
+  </g>
+</svg>

@@ -1,0 +1,80 @@
+# Auto-labeler configuration
+# https://github.com/actions/labeler
+
+# Service-based labels
+"service: gateway":
+  - changed-files:
+    - any-glob-to-any-file: ['gateway/**']
+
+"service: auth":
+  - changed-files:
+    - any-glob-to-any-file: ['auth/**']
+
+"service: orchestrator":
+  - changed-files:
+    - any-glob-to-any-file: ['orchestrator/**']
+
+"service: memory":
+  - changed-files:
+    - any-glob-to-any-file: ['memory/**', 'advanced-memory/**']
+
+"service: self-awareness":
+  - changed-files:
+    - any-glob-to-any-file: ['self-awareness/**']
+
+"service: gpu":
+  - changed-files:
+    - any-glob-to-any-file: ['gpu-acceleration/**', 'gpu-mig/**']
+
+"service: distributed":
+  - changed-files:
+    - any-glob-to-any-file: ['distributed-deployment/**', 'multi-region-replication/**']
+
+"service: federated-learning":
+  - changed-files:
+    - any-glob-to-any-file: ['federated-learning/**']
+
+"service: oauth":
+  - changed-files:
+    - any-glob-to-any-file: ['oauth-oidc/**']
+
+"service: frontend":
+  - changed-files:
+    - any-glob-to-any-file: ['frontend/**']
+
+"service: mobile":
+  - changed-files:
+    - any-glob-to-any-file: ['mobile-app/**']
+
+"service: desktop":
+  - changed-files:
+    - any-glob-to-any-file: ['desktop-app/**']
+
+# Type-based labels
+"area: ci-cd":
+  - changed-files:
+    - any-glob-to-any-file: ['.github/workflows/**', '.github/dependabot.yml']
+
+"area: docker":
+  - changed-files:
+    - any-glob-to-any-file: ['**/Dockerfile', 'docker-compose.yml']
+
+"area: k8s":
+  - changed-files:
+    - any-glob-to-any-file: ['k8s/**']
+
+"area: docs":
+  - changed-files:
+    - any-glob-to-any-file: ['**/*.md', 'docs/**']
+
+"area: deps":
+  - changed-files:
+    - any-glob-to-any-file: ['**/package.json', '**/package-lock.json']
+
+"area: config":
+  - changed-files:
+    - any-glob-to-any-file: ['**/.env.example', '**/tsconfig.json', '**/babel.config.js']
+
+"area: tests":
+  - changed-files:
+    - any-glob-to-any-file: ['**/*.test.ts', '**/*.test.js', '**/*.spec.ts', '**/*.spec.js']

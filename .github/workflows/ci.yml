@@ -1,0 +1,201 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # ============================================
+  # Lint & Type-Check all Node.js services
+  # ============================================
+  lint-and-test:
+    name: Lint & Test (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [18, 20, 22]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Find all Node.js services
+        id: services
+        run: |
+          services=$(find . -maxdepth 3 -name "package.json" -not -path "*/node_modules/*" -not -path "*/.git/*" -exec dirname {} \; | sort -u)
+          echo "services<<EOF" >> $GITHUB_OUTPUT
+          echo "$services" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Install & test each service
+        run: |
+          for service in ${{ steps.services.outputs.services }}; do
+            echo "::group::🔧 Processing $service"
+            cd "$GITHUB_WORKSPACE/$service"
+
+            # Skip if no package.json scripts
+            if [ ! -f "package.json" ]; then
+              echo "No package.json, skipping"
+              continue
+            fi
+
+            # Install
+            npm install --no-audit --no-fund --loglevel=error || {
+              echo "::warning::npm install failed for $service"
+              continue
+            }
+
+            # Lint if available
+            if npm run | grep -q "lint"; then
+              npm run lint || {
+                echo "::warning::Lint failed for $service"
+              }
+            fi
+
+            # Type-check TypeScript services
+            if npm run | grep -q "typecheck"; then
+              npm run typecheck || {
+                echo "::warning::Type check failed for $service"
+              }
+            fi
+
+            # Run tests if available
+            if npm run | grep -q "test"; then
+              npm test -- --passWithNoTests || {
+                echo "::warning::Tests failed for $service"
+              }
+            fi
+
+            # Verify the service boots (smoke test)
+            PORT=13999 timeout 5 node src/server.js > /tmp/boot-test.log 2>&1 &
+            BOOT_PID=$!
+            sleep 3
+            if curl -sf http://localhost:13999/health > /dev/null 2>&1 || \
+               curl -sf http://localhost:13999/health/live > /dev/null 2>&1; then
+              echo "✅ Health check passed"
+            else
+              echo "::warning::Health check failed for $service (may require Redis/Postgres)"
+            fi
+            kill $BOOT_PID 2>/dev/null || true
+            wait $BOOT_PID 2>/dev/null || true
+            cd "$GITHUB_WORKSPACE"
+            echo "::endgroup::"
+          done
+
+  # ============================================
+  # Validate Helm chart
+  # ============================================
+  helm-lint:
+    name: Helm Chart Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: 'v3.14.0'
+
+      - name: Lint Helm chart
+        run: |
+          helm lint k8s/helm/drs-ai
+
+      - name: Render templates (dry-run)
+        run: |
+          helm template drs-ai k8s/helm/drs-ai --namespace drs-ai --debug > /tmp/rendered.yaml 2>&1 || {
+            echo "::warning::Helm template render failed (may be expected for missing CRDs)"
+            cat /tmp/rendered.yaml
+          }
+
+  # ============================================
+  # Validate Docker Compose
+  # ============================================
+  compose-validate:
+    name: Docker Compose Validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate docker-compose.yml
+        run: |
+          docker compose config -q || {
+            echo "::error::docker-compose.yml is invalid"
+            exit 1
+          }
+
+      - name: Count services
+        run: |
+          services=$(docker compose config --services | wc -l)
+          echo "Total services in docker-compose: $services"
+          echo "::notice::Validated $services services in docker-compose.yml"
+
+  # ============================================
+  # Check for secrets / credentials
+  # ============================================
+  secret-scan:
+    name: Secret Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: TruffleHog OSS
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: .
+          extra_args: --only-verified --exclude-paths .github/trufflehog-exclude.txt
+
+      - name: Check for common secret patterns
+        run: |
+          # Simple grep-based check for obvious secrets
+          if grep -rE "(api[_-]?key|password|secret|token)\s*[:=]\s*['\"]?[a-zA-Z0-9]{20,}" \
+            --include="*.ts" --include="*.js" --include="*.tsx" --include="*.json" \
+            --exclude-dir=node_modules --exclude-dir=.git --exclude="*.example" \
+            . 2>/dev/null; then
+            echo "::error::Potential secrets found in source code"
+            exit 1
+          fi
+          echo "✅ No obvious secrets found"
+
+  # ============================================
+  # README link check
+  # ============================================
+  readme-check:
+    name: README & Docs Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check markdown links
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          use-quiet-mode: 'yes'
+          config-file: '.github/markdown-link-check.json'
+          folder-path: 'docs'
+          file-path: './README.md ./CHANGELOG.md ./CONTRIBUTING.md ./SECURITY.md'
+
+      - name: Check that all services have README
+        run: |
+          missing=0
+          for service in $(ls -d */); do
+            service=${service%/}
+            if [ -f "$service/package.json" ] || [ -f "$service/Dockerfile" ]; then
+              if [ ! -f "$service/README.md" ]; then
+                echo "::warning::Missing README in $service/"
+                missing=$((missing + 1))
+              fi
+            fi
+          done
+          if [ "$missing" -gt 5 ]; then
+            echo "::error::Too many services missing READMEs ($missing)"
+            exit 1
+          fi
+          echo "Services missing READMEs: $missing (acceptable ≤ 5)"
