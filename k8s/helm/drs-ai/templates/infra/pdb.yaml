@@ -6,7 +6,8 @@ apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: {{ $name }}-pdb
-  labels: { {{- include "drs-ai.labels" $ | nindent 4 }} }
+  labels:
+    {{- include "drs-ai.labels" $ | nindent 4 }}
 spec:
   minAvailable: {{ $.Values.podDisruptionBudget.minAvailable | default 1 }}
   selector:

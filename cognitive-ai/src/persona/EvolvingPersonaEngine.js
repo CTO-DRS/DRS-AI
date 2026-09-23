@@ -12,7 +12,11 @@
  */
 
 const { EventEmitter } = require('events');
-const tf = require('@tensorflow/tfjs-node');
+// TensorFlow.js is optional — initialize() will gracefully degrade if not installed
+let tf = null;
+try { tf = require('@tensorflow/tfjs-node'); } catch (e) {
+  console.warn('⚠️  @tensorflow/tfjs-node not available — EvolvingPersonaEngine will run in degraded mode:', e.message);
+}
 const { Matrix } = require('ml-matrix');
 const KMeans = require('ml-kmeans');
 const natural = require('natural');
@@ -57,25 +61,33 @@ class EvolvingPersonaEngine extends EventEmitter {
   async initialize() {
     try {
       logger.info('🧬 Initializing Evolving Persona Engine...');
-      
+
       // Initialize Redis connection
       this.redis = await getRedisClient();
-      
-      // Initialize meta-learning model
-      await this.initializeMetaModel();
-      
+
+      // Initialize meta-learning model (requires TensorFlow.js)
+      if (tf) {
+        try {
+          await this.initializeMetaModel();
+        } catch (modelErr) {
+          logger.warn(`⚠️  Meta-model init failed, running without neural adaptation: ${modelErr.message}`);
+        }
+      } else {
+        logger.warn('⚠️  TensorFlow.js not available — running without neural meta-learning');
+      }
+
       // Load existing personas from Redis
       await this.loadPersistedPersonas();
-      
+
       // Initialize persona clustering
       await this.initializeClustering();
-      
+
       // Start background consolidation
       this.startConsolidationTask();
-      
+
       this.isInitialized = true;
       logger.info('✅ Evolving Persona Engine initialized');
-      
+
     } catch (error) {
       logger.error('❌ Failed to initialize Evolving Persona Engine:', error);
       throw error;

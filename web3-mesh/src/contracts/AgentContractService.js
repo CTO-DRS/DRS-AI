@@ -11,8 +11,11 @@
  * @version 1.0.0
  */
 
-const { ethers } = require('ethers');
-const Web3 = require('web3');
+// ethers + Web3 are optional — service works in mock mode without them
+let ethers = null;
+let Web3 = null;
+try { ethers = require('ethers'); } catch { /* mock mode */ }
+try { Web3 = require('web3'); } catch { /* mock mode */ }
 const { v4: uuidv4 } = require('uuid');
 const { logger } = require('../utils/logger');
 const { getRedisClient } = require('../utils/redis');
@@ -72,11 +75,11 @@ class AgentContractService extends EventEmitter {
       // Initialize Redis
       this.redis = await getRedisClient();
       
-      // Initialize Ethereum connection
-      if (this.config.ethereumRpc && this.config.privateKey) {
+      // Initialize Ethereum connection (only if ethers is installed AND config is provided)
+      if (ethers && this.config.ethereumRpc && this.config.privateKey) {
         await this.initializeEthereum();
       } else {
-        logger.warn('⚠️ Ethereum configuration missing, running in mock mode');
+        logger.warn('⚠️ Ethereum configuration missing (or ethers not installed), running in mock mode');
         this.initializeMockMode();
       }
       

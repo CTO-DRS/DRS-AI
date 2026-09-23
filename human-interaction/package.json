@@ -23,15 +23,17 @@
     "swagger-ui-express": "^5.0.0",
     "uuid": "^9.0.1",
     "joi": "^17.11.0",
+    "fluent-ffmpeg": "^2.1.2",
+    "three": "^0.160.0"
+  },
+  "optionalDependencies": {
     "@tensorflow/tfjs-node": "^4.15.0",
     "onnxruntime-node": "^1.16.3",
     "node-microphone": "^0.1.6",
     "speaker": "^0.5.4",
     "wav": "^1.0.2",
     "ffmpeg-static": "^5.2.0",
-    "fluent-ffmpeg": "^2.1.2",
-    "webxr-polyfill": "^2.0.3",
-    "three": "^0.160.0"
+    "webxr-polyfill": "^2.0.3"
   },
   "devDependencies": {
     "nodemon": "^3.0.2",

@@ -10,7 +10,7 @@
  * @version 1.0.0
  */
 
-const { ml_dsa44, ml_dsa65, ml_dsa87 } = require('ml-dsa');
+const { ml_dsa44, ml_dsa65, ml_dsa87 } = require('./pq-compat');
 const { logger } = require('../utils/logger');
 const { getRedisClient } = require('../utils/redis');
 const { v4: uuidv4 } = require('uuid');

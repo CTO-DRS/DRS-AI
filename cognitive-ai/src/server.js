@@ -253,7 +253,13 @@ class CognitiveAIService {
       embeddingService: this.embeddingService,
     });
     await this.metaLearning.initialize();
-    
+
+    // Expose engines on app.locals so health route + other routes can access them
+    this.app.locals.embeddingService = this.embeddingService;
+    this.app.locals.personaEngine = this.personaEngine;
+    this.app.locals.visualEngine = this.visualEngine;
+    this.app.locals.metaLearning = this.metaLearning;
+
     logger.info('✅ All AI Engines initialized');
   }
 
