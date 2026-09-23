@@ -1,5 +1,5 @@
 {
-  "name": "@drs-ai/hybrid-rag",
+  "name": "@cto-drs/hybrid-rag",
   "version": "2.0.0",
   "description": "𝑫𝑹𝑺.𝑽𝑰𝑷. Hybrid RAG Engine - Vector + Full-text Search with Auto-Tagging",
   "main": "dist/index.js",

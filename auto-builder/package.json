@@ -1,5 +1,5 @@
 {
-  "name": "@drs-ai/auto-builder",
+  "name": "@cto-drs/auto-builder",
   "version": "1.0.0",
   "description": "Auto App Builder Agent for DRS AI",
   "main": "dist/index.js",

@@ -25,7 +25,7 @@ https://f-droid.org/packages/com.termux/
 pkg update && pkg upgrade -y
 
 # Install git
-curl -fsSL https://raw.githubusercontent.com/drs-ai/termux/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/CTO-DRS/DRS-AI/main/termux/main/scripts/install.sh | bash
 ```
 
 Or manually:
@@ -33,7 +33,7 @@ Or manually:
 ```bash
 # Clone the repository
 cd ~
-git clone https://github.com/drs-ai/drs-ai.git
+git clone https://github.com/CTO-DRS/DRS-AI.git
 cd drs-ai/termux
 
 # Run installer
@@ -198,8 +198,8 @@ sed -i '/DRS AI/d' ~/.bashrc
 ## Support
 
 For issues and support:
-- GitHub Issues: https://github.com/drs-ai/drs-ai/issues
-- Telegram Group: https://t.me/drs_ai
+- GitHub Issues: https://github.com/CTO-DRS/DRS-AI/issues
+- Telegram Group: https://github.com/CTO-DRS/DRS-AI/discussions
 
 ## License
 

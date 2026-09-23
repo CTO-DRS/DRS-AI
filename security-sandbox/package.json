@@ -1,5 +1,5 @@
 {
-  "name": "@drs-ai/security-sandbox",
+  "name": "@cto-drs/security-sandbox",
   "version": "2.0.0",
   "description": "𝑫𝑹𝑺.𝑽𝑰𝑷. Advanced Security Sandbox - Docker-in-Docker Isolated Execution Environment",
   "main": "dist/index.js",

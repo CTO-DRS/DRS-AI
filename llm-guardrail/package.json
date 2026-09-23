@@ -1,5 +1,5 @@
 {
-  "name": "@drs-ai/llm-guardrail",
+  "name": "@cto-drs/llm-guardrail",
   "version": "2.0.0",
   "description": "𝑫𝑹𝑺.𝑽𝑰𝑷. LLM Guardrail & WAF - Prompt Injection Protection & Output Filtering",
   "main": "dist/index.js",

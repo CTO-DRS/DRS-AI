@@ -1,5 +1,5 @@
 {
-  "name": "@drs-ai/advanced-memory",
+  "name": "@cto-drs/advanced-memory",
   "version": "1.0.0",
   "description": "Advanced Memory & RAG Service for DRS AI",
   "main": "dist/index.js",

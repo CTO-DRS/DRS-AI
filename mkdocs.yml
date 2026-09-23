@@ -1,0 +1,113 @@
+site_name: DRS AI Documentation
+site_description: DRS AI — Enterprise AI Operating System with 40+ microservices. Self-hosted, 100% offline, multilingual.
+site_url: https://cto-drs.github.io/DRS-AI/
+site_author: CTO.DRS
+
+repo_name: CTO-DRS/DRS-AI
+repo_url: https://github.com/CTO-DRS/DRS-AI
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.tracking
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+  font:
+    text: Inter
+    code: JetBrains Mono
+  logo: ../assets/logo/logo.svg
+  favicon: ../assets/logo/favicon.svg
+  icon:
+    repo: fontawesome/brands/github
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/CTO-DRS
+    - icon: fontawesome/brands/globe
+      link: https://drs.xo.je
+    - icon: fontawesome/solid/shield-halved
+      link: https://github.com/CTO-DRS/DRS-AI/security/advisories/new
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+plugins:
+  - search
+  - mermaid2:
+      arguments:
+        theme: dark
+
+nav:
+  - Home: index.md
+  - Quick Start: quick-start.md
+  - Architecture: architecture.md
+  - Deployment:
+      - Overview: deployment.md
+      - Kubernetes (Helm): ../k8s/README.md
+  - API Reference: api-reference.md
+  - Plugin Development: plugin-development.md
+  - Security: security.md
+  - Troubleshooting: troubleshooting.md
+  - Changelog: ../CHANGELOG.md
+  - Contributing: ../CONTRIBUTING.md

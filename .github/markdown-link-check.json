@@ -7,10 +7,10 @@
       "pattern": "^http://localhost"
     },
     {
-      "pattern": "^https://drs-ai.local"
+      "pattern": "^https://drs-ai.localhost"
     },
     {
-      "pattern": "^https://drs-ai.com"
+      "pattern": "^https://drs.xo.je"
     }
   ],
   "replacementPatterns": [

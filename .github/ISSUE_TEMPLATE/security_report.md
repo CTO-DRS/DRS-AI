@@ -6,7 +6,7 @@
 >
 > If the vulnerability is exploitable, please report it via:
 > - [GitHub Security Advisories](https://github.com/CTO-DRS/DRS-AI/security/advisories/new) (preferred)
-> - Email: security@drs-ai.com
+> - Email: CTO-DRS@users.noreply.github.com
 >
 > Only use this template for non-exploitable issues that you want to discuss publicly (e.g., a hardening suggestion or a "theoretical" weakness).
 

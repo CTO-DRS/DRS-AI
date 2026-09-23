@@ -5,10 +5,14 @@ on:
     branches: [main]
     paths:
       - 'docs/**'
+      - 'mkdocs.yml'
+      - 'assets/**'
       - 'README.md'
       - 'CHANGELOG.md'
       - 'CONTRIBUTING.md'
       - 'SECURITY.md'
+      - 'CODE_OF_CONDUCT.md'
+      - 'LICENSE'
       - '.github/workflows/docs.yml'
   workflow_dispatch:
 
@@ -27,15 +31,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
         with:
-          node-version: 20
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('mkdocs.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
       - name: Install MkDocs dependencies
         run: |
-          pip install mkdocs mkdocs-material mkdocs-mermaid2-plugin pymdown-extensions
+          python -m pip install --upgrade pip
+          pip install mkdocs mkdocs-material mkdocs-mermaid2-plugin pymdown-extensions mkdocs-material-extensions
 
       - name: Build site
         run: |

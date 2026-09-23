@@ -24,11 +24,11 @@ Instead, report vulnerabilities privately using one of these channels:
    - Click "Report a vulnerability"
    - Fill in the details
 
-2. **Email**: security@drs-ai.com
+2. **Email**: CTO-DRS@users.noreply.github.com
    - Use the subject line: `[SECURITY] DRS AI - <short description>`
    - Include a PGP-encrypted report if possible (public key below)
 
-3. **Telegram**: [@drs_security](https://t.me/drs_security) (for initial contact only)
+3. **Telegram**: [GitHub Security Advisories](https://github.com/CTO-DRS/DRS-AI/security/advisories/new) (for initial contact only)
 
 ### What to Include in the Report
 
@@ -156,8 +156,8 @@ When we receive a security report, we will:
 
 ## Contact
 
-- 📧 Email: security@drs-ai.com
-- 💬 Telegram: [@drs_security](https://t.me/drs_security)
+- 📧 Email: CTO-DRS@users.noreply.github.com
+- 💬 Telegram: [GitHub Security Advisories](https://github.com/CTO-DRS/DRS-AI/security/advisories/new)
 - 🐛 GitHub Security Advisories: https://github.com/CTO-DRS/DRS-AI/security/advisories/new
 
 ---

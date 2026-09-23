@@ -367,6 +367,6 @@ See [SECURITY.md](../SECURITY.md) for full policy.
 
 ## Security Contact
 
-- 📧 Email: security@drs-ai.com
-- 💬 Telegram: [@drs_security](https://t.me/drs_security)
+- 📧 Email: CTO-DRS@users.noreply.github.com
+- 💬 Telegram: [GitHub Security Advisories](https://github.com/CTO-DRS/DRS-AI/security/advisories/new)
 - 🔒 PGP: contact for public key

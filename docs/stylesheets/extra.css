@@ -1,0 +1,115 @@
+/* DRS AI custom styles for MkDocs Material */
+
+:root {
+  --drs-primary: #6366f1;
+  --drs-accent: #8b5cf6;
+  --drs-bg: #0a0a0a;
+}
+
+.md-header {
+  background: linear-gradient(90deg, var(--drs-primary), var(--drs-accent));
+}
+
+.md-tabs {
+  background: linear-gradient(90deg, var(--drs-primary), var(--drs-accent));
+}
+
+/* Hero section on home page */
+.md-typeset .drx-hero {
+  text-align: center;
+  padding: 2rem 1rem;
+  margin-bottom: 2rem;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0a0a0a 100%);
+  border-radius: 16px;
+  color: #fff;
+}
+
+.md-typeset .drx-hero h1 {
+  font-size: 3em;
+  margin-bottom: 0.5em;
+  color: #fff;
+}
+
+.md-typeset .drx-hero p {
+  font-size: 1.25em;
+  color: #a5b4fc;
+}
+
+.md-typeset .drx-hero img {
+  max-width: 100%;
+  height: auto;
+  margin: 1rem 0;
+}
+
+/* Badge grid */
+.md-typeset .drx-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  justify-content: center;
+}
+
+.md-typeset .drx-badges img {
+  height: 24px;
+}
+
+/* Feature cards */
+.md-typeset .drx-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.md-typeset .drx-card {
+  background: var(--md-default-bg-color--light);
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.md-typeset .drx-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.2);
+  border-color: var(--drs-primary);
+}
+
+.md-typeset .drx-card h3 {
+  margin-top: 0;
+  color: var(--drs-primary);
+}
+
+/* Tables */
+.md-typeset table:not([class]) {
+  display: table;
+  width: 100%;
+}
+
+/* Code blocks */
+.md-typeset code {
+  background-color: rgba(99, 102, 241, 0.1);
+  border-radius: 4px;
+  padding: 0.1em 0.3em;
+}
+
+.md-typeset pre > code {
+  background-color: var(--md-code-bg-color);
+}
+
+/* Admonitions */
+.md-typeset .admonition.tip,
+.md-typeset details.tip {
+  border-color: var(--drs-primary);
+}
+
+.md-typeset .admonition.tip > .admonition-title,
+.md-typeset details.tip > .admonition-title {
+  background-color: rgba(99, 102, 241, 0.15);
+}
+
+/* Footer */
+.md-footer-meta {
+  background-color: var(--drs-bg);
+}

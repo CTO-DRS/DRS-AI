@@ -106,6 +106,6 @@ See [architecture.md](./architecture.md) for full details.
 
 - 💬 [GitHub Discussions](https://github.com/CTO-DRS/DRS-AI/discussions) — questions & ideas
 - 🐛 [GitHub Issues](https://github.com/CTO-DRS/DRS-AI/issues) — bugs & features
-- 📧 Email: support@drs-ai.com
-- 📱 Telegram: [@drs_ai](https://t.me/drs_ai)
+- 📧 Email: CTO-DRS@users.noreply.github.com
+- 📱 Telegram: [GitHub Discussions](https://github.com/CTO-DRS/DRS-AI/discussions)
 - 📖 [Troubleshooting guide](./troubleshooting.md)

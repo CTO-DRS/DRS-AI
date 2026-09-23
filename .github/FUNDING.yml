@@ -1,52 +1,5 @@
-# Funding 💛
+# GitHub Sponsors — when @CTO-DRS enables sponsors program, replace `custom` with:
+#   github: CTO-DRS
+# Until then, the "Sponsor this project" button will link to the homepage.
 
-DRS AI is a community-driven project. If it has helped you or your organization, consider supporting continued development.
-
-## 🏢 Sponsors
-
-_Become a sponsor — your logo will appear here. Contact sponsors@drs-ai.com_
-
-## 👤 Sponsor the Maintainer
-
-<!-- Uncomment and configure these platforms as they become available -->
-
-<!-- ### GitHub Sponsors -->
-<!-- - [@CTO-DRS](https://github.com/sponsors/CTO-DRS) -->
-
-<!-- ### Open Collective -->
-<!-- - [DRS AI on Open Collective](https://opencollective.com/drs-ai) -->
-
-<!-- ### Patreon -->
-<!-- - [DRS AI on Patreon](https://www.patreon.com/drsai) -->
-
-### Other channels
-- 💳 Stripe / bank transfer: contact sponsors@drs-ai.com
-- ₿ Bitcoin: `bc1qdrsai00000000000000000000000000000000` _(placeholder — request fresh address)_
-- 💬 Telegram: [@drs_sponsors](https://t.me/drs_sponsors)
-
-## 🌟 How Your Sponsorship Helps
-
-- 🛠️ **Maintenance** — keep all 40+ services tested and updated against new Node / Ollama / PostgreSQL releases
-- 🐛 **Bug triage** — respond to issues faster
-- 📚 **Documentation** — write more guides, examples, and video tutorials
-- 🚀 **New features** — accelerate roadmap items (multi-cloud federation, edge gateway)
-- 🎓 **Education** — free workshops and bootcamps for the community
-
-## 🏆 Sponsor Tiers
-
-| Tier | Amount | Benefits |
-|------|--------|----------|
-| 🌱 **Seed** | $10/mo | Name in `BACKERS.md`, access to sponsor-only Telegram channel |
-| 🌿 **Sapling** | $50/mo | Above + priority issue triage (1 ticket/week) |
-| 🌳 **Tree** | $200/mo | Above + logo on README, private Slack workspace access |
-| 🌲 **Forest** | $1,000/mo | Above + quarterly video call with maintainers, dedicated support email |
-
-## 💼 Enterprise Support
-
-For organizations needing SLAs, custom features, or on-prem deployment support:
-- 📧 enterprise@drs-ai.com
-- 🌐 [drs-ai.com/enterprise](https://drs-ai.com/enterprise)
-
----
-
-Every sponsor — large or small — helps us keep DRS AI free and open. Thank you! 🙏
+custom: ["https://drs.xo.je"]

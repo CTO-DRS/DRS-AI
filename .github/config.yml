@@ -7,7 +7,7 @@ newIssueWelcomeComment: |
 
   We'll triage this as soon as possible. While you wait:
   - 📖 Check the [docs](https://github.com/CTO-DRS/DRS-AI/tree/main/docs) — your answer might already be there
-  - 💬 Join our [Telegram group](https://t.me/drs_ai) for live help
+  - 💬 Join our [Telegram group](https://github.com/CTO-DRS/DRS-AI/discussions) for live help
   - 🔍 Search [existing issues](https://github.com/CTO-DRS/DRS-AI/issues?q=is%3Aissue) to see if it's been discussed before
 
 # Comment to post when a user opens their first PR
@@ -20,7 +20,7 @@ newPRWelcomeComment: |
   - [ ] Used [conventional commit messages](https://github.com/CTO-DRS/DRS-AI/blob/main/CONTRIBUTING.md#commit-message-convention)
   - [ ] Not committed any secrets or `node_modules/`
 
-  Feel free to ask questions in our [Telegram dev group](https://t.me/drs_ai_dev)!
+  Feel free to ask questions in our [Telegram dev group](https://github.com/CTO-DRS/DRS-AI/discussions)!
 
 # Comment to post when a user's first PR is merged
 firstPRMergeComment: |

@@ -1,5 +1,5 @@
 {
-  "name": "@drs-ai/polyglot-interpreter",
+  "name": "@cto-drs/polyglot-interpreter",
   "version": "2.0.0",
   "description": "𝑫𝑹𝑺.𝑽𝑰𝑷. Polyglot Interpreter - Go, Rust, Node.js, Python with Isolation",
   "main": "dist/index.js",

@@ -1,5 +1,5 @@
 {
-  "name": "@drs-ai/git-automator",
+  "name": "@cto-drs/git-automator",
   "version": "2.0.0",
   "description": "𝑫𝑹𝑺.𝑽𝑰𝑷. Git Automator - Secure Git Operations",
   "main": "dist/index.js",

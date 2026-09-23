@@ -270,7 +270,7 @@ Use the service or feature name as scope:
 ## Questions?
 
 - 💬 Open a [Discussion](https://github.com/CTO-DRS/DRS-AI/discussions)
-- 📧 Email: support@drs-ai.com
-- 📱 Telegram: [@drs_ai](https://t.me/drs_ai)
+- 📧 Email: CTO-DRS@users.noreply.github.com
+- 📱 Telegram: [GitHub Discussions](https://github.com/CTO-DRS/DRS-AI/discussions)
 
 Happy coding! 🚀

@@ -1,5 +1,5 @@
 {
-  "name": "@drs-ai/edge-optimizer",
+  "name": "@cto-drs/edge-optimizer",
   "version": "2.0.0",
   "description": "𝑫𝑹𝑺.𝑽𝑰𝑷. Edge Optimizer - Auto-Quantization & Resource Budgeting for Termux",
   "main": "dist/index.js",

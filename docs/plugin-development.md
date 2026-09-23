@@ -152,7 +152,7 @@ curl -X POST http://localhost:3012/api/v1/plugins/install \
   -H "Content-Type: application/json" \
   -d '{
     "source": "npm",
-    "name": "@drs-ai/weather",
+    "name": "@cto-drs/weather",
     "version": "1.0.0"
   }'
 ```
@@ -213,7 +213,7 @@ curl -X POST http://localhost:3012/api/v1/plugins/install \
   -H "Content-Type: application/json" \
   -d '{
     "source": "npm",
-    "name": "@drs-ai/weather",
+    "name": "@cto-drs/weather",
     "version": "1.0.0",
     "grantPermissions": [
       "http:get:api.open-meteo.com",
@@ -260,7 +260,7 @@ npm init -y
   "drs-ai": {
     "type": "plugin",
     "apiVersion": "1.0",
-    "permissions": ["http:post:translate.drs-ai.local:3040"],
+    "permissions": ["http:post:translate.drs-ai.localhost:3040"],
     "hooks": ["chat:before"]
   }
 }
@@ -355,11 +355,11 @@ drs plugin publish
 For TypeScript development, install the SDK:
 
 ```bash
-npm install --save-dev @drs-ai/plugin-sdk
+npm install --save-dev @cto-drs/plugin-sdk
 ```
 
 ```typescript
-import { definePlugin } from '@drs-ai/plugin-sdk';
+import { definePlugin } from '@cto-drs/plugin-sdk';
 
 export default definePlugin({
   name: 'my-plugin',

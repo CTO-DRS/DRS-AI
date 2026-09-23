@@ -117,7 +117,7 @@ Response:
   "user": {
     "id": "u-1",
     "username": "admin",
-    "email": "admin@drs-ai.local",
+    "email": "admin@drs-ai.localhost",
     "role": "admin"
   }
 }
@@ -455,7 +455,7 @@ For real-time features (streaming chat, AR overlays, gesture detection):
 ### JavaScript / TypeScript
 
 ```typescript
-import { DRSAIClient } from '@drs-ai/sdk';
+import { DRSAIClient } from '@cto-drs/sdk';
 
 const client = new DRSAIClient({
   baseUrl: 'http://localhost:3000',
@@ -487,7 +487,7 @@ response = client.chat.send('Hello!')
 
 ```bash
 # Install
-npm install -g @drs-ai/cli
+npm install -g @cto-drs/cli
 
 # Use
 drs login --username admin

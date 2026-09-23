@@ -157,7 +157,7 @@ frontend:
   ingress:
     enabled: true
     className: nginx
-    host: drs-ai.local
+    host: drs-ai.localhost
     tls:
       enabled: false
       secretName: ""
@@ -191,7 +191,7 @@ ingress:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
   hosts:
-    - host: drs-ai.local
+    - host: drs-ai.localhost
       paths:
         - path: /
           pathType: Prefix

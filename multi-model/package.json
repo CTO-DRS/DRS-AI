@@ -1,5 +1,5 @@
 {
-  "name": "@drs-ai/multi-model",
+  "name": "@cto-drs/multi-model",
   "version": "1.0.0",
   "description": "Multi-Model Intelligence Service for DRS AI",
   "main": "dist/index.js",

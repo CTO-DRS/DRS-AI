@@ -159,7 +159,7 @@ DRS AI is organized into 5 tiers: **Clients** → **Gateway** → **AI OS Servic
 
 ```bash
 # Clone the repository
-git clone https://github.com/drs-ai/drs-ai.git
+git clone https://github.com/CTO-DRS/DRS-AI.git
 cd drs-ai
 
 # Set environment variables
@@ -188,7 +188,7 @@ Run DRS AI on your Android device without root access!
 ```bash
 # Install Termux from F-Droid
 # Then run:
-curl -fsSL https://raw.githubusercontent.com/drs-ai/termux/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/CTO-DRS/DRS-AI/main/termux/main/scripts/install.sh | bash
 
 # Start services
 $HOME/start-drs.sh start
@@ -388,8 +388,8 @@ Looking for a way to contribute? Check issues labeled [`good first issue`](https
 ### Community
 
 - 💬 [GitHub Discussions](https://github.com/CTO-DRS/DRS-AI/discussions) — questions & ideas
-- 📱 [Telegram group](https://t.me/drs_ai)
-- 📧 Email: support@drs-ai.com
+- 📱 [Telegram group](https://github.com/CTO-DRS/DRS-AI/discussions)
+- 📧 Email: CTO-DRS@users.noreply.github.com
 
 ## 📄 License
 
@@ -415,8 +415,8 @@ This project is licensed under the MIT License - see [LICENSE](./LICENSE) file.
 - 💡 **Feature Requests**: [GitHub Issues](https://github.com/CTO-DRS/DRS-AI/issues/new?template=feature_request.yml)
 - 💬 **Questions**: [GitHub Discussions](https://github.com/CTO-DRS/DRS-AI/discussions)
 - 🔒 **Security Reports**: [Security Advisories](https://github.com/CTO-DRS/DRS-AI/security/advisories/new)
-- 📱 **Telegram Group**: [@drs_ai](https://t.me/drs_ai)
-- 📧 **Email**: support@drs-ai.com
+- 📱 **Telegram Group**: [GitHub Discussions](https://github.com/CTO-DRS/DRS-AI/discussions)
+- 📧 **Email**: CTO-DRS@users.noreply.github.com
 
 ## 🗺️ Roadmap
 
