@@ -17,7 +17,7 @@
     "ioredis": "^5.3.2",
     "swagger-ui-express": "^5.0.0",
     "swagger-jsdoc": "^6.2.8",
-    "uuid": "^9.0.0",
+    "uuid": "^14.0.2",
     "axios": "^1.6.0"
   },
   "engines": {
