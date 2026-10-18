@@ -7,7 +7,7 @@ polyglot-interpreter, git-automator, edge-optimizer
 {{- $svc := index $.Values.advInfraServices $name -}}
 {{- if $svc.enabled }}
 ---
-{{- $hyphen := regexReplaceAll "([A-Z])" $name "-${1}" | lower -}}
+{{- $hyphen := regexReplaceAll "([A-Z])" $name "-${1}" | lower }}
 {{ include "drs-ai.microservice" (dict "name" $hyphen "port" $svc.port "replicas" (default 1 $svc.replicas) "resources" $svc.resources "env" $svc.env "gpu" false "root" $) }}
 {{- end -}}
 {{- end -}}
@@ -23,7 +23,7 @@ multi-region-replication, oauth-oidc, gpu-mig
 {{- $svc := index $.Values.platformServices $name -}}
 {{- if $svc.enabled }}
 ---
-{{- $hyphen := regexReplaceAll "([A-Z])" $name "-${1}" | lower -}}
+{{- $hyphen := regexReplaceAll "([A-Z])" $name "-${1}" | lower }}
 {{ include "drs-ai.microservice" (dict "name" $hyphen "port" $svc.port "replicas" (default 1 $svc.replicas) "resources" $svc.resources "env" $svc.env "gpu" (default false $svc.gpu) "root" $) }}
 {{- end -}}
 {{- end -}}

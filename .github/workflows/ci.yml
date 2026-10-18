@@ -36,8 +36,13 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Install & test each service
+        env:
+          SERVICES: ${{ steps.services.outputs.services }}
         run: |
-          for service in ${{ steps.services.outputs.services }}; do
+          # read service list via env (raw multiline interpolation here breaks bash
+          # parsing and is a script-injection vector); skip blank lines
+          while IFS= read -r service; do
+            [ -z "$service" ] && continue
             echo "::group::🔧 Processing $service"
             cd "$GITHUB_WORKSPACE/$service"
 
@@ -88,7 +93,7 @@ jobs:
             wait $BOOT_PID 2>/dev/null || true
             cd "$GITHUB_WORKSPACE"
             echo "::endgroup::"
-          done
+          done <<< "$SERVICES"
 
   # ============================================
   # Validate Helm chart
