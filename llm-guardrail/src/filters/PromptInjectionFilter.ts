@@ -186,7 +186,7 @@ const CONTEXT_PATTERNS = {
 
 export class PromptInjectionFilter {
   private patterns: InjectionPattern[];
-  private policy: SecurityPolicy;
+  private policy: SecurityPolicy['settings']['promptInjection'];
 
   constructor() {
     this.patterns = INJECTION_PATTERNS;

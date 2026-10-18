@@ -1,3 +1,4 @@
+import os from 'os';
 /**
  * Resource Monitor
  * Monitors CPU, Memory, and system resources
@@ -81,7 +82,7 @@ export class ResourceMonitor extends EventEmitter {
       cpu: {
         usage: cpu.currentLoad,
         cores: cpu.cpus.length,
-        loadAverage: load
+        loadAverage: os.loadavg()
       },
       memory: {
         total: mem.total,

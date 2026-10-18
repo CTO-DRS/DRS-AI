@@ -4,7 +4,7 @@
 
 export type ThreatLevel = 'none' | 'low' | 'medium' | 'high' | 'critical';
 export type ToxicityLevel = 'none' | 'low' | 'medium' | 'high' | 'severe';
-export type FilterAction = 'allow' | 'sanitize' | 'block' | 'flag';
+export type FilterAction = 'allow' | 'sanitize' | 'block' | 'flag' | 'redact' | 'moderate' | 'rate_limit';
 
 export interface InjectionPattern {
   name: string;

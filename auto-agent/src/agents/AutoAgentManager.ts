@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import cron from 'node-cron';
+import { parseExpression } from 'cron-parser';
 import chokidar from 'chokidar';
 import fs from 'fs-extra';
 import { AutoAgent, AgentExecution, FileWatcherConfig, LogMonitorConfig } from '../types';
@@ -72,7 +73,7 @@ export class AutoAgentManager {
     this.scheduledTasks.set(agent.id, task);
     
     // Calculate next run
-    const interval = cron.parseExpression(agent.schedule.cron);
+    const interval = parseExpression(agent.schedule.cron);
     agent.nextRunAt = interval.next().toDate();
     this.saveAgent(agent);
 
@@ -89,11 +90,10 @@ export class AutoAgentManager {
       const { eventType } = agent.eventConfig;
 
       if (eventType === 'file.watch') {
-        const config = agent.eventConfig as FileWatcherConfig;
+        const config = agent.eventConfig as unknown as FileWatcherConfig; // runtime shape from persisted agent JSON
         const watcher = chokidar.watch(config.path, {
           ignored: /(^|[\/\\])\../,
           persistent: true,
-          recursive: config.recursive
         });
 
         watcher.on('all', async (event, path) => {
@@ -132,7 +132,7 @@ export class AutoAgentManager {
   }
 
   private startLogMonitor(agent: AutoAgent): void {
-    const config = agent.eventConfig as LogMonitorConfig;
+    const config = agent.eventConfig as unknown as LogMonitorConfig; // runtime shape from persisted agent JSON
     
     // Simple log tail implementation
     const tailLog = async () => {
