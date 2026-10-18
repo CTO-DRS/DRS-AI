@@ -18,7 +18,9 @@ RUN pip3 install --break-system-packages \
     xlrd
 
 COPY package*.json ./
-RUN npm install --omit=dev --no-audit --no-fund
+# install devDeps too: 'npm run build' needs typescript (tsc);
+# single-stage image keeps them at runtime by design
+RUN npm install --no-audit --no-fund
 
 COPY tsconfig.json ./
 COPY src ./src
