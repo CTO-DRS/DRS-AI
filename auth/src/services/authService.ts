@@ -13,8 +13,17 @@ import {
 import logger from '../utils/logger';
 import redis from '../utils/redis';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'drs-secret-key';
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'drs-refresh-secret';
+const requireSecret = (name: string, devFallback: string): string => {
+  const value = process.env[name];
+  if (value) return value;
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(`${name} environment variable must be set in production`);
+  }
+  return devFallback; // development fallback only
+};
+
+const JWT_SECRET = requireSecret('JWT_SECRET', 'drs-dev-secret');
+const JWT_REFRESH_SECRET = requireSecret('JWT_REFRESH_SECRET', 'drs-dev-refresh-secret');
 const ACCESS_TOKEN_EXPIRY = '15m';
 const REFRESH_TOKEN_EXPIRY = '7d';
 const ACCESS_TOKEN_EXPIRY_SECONDS = 900; // 15 minutes

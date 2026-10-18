@@ -148,7 +148,7 @@ jobs:
           fetch-depth: 0
 
       - name: TruffleHog OSS
-        uses: trufflesecurity/trufflehog@main
+        uses: trufflesecurity/trufflehog@v3.99.2 # pinned: floating  is a supply-chain risk
         with:
           path: .
           extra_args: --only-verified --exclude-paths .github/trufflehog-exclude.txt
