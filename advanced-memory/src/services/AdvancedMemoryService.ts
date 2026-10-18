@@ -339,7 +339,7 @@ export class AdvancedMemoryService {
     const summaries: string[] = [];
     for (const group of groups) {
       const combined = group.map(m => m.content).join(' ');
-      const summary = await this.generateSummary(combined, query);
+      const summary = await this.generateSummaryWithLLM(combined);
       summaries.push(summary);
     }
 
@@ -443,10 +443,10 @@ export class AdvancedMemoryService {
       const doc = compromise(allContent);
 
       const keyPoints = this.extractKeyPoints(memories);
-      const entities = doc.people().out('array')
-        .concat(doc.places().out('array'))
-        .concat(doc.organizations().out('array'));
-      const topics = doc.topics().out('array');
+      const entities = (doc.people().out('array') as string[])
+        .concat(doc.places().out('array') as string[])
+        .concat(doc.organizations().out('array') as string[]);
+      const topics = doc.topics().out('array') as string[];
 
       // Generate summary using Ollama
       const summary = await this.generateSummaryWithLLM(allContent);
@@ -478,7 +478,7 @@ export class AdvancedMemoryService {
           JSON.stringify(memorySummary.topics),
           memorySummary.timeRange.start,
           memorySummary.timeRange.end,
-          memoryCount
+          memorySummary.memoryCount
         ]
       );
 
@@ -584,7 +584,7 @@ export class AdvancedMemoryService {
         })
       });
 
-      const data = await response.json();
+      const data = (await response.json()) as { embedding: number[] };
       return data.embedding;
     } catch (error) {
       this.logger.error('Failed to get embedding:', error);
@@ -866,7 +866,7 @@ export class AdvancedMemoryService {
       length: Math.min(content.length / 1000, 1),
       entities: (content.match(/\b[A-Z][a-z]+\b/g) || []).length / 10,
       numbers: (content.match(/\d+/g) || []).length / 5,
-      uniqueness: this.tfidf.documents.length > 0 ? this.calculateUniqueness(content) : 0.5
+      uniqueness: (this.tfidf.documents as unknown as unknown[]).length > 0 ? this.calculateUniqueness(content) : 0.5
     };
 
     return Math.min(
@@ -996,7 +996,7 @@ export class AdvancedMemoryService {
         })
       });
 
-      const data = await response.json();
+      const data = (await response.json()) as { response: string };
       return data.response;
     } catch (error) {
       this.logger.error('Failed to generate summary:', error);

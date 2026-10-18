@@ -105,6 +105,7 @@ export enum FeatureType {
 
 export interface DesignPreferences {
   style: 'modern' | 'minimal' | 'corporate' | 'creative' | 'playful';
+  theme?: string;
   primaryColor?: string;
   secondaryColor?: string;
   fontFamily?: string;

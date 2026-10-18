@@ -449,7 +449,12 @@ export default function DashboardPage() {
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET || (() => {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('JWT_SECRET environment variable must be set in production');
+  }
+  return 'generated-app-dev-secret'; // development fallback only
+})();
 
 export async function POST(req: NextRequest) {
   try {
@@ -606,7 +611,7 @@ services:
       - "3000:3000"
     environment:
       - DATABASE_URL=postgresql://postgres:password@db:5432/app
-      - JWT_SECRET=your-secret-key
+      - JWT_SECRET=\${JWT_SECRET:?set a strong JWT_SECRET (openssl rand -hex 32)}
       - NODE_ENV=production
     depends_on:
       - db
