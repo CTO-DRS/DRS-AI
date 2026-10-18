@@ -55,8 +55,10 @@ RUN mkdir -p /var/log/drs /tmp/sandbox /workspace && \
     chmod 755 /var/log/drs /tmp/sandbox /workspace
 
 # Create non-root user for sandbox execution
-RUN addgroup -g 1000 sandbox && \
-    adduser -D -u 1000 -G sandbox sandbox
+# (node:20-alpine already ships uid/gid 1000 as user 'node' — forcing -g 1000
+#  collides with it and fails the build; use auto-assigned system ids instead)
+RUN addgroup -S sandbox && \
+    adduser -S -D -G sandbox -h /home/sandbox sandbox
 
 # Set up Docker socket access
 RUN addgroup sandbox docker || true
