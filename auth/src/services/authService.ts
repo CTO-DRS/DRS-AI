@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 import speakeasy from 'speakeasy';
 import QRCode from 'qrcode';
@@ -23,7 +24,7 @@ export class AuthService {
   async register(data: RegisterData, ipAddress: string, userAgent: string): Promise<{ user: User; tokens: AuthTokens }> {
     const existingUser = await User.findOne({
       where: {
-        $or: [
+        [Op.or]: [
           { email: data.email },
           { username: data.username }
         ]
