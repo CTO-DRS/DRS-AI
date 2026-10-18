@@ -447,7 +447,7 @@ export class AutoBuilderService {
     const layoutTemplate = templates.components.layout;
     const layoutContent = this.renderTemplate(layoutTemplate, {
       appName: request.name,
-      theme: design.theme,
+      theme: design.theme ?? design.style,
       layout: design.layout
     });
     components.push({
@@ -464,7 +464,7 @@ export class AutoBuilderService {
       if (template) {
         const content = this.renderTemplate(template, {
           componentName,
-          theme: design.theme
+          theme: design.theme ?? design.style
         });
         components.push({
           filePath: `src/components/ui/${componentName}.tsx`,
@@ -634,7 +634,7 @@ export class AutoBuilderService {
         })
       });
 
-      const data = await response.json();
+      const data = (await response.json()) as { response: string };
       return data.response;
     } catch (error) {
       this.logger.error('LLM call failed:', error);
