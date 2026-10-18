@@ -24,7 +24,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
+          # no npm cache: repo intentionally commits no lock files,
+          # and setup-node cache requires package-lock.json/yarn.lock
 
       - name: Find all Node.js services
         id: services

@@ -10,7 +10,7 @@ RUN apk add --no-cache python3 make g++ linux-headers
 COPY package*.json ./
 COPY tsconfig.json ./
 
-RUN npm ci
+RUN npm install --omit=dev --no-audit --no-fund
 
 COPY src ./src
 
@@ -22,7 +22,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm ci --only=production && npm cache clean --force
+RUN npm install --omit=dev --no-audit --no-fund && npm cache clean --force
 
 COPY --from=builder /app/dist ./dist
 

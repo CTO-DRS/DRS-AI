@@ -400,10 +400,4 @@ docker compose logs plugin-system | grep "weather"
 
 ## Examples
 
-See the [`examples/plugins/`](https://github.com/CTO-DRS/DRS-AI-Web/tree/main/examples/plugins) directory for complete working examples:
-
-- **weather** — fetch weather forecasts
-- **jira** — create Jira tickets from chat commands
-- **slack** — send messages to Slack channels
-- **translate** — auto-translate based on user language
-- **summarize** — summarize uploaded documents
+The [`plugin-system/`](https://github.com/CTO-DRS/DRS-AI-Web/tree/main/plugin-system) service ships the plugin runtime, loader, and lifecycle manager — inspect its source for a complete working reference.
