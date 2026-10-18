@@ -1,10 +1,10 @@
 site_name: DRS AI Documentation
 site_description: DRS AI — Enterprise AI Operating System with 40+ microservices. Self-hosted, 100% offline, multilingual.
-site_url: https://cto-drs.github.io/DRS-AI/
+site_url: https://cto-drs.github.io/DRS-AI-Web/
 site_author: CTO.DRS
 
-repo_name: CTO-DRS/DRS-AI
-repo_url: https://github.com/CTO-DRS/DRS-AI
+repo_name: CTO-DRS/DRS-AI-Web
+repo_url: https://github.com/CTO-DRS/DRS-AI-Web
 edit_uri: edit/main/docs/
 
 theme:
@@ -53,7 +53,7 @@ extra:
     - icon: fontawesome/brands/globe
       link: https://drs.xo.je
     - icon: fontawesome/solid/shield-halved
-      link: https://github.com/CTO-DRS/DRS-AI/security/advisories/new
+      link: https://github.com/CTO-DRS/DRS-AI-Web/security/advisories/new
 
 extra_css:
   - stylesheets/extra.css

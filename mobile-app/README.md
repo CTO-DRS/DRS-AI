@@ -1,6 +1,6 @@
 # DRS AI Mobile 📱
 
-Cross-platform mobile client for the [DRS AI](https://github.com/CTO-DRS/DRS-AI) Enterprise AI Operating System.
+Cross-platform mobile client for the [DRS AI](https://github.com/CTO-DRS/DRS-AI-Web) Enterprise AI Operating System.
 
 Built with **React Native + Expo**, supporting Android, iOS, and Web from a single codebase.
 

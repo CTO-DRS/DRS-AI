@@ -144,7 +144,7 @@ export class GitService {
 
       // Commit
       const commitResult = await git.commit(request.message, {
-        '--author': request.author || 'DRS AI <bot@drs.vip>',
+        '--author': request.author || 'DRS AI <cto.drs@gmail.com>',
         '--no-verify': null
       });
 

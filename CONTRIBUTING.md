@@ -25,12 +25,11 @@ Participation in this project is governed by the [Code of Conduct](./CODE_OF_CON
 1. **Fork** the repository on GitHub
 2. **Clone** your fork locally:
    ```bash
-   git clone https://github.com/<your-username>/DRS-AI.git
-   cd DRS-AI
-   ```
+   git clone https://github.com/<your-username>/DRS-AI-Web.git
+   cd DRS-AI-Web   ```
 3. **Add upstream** remote:
    ```bash
-   git remote add upstream https://github.com/CTO-DRS/DRS-AI.git
+   git remote add upstream https://github.com/CTO-DRS/DRS-AI-Web.git
    ```
 4. **Install dependencies** for the service you want to work on:
    ```bash
@@ -46,7 +45,7 @@ Participation in this project is governed by the [Code of Conduct](./CODE_OF_CON
 
 ### 🐛 Reporting Bugs
 
-Open a [Bug Report issue](https://github.com/CTO-DRS/DRS-AI/issues/new?template=bug_report.yml). Please include:
+Open a [Bug Report issue](https://github.com/CTO-DRS/DRS-AI-Web/issues/new?template=bug_report.yml). Please include:
 - DRS AI version
 - Service(s) involved (with port number)
 - Steps to reproduce
@@ -55,7 +54,7 @@ Open a [Bug Report issue](https://github.com/CTO-DRS/DRS-AI/issues/new?template=
 
 ### ✨ Suggesting Enhancements
 
-Open a [Feature Request issue](https://github.com/CTO-DRS/DRS-AI/issues/new?template=feature_request.yml). Describe:
+Open a [Feature Request issue](https://github.com/CTO-DRS/DRS-AI-Web/issues/new?template=feature_request.yml). Describe:
 - The problem you're trying to solve
 - The proposed solution
 - Alternatives considered
@@ -83,7 +82,7 @@ See the Pull Request Workflow below.
    ```bash
    git push origin feat/your-feature-name
    ```
-6. **Open a Pull Request** against `CTO-DRS/DRS-AI:main`
+6. **Open a Pull Request** against `CTO-DRS/DRS-AI-Web:main`
 7. **Address review feedback** — push additional commits to the same branch
 8. **A maintainer will merge** once CI passes and review is approved
 
@@ -269,8 +268,8 @@ Use the service or feature name as scope:
 
 ## Questions?
 
-- 💬 Open a [Discussion](https://github.com/CTO-DRS/DRS-AI/discussions)
-- 📧 Email: CTO-DRS@users.noreply.github.com
-- 📱 Telegram: [GitHub Discussions](https://github.com/CTO-DRS/DRS-AI/discussions)
+- 💬 Open a [Discussion](https://github.com/CTO-DRS/DRS-AI-Web/discussions)
+- 📧 Email: cto.drs@gmail.com
+- 📱 Telegram: [GitHub Discussions](https://github.com/CTO-DRS/DRS-AI-Web/discussions)
 
 Happy coding! 🚀

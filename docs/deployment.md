@@ -22,9 +22,8 @@ Best for: development, testing, small teams (< 50 users)
 ### Quick Deploy
 
 ```bash
-git clone https://github.com/CTO-DRS/DRS-AI.git
-cd DRS-AI
-
+git clone https://github.com/CTO-DRS/DRS-AI-Web.git
+cd DRS-AI-Web
 # Configure secrets
 cp .env.example .env
 sed -i "s|JWT_SECRET=.*|JWT_SECRET=$(openssl rand -hex 32)|" .env
@@ -302,7 +301,7 @@ Install Termux from [F-Droid](https://f-droid.org/en/packages/com.termux/) (not 
 
 ```bash
 # One-line installer
-curl -fsSL https://raw.githubusercontent.com/CTO-DRS/DRS-AI/main/termux/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/CTO-DRS/DRS-AI-Web/main/termux/scripts/install.sh | bash
 
 # Start services
 $HOME/start-drs.sh start
@@ -329,9 +328,8 @@ For environments without Docker / K8s.
 ### Install
 
 ```bash
-git clone https://github.com/CTO-DRS/DRS-AI.git
-cd DRS-AI
-
+git clone https://github.com/CTO-DRS/DRS-AI-Web.git
+cd DRS-AI-Web
 # Install each service
 for service in gateway auth router orchestrator memory files voice; do
   cd $service
@@ -430,7 +428,7 @@ Use the included script:
 
 ```bash
 # Set up daily backups via cron
-echo "0 2 * * * /path/to/DRS-AI/scripts/backup.sh" | crontab -
+echo "0 2 * * * /path/to/DRS-AI-Web/scripts/backup.sh" | crontab -
 ```
 
 ### Redis Backup

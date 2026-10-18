@@ -361,12 +361,12 @@ Response:
 See [SECURITY.md](../SECURITY.md) for full policy.
 
 **Summary**:
-- Report vulnerabilities privately via [GitHub Security Advisories](https://github.com/CTO-DRS/DRS-AI/security/advisories/new)
+- Report vulnerabilities privately via [GitHub Security Advisories](https://github.com/CTO-DRS/DRS-AI-Web/security/advisories/new)
 - We respond within 48 hours
 - We credit reporters in security advisories (if desired)
 
 ## Security Contact
 
-- 📧 Email: CTO-DRS@users.noreply.github.com
-- 💬 Telegram: [GitHub Security Advisories](https://github.com/CTO-DRS/DRS-AI/security/advisories/new)
+- 📧 Email: cto.drs@gmail.com
+- 💬 Telegram: [GitHub Security Advisories](https://github.com/CTO-DRS/DRS-AI-Web/security/advisories/new)
 - 🔒 PGP: contact for public key

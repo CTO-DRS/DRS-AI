@@ -654,10 +654,10 @@ This shows the health of all 40 services, including latency and error rates.
 ## Still stuck?
 
 1. 📖 Read the full [docs](./README.md)
-2. 🔍 Search [existing issues](https://github.com/CTO-DRS/DRS-AI/issues?q=is%3Aissue)
-3. 💬 Ask in [GitHub Discussions](https://github.com/CTO-DRS/DRS-AI/discussions)
-4. 📧 Email: CTO-DRS@users.noreply.github.com
-5. 📱 Telegram: [GitHub Discussions](https://github.com/CTO-DRS/DRS-AI/discussions)
+2. 🔍 Search [existing issues](https://github.com/CTO-DRS/DRS-AI-Web/issues?q=is%3Aissue)
+3. 💬 Ask in [GitHub Discussions](https://github.com/CTO-DRS/DRS-AI-Web/discussions)
+4. 📧 Email: cto.drs@gmail.com
+5. 📱 Telegram: [GitHub Discussions](https://github.com/CTO-DRS/DRS-AI-Web/discussions)
 
 When reporting an issue, include:
 - DRS AI version (`git rev-parse --short HEAD`)
