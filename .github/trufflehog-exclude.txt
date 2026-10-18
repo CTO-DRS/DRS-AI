@@ -1,31 +1,32 @@
 # These files are NOT scanned by TruffleHog for secrets
-# Patterns: glob-style
+# Patterns: RE2 regular expressions matched against file paths
+# (TruffleHog cannot compile glob syntax such as *.md)
 
 # Documentation
-docs/
-*.md
-LICENSE
+^docs/
+\.md$
+^LICENSE$
 
 # Example files (intentionally have placeholder secrets)
-.env.example
-**/.env.example
+^\.env\.example$
+/\.env\.example$
 
 # Test fixtures
-**/test/fixtures/**
-**/__tests__/fixtures/**
+/test/fixtures/
+/__tests__/fixtures/
 
 # Build artifacts
-node_modules/
-dist/
-build/
-.next/
-.nuxt/
+^node_modules/
+^dist/
+^build/
+^\.next/
+^\.nuxt/
 
 # Lock files (can contain hashes that look like secrets)
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
+^package-lock\.json$
+^yarn\.lock$
+^pnpm-lock\.yaml$
 
 # Helm chart values (have placeholder passwords)
-k8s/examples/
-**/values.yaml
+^k8s/examples/
+/values\.yaml$

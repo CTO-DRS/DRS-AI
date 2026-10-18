@@ -2,7 +2,7 @@ FROM node:18-slim
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 COPY package*.json ./
-RUN npm ci --only=production && npm cache clean --force
+RUN npm install --omit=dev --no-audit --no-fund && npm cache clean --force
 COPY . .
 RUN groupadd -r gpumig && useradd -r -g gpumig gpumig && mkdir -p logs && chown -R gpumig:gpumig logs
 USER gpumig

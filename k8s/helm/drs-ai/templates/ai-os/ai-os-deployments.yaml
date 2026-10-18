@@ -7,7 +7,7 @@ code-interpreter, cybersecurity, advanced-memory, multi-model, auto-builder
 {{- $svc := index $.Values.aiOsServices $name -}}
 {{- if $svc.enabled }}
 ---
-{{- $hyphen := regexReplaceAll "([A-Z])" $name "-${1}" | lower -}}
+{{- $hyphen := regexReplaceAll "([A-Z])" $name "-${1}" | lower }}
 {{ include "drs-ai.microservice" (dict "name" $hyphen "port" $svc.port "replicas" (default 1 $svc.replicas) "resources" $svc.resources "env" $svc.env "gpu" false "root" $) }}
 {{- end -}}
 {{- end -}}
