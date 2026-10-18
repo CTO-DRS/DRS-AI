@@ -1,3 +1,4 @@
+import os from 'os';
 /**
  * Health Check Routes
  * System health and status endpoints
@@ -123,11 +124,11 @@ export class HealthController {
 
   private async getSystemStats(): Promise<any> {
     try {
-      const [cpu, mem, load] = await Promise.all([
+      const [cpu, mem] = await Promise.all([
         si.currentLoad(),
-        si.mem(),
-        si.load()
+        si.mem()
       ]);
+      const load = os.loadavg();
 
       return {
         cpu: {

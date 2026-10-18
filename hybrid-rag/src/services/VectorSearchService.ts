@@ -4,7 +4,7 @@
  */
 
 import { createLogger } from '../utils/logger';
-import { Pipeline } from '@xenova/transformers';
+import { pipeline } from '@xenova/transformers';
 import { Pool } from 'pg';
 import { VectorDocument, SearchResult, EmbeddingConfig } from '../models/types';
 
@@ -41,7 +41,7 @@ export class VectorSearchService {
       // Initialize embedding model
       logger.info(`Loading embedding model: ${this.config.model}`);
       try {
-        this.embedder = await Pipeline('feature-extraction', this.config.model);
+        this.embedder = await pipeline('feature-extraction', this.config.model);
       } catch (e) {
         logger.warn(`Could not load embedding model (running in degraded mode): ${(e as Error).message}`);
       }

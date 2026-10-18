@@ -104,9 +104,9 @@ export class MemoryService {
   }
 
   // Search memories by similarity
-  async searchMemories(userId: string, query: string, limit: number = 5): Promise<Memory[]> {
+  async searchMemories(userId: string, searchQuery: string, limit: number = 5): Promise<Memory[]> {
     try {
-      const embedding = await embeddingService.generateEmbedding(query);
+      const embedding = await embeddingService.generateEmbedding(searchQuery);
       
       const result = await query(
         `SELECT id, user_id, content, metadata, source, created_at,

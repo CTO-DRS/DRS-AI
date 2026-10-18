@@ -191,12 +191,14 @@ export class GitService {
       }
 
       // Push
+      const pushOptions: { '--set-upstream'?: string | null } = {};
+      if (request.setUpstream) {
+        pushOptions['--set-upstream'] = null;
+      }
       const pushResult = await git.push(
         request.remote || 'origin',
         request.branch || 'HEAD',
-        {
-          '--set-upstream': request.setUpstream
-        }
+        pushOptions
       );
 
       logger.info(`✅ Pushed: ${pushResult.pushed.length} refs`);
@@ -255,6 +257,8 @@ export class GitService {
   }
 
   async createBranch(repoDir: string, branchName: string, fromBranch?: string): Promise<GitOperationResult> {
+    const startTime = Date.now();
+    const operationId = uuidv4();
     try {
       const git = simpleGit(repoDir);
 
@@ -266,53 +270,69 @@ export class GitService {
 
       return {
         success: true,
+        operationId,
         message: `Branch ${branchName} created`,
-        data: { branchName }
+        data: { branchName },
+        executionTime: Date.now() - startTime
       };
     } catch (error) {
       return {
         success: false,
-        message: error instanceof Error ? error.message : 'Branch creation failed'
+        operationId,
+        message: error instanceof Error ? error.message : 'Branch creation failed',
+        executionTime: Date.now() - startTime
       };
     }
   }
 
   async checkoutBranch(repoDir: string, branchName: string): Promise<GitOperationResult> {
+    const startTime = Date.now();
+    const operationId = uuidv4();
     try {
       const git = simpleGit(repoDir);
       await git.checkout(branchName);
 
       return {
         success: true,
+        operationId,
         message: `Checked out ${branchName}`,
-        data: { branchName }
+        data: { branchName },
+        executionTime: Date.now() - startTime
       };
     } catch (error) {
       return {
         success: false,
-        message: error instanceof Error ? error.message : 'Checkout failed'
+        operationId,
+        message: error instanceof Error ? error.message : 'Checkout failed',
+        executionTime: Date.now() - startTime
       };
     }
   }
 
   async pull(repoDir: string, remote?: string, branch?: string): Promise<GitOperationResult> {
+    const startTime = Date.now();
+    const operationId = uuidv4();
     try {
       const git = simpleGit(repoDir);
       const pullResult = await git.pull(remote || 'origin', branch);
 
       return {
         success: true,
+        operationId,
         message: 'Pull successful',
         data: {
           filesChanged: pullResult.files.length,
           insertions: pullResult.summary.insertions,
           deletions: pullResult.summary.deletions
-        }
+        },
+        executionTime: Date.now() - startTime
       };
     } catch (error) {
       return {
         success: false,
-        message: error instanceof Error ? error.message : 'Pull failed'
+        operationId,
+        message: error instanceof Error ? error.message : 'Pull failed',
+        executionTime: Date.now() - startTime
       };
     }
   }

@@ -18,6 +18,7 @@ const logger = createLogger('QuantizationService');
 
 // Quantization levels and their memory requirements
 const QUANTIZATION_LEVELS: Record<QuantizationLevel, { bits: number; description: string }> = {
+  'none': { bits: 0, description: 'No quantization performed' },
   'Q2_K': { bits: 2.5, description: 'Smallest, significant quality loss' },
   'Q3_K_S': { bits: 3, description: 'Small, high quality loss' },
   'Q3_K_M': { bits: 3.5, description: 'Small, medium quality loss' },
@@ -54,7 +55,9 @@ export class QuantizationService {
   async getAvailableModels(): Promise<ModelInfo[]> {
     try {
       const response = await fetch(`${this.ollamaHost}/api/tags`);
-      const data = await response.json();
+      const data = (await response.json()) as {
+        models: Array<{ name: string; size: number; modified_at: string; digest: string }>;
+      };
 
       return data.models.map((m: any) => ({
         name: m.name,
@@ -79,7 +82,12 @@ export class QuantizationService {
         body: JSON.stringify({ name: modelName })
       });
 
-      const data = await response.json();
+      const data = (await response.json()) as {
+        size?: number;
+        modified_at?: string;
+        digest?: string;
+        details?: Record<string, any>;
+      };
 
       return {
         name: modelName,
@@ -206,6 +214,8 @@ export class QuantizationService {
       return {
         success: false,
         originalModel: modelName,
+        level: 'none',
+        processingTime: 0,
         message: 'Model not found'
       };
     }

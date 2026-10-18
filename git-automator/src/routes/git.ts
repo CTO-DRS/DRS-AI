@@ -7,6 +7,7 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { createLogger } from '../utils/logger';
 import { GitService } from '../services/GitService';
+import { CloneRequest, CommitRequest, PushRequest } from '../models/types';
 
 const logger = createLogger('GitRoutes');
 
@@ -51,7 +52,7 @@ export class GitController {
     // Clone repository
     this.router.post('/clone', async (req: Request, res: Response) => {
       try {
-        const data = CloneSchema.parse(req.body);
+        const data = CloneSchema.parse(req.body) as CloneRequest;
         logger.info(`Cloning: ${data.url}`);
 
         const result = await this.gitService.clone(data);
@@ -68,7 +69,7 @@ export class GitController {
     // Commit changes
     this.router.post('/commit', async (req: Request, res: Response) => {
       try {
-        const data = CommitSchema.parse(req.body);
+        const data = CommitSchema.parse(req.body) as CommitRequest;
         logger.info(`Committing in ${data.repoDir}`);
 
         const result = await this.gitService.commit(data);
@@ -85,7 +86,7 @@ export class GitController {
     // Push changes
     this.router.post('/push', async (req: Request, res: Response) => {
       try {
-        const data = PushSchema.parse(req.body);
+        const data = PushSchema.parse(req.body) as PushRequest;
         logger.info(`Pushing from ${data.repoDir}`);
 
         const result = await this.gitService.push(data);

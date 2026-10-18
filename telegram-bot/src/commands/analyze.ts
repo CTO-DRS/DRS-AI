@@ -82,10 +82,12 @@ export const fileHandler = async (ctx: Context) => {
       const filePath = fileResponse.data.result.file_path;
       const fileUrl = `https://api.telegram.org/file/bot${BOT_TOKEN}/${filePath}`;
 
-      await ctx.editMessageText('📤 Uploading to DRS...', {
-        chat_id: loadingMsg.chat.id,
-        message_id: loadingMsg.message_id
-      });
+      await ctx.telegram.editMessageText(
+        loadingMsg.chat.id,
+        loadingMsg.message_id,
+        undefined,
+        '📤 Uploading to DRS...'
+      );
 
       // Download file
       const fileBuffer = await axios.get(fileUrl, { responseType: 'arraybuffer' });
