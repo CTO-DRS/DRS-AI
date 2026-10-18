@@ -23,7 +23,13 @@ export const authenticateToken = (
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'default-secret') as any;
+    const JWT_SECRET = process.env.JWT_SECRET || (() => {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('JWT_SECRET environment variable must be set in production');
+    }
+    return 'default-secret'; // development fallback only
+  })();
+  const decoded = jwt.verify(token, JWT_SECRET) as any;
     req.user = decoded;
     next();
   } catch (error) {

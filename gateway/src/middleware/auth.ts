@@ -3,7 +3,12 @@ import jwt from 'jsonwebtoken';
 import { User } from '../types';
 import logger from '../utils/logger';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'drs-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET || (() => {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('JWT_SECRET environment variable must be set in production');
+  }
+  return 'drs-dev-secret'; // development fallback only
+})();
 
 interface JwtPayload {
   userId: string;
