@@ -77,7 +77,7 @@ function makeKem(level) {
      */
     decapsulate(cipherText, secretKey) {
       const secKeyObj = crypto.createPrivateKey({
-        key: Buffer.concat([Buffer.from('302e020100300506032b656e042200', 'hex'), Buffer.from(secretKey)]),
+        key: Buffer.concat([Buffer.from('302e020100300506032b656e04220420', 'hex'), Buffer.from(secretKey)]),
         format: 'der',
         type: 'pkcs8',
       });
@@ -125,7 +125,7 @@ function makeDsa(level) {
      */
     sign(secretKey, message) {
       const secKeyObj = crypto.createPrivateKey({
-        key: Buffer.concat([Buffer.from('302e020100300506032b6570042200', 'hex'), Buffer.from(secretKey)]),
+        key: Buffer.concat([Buffer.from('302e020100300506032b657004220420', 'hex'), Buffer.from(secretKey)]),
         format: 'der',
         type: 'pkcs8',
       });

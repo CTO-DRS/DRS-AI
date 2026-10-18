@@ -26,9 +26,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: list
+        env:
+          INPUT_SERVICES: ${{ github.event.inputs.services }}
         run: |
-          if [ -n "${{ github.event.inputs.services }}" ]; then
-            services='${{ github.event.inputs.services }}'
+          if [ -n "$INPUT_SERVICES" ]; then
+            services="$INPUT_SERVICES"
           else
             # Find all services with a Dockerfile
             services=$(find . -maxdepth 2 -name "Dockerfile" -exec dirname {} \; | xargs -n1 basename | sort -u | tr '\n' ',' | sed 's/,$//')
