@@ -14,7 +14,9 @@ COPY package*.json ./
 COPY tsconfig.json ./
 
 # Install dependencies
-RUN npm install --omit=dev --no-audit --no-fund
+# install devDeps too: 'npm run build' needs typescript (tsc);
+# single-stage image keeps them at runtime by design
+RUN npm install --no-audit --no-fund
 
 # Copy source code
 COPY src ./src
@@ -40,7 +42,9 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install production dependencies only
-RUN npm install --omit=dev --no-audit --no-fund && \
+# install devDeps too: 'npm run build' needs typescript (tsc);
+# single-stage image keeps them at runtime by design
+RUN npm install --no-audit --no-fund && \
     npm cache clean --force
 
 # Copy built files from builder

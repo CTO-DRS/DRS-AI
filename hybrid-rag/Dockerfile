@@ -10,7 +10,9 @@ RUN apk add --no-cache python3 make g++ postgresql-dev
 COPY package*.json ./
 COPY tsconfig.json ./
 
-RUN npm install --omit=dev --no-audit --no-fund
+# install devDeps too: 'npm run build' needs typescript (tsc);
+# single-stage image keeps them at runtime by design
+RUN npm install --no-audit --no-fund
 
 COPY src ./src
 
@@ -24,7 +26,9 @@ RUN apk add --no-cache postgresql-client
 
 COPY package*.json ./
 
-RUN npm install --omit=dev --no-audit --no-fund && npm cache clean --force
+# install devDeps too: 'npm run build' needs typescript (tsc);
+# single-stage image keeps them at runtime by design
+RUN npm install --no-audit --no-fund && npm cache clean --force
 
 COPY --from=builder /app/dist ./dist
 
