@@ -47,7 +47,7 @@
     "isolated-execution",
     "cybersecurity"
   ],
-  "author": "\ud835\udc6b\ud835\udc79\ud835\udc7a.\ud835\udc7d\ud835\udc70\ud835\udc77. Architect",
+  "author": "CTO-DRS <cto.drs@gmail.com>",
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"
