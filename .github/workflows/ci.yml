@@ -16,7 +16,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [18, 20, 22]
+        # 18 dropped: merged dependency baselines (ioredis 6, pgvector 0.3,
+        # vite 8) declare engines >=20/22 and the Docker runtime images are
+        # node 20+; testing on 18 stopped being representative.
+        node-version: [20, 22, 24]
     steps:
       - uses: actions/checkout@v4
 
@@ -41,6 +44,8 @@ jobs:
         run: |
           # read service list via env (raw multiline interpolation here breaks bash
           # parsing and is a script-injection vector); skip blank lines
+          FAILED_SERVICES="/tmp/failed-services.txt"
+          : > "$FAILED_SERVICES"
           while IFS= read -r service; do
             [ -z "$service" ] && continue
             echo "::group::🔧 Processing $service"
@@ -52,30 +57,35 @@ jobs:
               continue
             fi
 
-            # Install
+            # Install (hard failure: a service that cannot install is broken)
             npm install --no-audit --no-fund --loglevel=error || {
-              echo "::warning::npm install failed for $service"
+              echo "::error::npm install failed for $service"
+              echo "$service (install)" >> "$FAILED_SERVICES"
+              echo "::endgroup::"
+              cd "$GITHUB_WORKSPACE"
               continue
             }
 
-            # Lint if available
+            # Lint if available (advisory: style-level, tracked as warning)
             if npm run | grep -q "lint"; then
               npm run lint || {
                 echo "::warning::Lint failed for $service"
               }
             fi
 
-            # Type-check TypeScript services
+            # Type-check TypeScript services (hard failure)
             if npm run | grep -q "typecheck"; then
               npm run typecheck || {
-                echo "::warning::Type check failed for $service"
+                echo "::error::Type check failed for $service"
+                echo "$service (typecheck)" >> "$FAILED_SERVICES"
               }
             fi
 
-            # Run tests if available
+            # Run tests if available (hard failure)
             if npm run | grep -q "test"; then
               npm test -- --passWithNoTests || {
-                echo "::warning::Tests failed for $service"
+                echo "::error::Tests failed for $service"
+                echo "$service (test)" >> "$FAILED_SERVICES"
               }
             fi
 
@@ -94,6 +104,14 @@ jobs:
             cd "$GITHUB_WORKSPACE"
             echo "::endgroup::"
           done <<< "$SERVICES"
+
+          # Aggregate gate: install/typecheck/test failures must fail the job.
+          # (Boot smoke stays advisory because services need Redis/Postgres.)
+          if [ -s "$FAILED_SERVICES" ]; then
+            echo "::error::Service verification failed for:"
+            cat "$FAILED_SERVICES"
+            exit 1
+          fi
 
   # ============================================
   # Validate Helm chart
