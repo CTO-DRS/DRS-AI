@@ -176,7 +176,6 @@ export async function uploadFile(uri: string, name: string, type: string): Promi
   const base = await getBaseUrl();
   const session = await getSession();
   const formData = new FormData();
-  // @ts-expect-error — RN FormData supports uri
   formData.append('file', { uri, name, type } as unknown as Blob);
 
   try {

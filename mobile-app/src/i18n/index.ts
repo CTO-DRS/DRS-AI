@@ -1,5 +1,5 @@
 import * as Localization from 'expo-localization';
-import i18n from 'i18n-js';
+import { I18n } from 'i18n-js';
 
 import { ar } from './locales/ar';
 import { en } from './locales/en';
@@ -7,8 +7,7 @@ import { fr } from './locales/fr';
 import { de } from './locales/de';
 import type { Locale } from '../types';
 
-i18n.fallbacks = true;
-i18n.translations = { ar, en, fr, de };
+const i18n = new I18n({ ar, en, fr, de }, { enableFallback: true });
 
 const RTL_LOCALES: Locale[] = ['ar'];
 
@@ -24,7 +23,6 @@ export function isRTL(locale: Locale): boolean {
 
 export function setLocale(locale: Locale) {
   i18n.locale = locale;
-  Localization.locale = locale;
 }
 
 export function t(scope: string, options?: Record<string, unknown>): string {

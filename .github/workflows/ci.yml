@@ -87,7 +87,7 @@ jobs:
 
             # Run tests if available (hard failure)
             if npm run | grep -q "test"; then
-              npm test -- --passWithNoTests || {
+              npm test || {
                 echo "::error::Tests failed for $service"
                 echo "$service (test)" >> "$FAILED_SERVICES"
               }

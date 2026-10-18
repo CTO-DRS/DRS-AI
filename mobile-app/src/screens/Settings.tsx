@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Switch, Alert } from 'react-native';
-import { SafeAreaView, ScrollView } from 'react-native-safe-area-context';
+import { View, Text, TouchableOpacity, StyleSheet, Switch, Alert, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Globe, Server, Brain, Volume2, Wifi, LogOut, Info } from 'lucide-react-native';
 import { colors, spacing, typography, radius, shadows } from '../theme';
 import { t, supportedLocales, getCurrentLocale, setLocale } from '../i18n';
