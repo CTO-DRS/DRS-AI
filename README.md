@@ -11,11 +11,11 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/CTO-DRS/DRS-AI/releases"><img alt="Version" src="https://img.shields.io/badge/version-1.0.0-6366f1?style=flat-square"></a>
+  <a href="https://github.com/CTO-DRS/DRS-AI-Web/releases"><img alt="Version" src="https://img.shields.io/badge/version-1.0.0-6366f1?style=flat-square"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-22c55e?style=flat-square"></a>
-  <a href="https://github.com/CTO-DRS/DRS-AI/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/CTO-DRS/DRS-AI/ci.yml?branch=main&style=flat-square&label=CI"></a>
-  <a href="https://github.com/CTO-DRS/DRS-AI/actions/workflows/docker.yml"><img alt="Docker" src="https://img.shields.io/github/actions/workflow/status/CTO-DRS/DRS-AI/docker.yml?branch=main&style=flat-square&label=Docker"></a>
-  <a href="https://github.com/CTO-DRS/DRS-AI/actions/workflows/codeql.yml"><img alt="CodeQL" src="https://img.shields.io/github/actions/workflow/status/CTO-DRS/DRS-AI/codeql.yml?branch=main&style=flat-square&label=CodeQL"></a>
+  <a href="https://github.com/CTO-DRS/DRS-AI-Web/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/CTO-DRS/DRS-AI-Web/ci.yml?branch=main&style=flat-square&label=CI"></a>
+  <a href="https://github.com/CTO-DRS/DRS-AI-Web/actions/workflows/docker.yml"><img alt="Docker" src="https://img.shields.io/github/actions/workflow/status/CTO-DRS/DRS-AI-Web/docker.yml?branch=main&style=flat-square&label=Docker"></a>
+  <a href="https://github.com/CTO-DRS/DRS-AI-Web/actions/workflows/codeql.yml"><img alt="CodeQL" src="https://img.shields.io/github/actions/workflow/status/CTO-DRS/DRS-AI-Web/codeql.yml?branch=main&style=flat-square&label=CodeQL"></a>
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-%E2%89%A518-339933?style=flat-square&logo=node.js&logoColor=white">
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.x-3178c6?style=flat-square&logo=typescript&logoColor=white">
   <img alt="Docker" src="https://img.shields.io/badge/Docker-Ready-2496ed?style=flat-square&logo=docker&logoColor=white">
@@ -159,9 +159,8 @@ DRS AI is organized into 5 tiers: **Clients** → **Gateway** → **AI OS Servic
 
 ```bash
 # Clone the repository
-git clone https://github.com/CTO-DRS/DRS-AI.git
-cd drs-ai
-
+git clone https://github.com/CTO-DRS/DRS-AI-Web.git
+cd DRS-AI-Web
 # Set environment variables
 cp .env.example .env
 # Edit .env with your settings
@@ -188,7 +187,7 @@ Run DRS AI on your Android device without root access!
 ```bash
 # Install Termux from F-Droid
 # Then run:
-curl -fsSL https://raw.githubusercontent.com/CTO-DRS/DRS-AI/main/termux/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/CTO-DRS/DRS-AI-Web/main/termux/scripts/install.sh | bash
 
 # Start services
 $HOME/start-drs.sh start
@@ -368,9 +367,8 @@ We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for gu
 
 ```bash
 # Fork and clone
-git clone https://github.com/your-username/DRS-AI.git
-cd DRS-AI
-
+git clone https://github.com/your-username/DRS-AI-Web.git
+cd DRS-AI-Web
 # Create branch
 git checkout -b feature/your-feature
 
@@ -383,13 +381,13 @@ git push origin feature/your-feature
 
 ### Good First Issues
 
-Looking for a way to contribute? Check issues labeled [`good first issue`](https://github.com/CTO-DRS/DRS-AI/labels/good%20first%20issue) — they're hand-picked for new contributors.
+Looking for a way to contribute? Check issues labeled [`good first issue`](https://github.com/CTO-DRS/DRS-AI-Web/labels/good%20first%20issue) — they're hand-picked for new contributors.
 
 ### Community
 
-- 💬 [GitHub Discussions](https://github.com/CTO-DRS/DRS-AI/discussions) — questions & ideas
-- 📱 [Telegram group](https://github.com/CTO-DRS/DRS-AI/discussions)
-- 📧 Email: CTO-DRS@users.noreply.github.com
+- 💬 [GitHub Discussions](https://github.com/CTO-DRS/DRS-AI-Web/discussions) — questions & ideas
+- 📱 [Telegram group](https://github.com/CTO-DRS/DRS-AI-Web/discussions)
+- 📧 Email: cto.drs@gmail.com
 
 ## 📄 License
 
@@ -407,16 +405,16 @@ This project is licensed under the MIT License - see [LICENSE](./LICENSE) file.
 - [Prometheus](https://prometheus.io) + [Grafana](https://grafana.com) — Monitoring
 - [Expo](https://expo.dev) — React Native tooling
 - [Electron](https://electronjs.org) — Cross-platform desktop framework
-- All our [contributors](https://github.com/CTO-DRS/DRS-AI/graphs/contributors) 🙌
+- All our [contributors](https://github.com/CTO-DRS/DRS-AI-Web/graphs/contributors) 🙌
 
 ## 📞 Support
 
-- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/CTO-DRS/DRS-AI/issues/new?template=bug_report.yml)
-- 💡 **Feature Requests**: [GitHub Issues](https://github.com/CTO-DRS/DRS-AI/issues/new?template=feature_request.yml)
-- 💬 **Questions**: [GitHub Discussions](https://github.com/CTO-DRS/DRS-AI/discussions)
-- 🔒 **Security Reports**: [Security Advisories](https://github.com/CTO-DRS/DRS-AI/security/advisories/new)
-- 📱 **Telegram Group**: [GitHub Discussions](https://github.com/CTO-DRS/DRS-AI/discussions)
-- 📧 **Email**: CTO-DRS@users.noreply.github.com
+- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/CTO-DRS/DRS-AI-Web/issues/new?template=bug_report.yml)
+- 💡 **Feature Requests**: [GitHub Issues](https://github.com/CTO-DRS/DRS-AI-Web/issues/new?template=feature_request.yml)
+- 💬 **Questions**: [GitHub Discussions](https://github.com/CTO-DRS/DRS-AI-Web/discussions)
+- 🔒 **Security Reports**: [Security Advisories](https://github.com/CTO-DRS/DRS-AI-Web/security/advisories/new)
+- 📱 **Telegram Group**: [GitHub Discussions](https://github.com/CTO-DRS/DRS-AI-Web/discussions)
+- 📧 **Email**: cto.drs@gmail.com
 
 ## 🗺️ Roadmap
 

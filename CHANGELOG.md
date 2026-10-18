@@ -214,6 +214,6 @@ DRS AI follows [Semantic Versioning](https://semver.org/):
 
 ## Links
 
-- [Releases](https://github.com/CTO-DRS/DRS-AI/releases)
-- [Tags](https://github.com/CTO-DRS/DRS-AI/tags)
-- [Compare versions](https://github.com/CTO-DRS/DRS-AI/compare)
+- [Releases](https://github.com/CTO-DRS/DRS-AI-Web/releases)
+- [Tags](https://github.com/CTO-DRS/DRS-AI-Web/tags)
+- [Compare versions](https://github.com/CTO-DRS/DRS-AI-Web/compare)

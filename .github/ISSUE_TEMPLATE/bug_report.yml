@@ -10,8 +10,8 @@ body:
 
         Before submitting, please:
         - Search existing issues to avoid duplicates
-        - Check the [troubleshooting docs](https://github.com/CTO-DRS/DRS-AI/blob/main/docs/troubleshooting.md)
-        - For security vulnerabilities, use [GitHub Security Advisories](https://github.com/CTO-DRS/DRS-AI/security/advisories/new) instead
+        - Check the [troubleshooting docs](https://github.com/CTO-DRS/DRS-AI-Web/blob/main/docs/troubleshooting.md)
+        - For security vulnerabilities, use [GitHub Security Advisories](https://github.com/CTO-DRS/DRS-AI-Web/security/advisories/new) instead
 
   - type: input
     id: version
@@ -145,7 +145,7 @@ body:
     id: terms
     attributes:
       label: Code of Conduct
-      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/CTO-DRS/DRS-AI/blob/main/CODE_OF_CONDUCT.md)
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/CTO-DRS/DRS-AI-Web/blob/main/CODE_OF_CONDUCT.md)
       options:
         - label: I agree to follow the Code of Conduct
           required: true

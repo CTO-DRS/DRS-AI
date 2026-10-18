@@ -104,8 +104,8 @@ See [architecture.md](./architecture.md) for full details.
 
 ## 🆘 Getting Help
 
-- 💬 [GitHub Discussions](https://github.com/CTO-DRS/DRS-AI/discussions) — questions & ideas
-- 🐛 [GitHub Issues](https://github.com/CTO-DRS/DRS-AI/issues) — bugs & features
-- 📧 Email: CTO-DRS@users.noreply.github.com
-- 📱 Telegram: [GitHub Discussions](https://github.com/CTO-DRS/DRS-AI/discussions)
+- 💬 [GitHub Discussions](https://github.com/CTO-DRS/DRS-AI-Web/discussions) — questions & ideas
+- 🐛 [GitHub Issues](https://github.com/CTO-DRS/DRS-AI-Web/issues) — bugs & features
+- 📧 Email: cto.drs@gmail.com
+- 📱 Telegram: [GitHub Discussions](https://github.com/CTO-DRS/DRS-AI-Web/discussions)
 - 📖 [Troubleshooting guide](./troubleshooting.md)

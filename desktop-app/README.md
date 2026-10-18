@@ -1,6 +1,6 @@
 # DRS AI Desktop 🖥️
 
-Electron wrapper for the [DRS AI](https://github.com/CTO-DRS/DRS-AI) Enterprise AI Operating System.
+Electron wrapper for the [DRS AI](https://github.com/CTO-DRS/DRS-AI-Web) Enterprise AI Operating System.
 
 Runs the DRS AI frontend as a native desktop application on macOS, Windows, and Linux with deep OS integration.
 

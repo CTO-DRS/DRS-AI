@@ -18,9 +18,8 @@ docker compose version    # v2+
 ## Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/CTO-DRS/DRS-AI.git
-cd DRS-AI
-```
+git clone https://github.com/CTO-DRS/DRS-AI-Web.git
+cd DRS-AI-Web```
 
 ## Step 2: Configure Environment
 

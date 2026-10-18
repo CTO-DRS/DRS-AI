@@ -53,15 +53,15 @@ Closes #
 
 ### Checklist
 
-- [ ] My code follows the [coding standards](https://github.com/CTO-DRS/DRS-AI/blob/main/CONTRIBUTING.md#coding-standards)
-- [ ] I have committed using the [conventional commit format](https://github.com/CTO-DRS/DRS-AI/blob/main/CONTRIBUTING.md#commit-message-convention)
+- [ ] My code follows the [coding standards](https://github.com/CTO-DRS/DRS-AI-Web/blob/main/CONTRIBUTING.md#coding-standards)
+- [ ] I have committed using the [conventional commit format](https://github.com/CTO-DRS/DRS-AI-Web/blob/main/CONTRIBUTING.md#commit-message-convention)
 - [ ] I have NOT committed any secrets, API keys, or `.env` files
 - [ ] I have NOT committed `node_modules/`, `dist/`, or build artifacts
 - [ ] I have updated `docker-compose.yml` if I added a new service
 - [ ] I have updated `README.md` services table if needed
 - [ ] I have updated `TRANSFORMATION_PROGRESS.md` if a new phase was added
 - [ ] I have updated `k8s/helm/drs-ai/values.yaml` if a new service was added
-- [ ] I have read the [Code of Conduct](https://github.com/CTO-DRS/DRS-AI/blob/main/CODE_OF_CONDUCT.md)
+- [ ] I have read the [Code of Conduct](https://github.com/CTO-DRS/DRS-AI-Web/blob/main/CODE_OF_CONDUCT.md)
 
 ### Additional Notes
 

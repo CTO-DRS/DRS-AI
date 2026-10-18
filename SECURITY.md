@@ -20,15 +20,15 @@ The DRS AI team takes security bugs seriously. We appreciate your efforts to res
 Instead, report vulnerabilities privately using one of these channels:
 
 1. **GitHub Security Advisories** (preferred):
-   - Go to https://github.com/CTO-DRS/DRS-AI/security/advisories/new
+   - Go to https://github.com/CTO-DRS/DRS-AI-Web/security/advisories/new
    - Click "Report a vulnerability"
    - Fill in the details
 
-2. **Email**: CTO-DRS@users.noreply.github.com
+2. **Email**: cto.drs@gmail.com
    - Use the subject line: `[SECURITY] DRS AI - <short description>`
    - Include a PGP-encrypted report if possible (public key below)
 
-3. **Telegram**: [GitHub Security Advisories](https://github.com/CTO-DRS/DRS-AI/security/advisories/new) (for initial contact only)
+3. **Telegram**: [GitHub Security Advisories](https://github.com/CTO-DRS/DRS-AI-Web/security/advisories/new) (for initial contact only)
 
 ### What to Include in the Report
 
@@ -156,9 +156,9 @@ When we receive a security report, we will:
 
 ## Contact
 
-- 📧 Email: CTO-DRS@users.noreply.github.com
-- 💬 Telegram: [GitHub Security Advisories](https://github.com/CTO-DRS/DRS-AI/security/advisories/new)
-- 🐛 GitHub Security Advisories: https://github.com/CTO-DRS/DRS-AI/security/advisories/new
+- 📧 Email: cto.drs@gmail.com
+- 💬 Telegram: [GitHub Security Advisories](https://github.com/CTO-DRS/DRS-AI-Web/security/advisories/new)
+- 🐛 GitHub Security Advisories: https://github.com/CTO-DRS/DRS-AI-Web/security/advisories/new
 
 ---
 

@@ -247,9 +247,9 @@ function buildMenu() {
       role: 'help',
       label: m.help,
       submenu: [
-        { label: m.docs, click: () => shell.openExternal('https://github.com/CTO-DRS/DRS-AI#readme') },
-        { label: m.repo, click: () => shell.openExternal('https://github.com/CTO-DRS/DRS-AI') },
-        { label: m.reportIssue, click: () => shell.openExternal('https://github.com/CTO-DRS/DRS-AI/issues') },
+        { label: m.docs, click: () => shell.openExternal('https://github.com/CTO-DRS/DRS-AI-Web#readme') },
+        { label: m.repo, click: () => shell.openExternal('https://github.com/CTO-DRS/DRS-AI-Web') },
+        { label: m.reportIssue, click: () => shell.openExternal('https://github.com/CTO-DRS/DRS-AI-Web/issues') },
         { label: m.about, click: () => {
           dialog.showMessageBox(mainWindow, {
             type: 'info',

@@ -6,9 +6,9 @@ newIssueWelcomeComment: |
   👋 Thanks for opening your first issue on **DRS AI**!
 
   We'll triage this as soon as possible. While you wait:
-  - 📖 Check the [docs](https://github.com/CTO-DRS/DRS-AI/tree/main/docs) — your answer might already be there
-  - 💬 Join our [Telegram group](https://github.com/CTO-DRS/DRS-AI/discussions) for live help
-  - 🔍 Search [existing issues](https://github.com/CTO-DRS/DRS-AI/issues?q=is%3Aissue) to see if it's been discussed before
+  - 📖 Check the [docs](https://github.com/CTO-DRS/DRS-AI-Web/tree/main/docs) — your answer might already be there
+  - 💬 Join our [Telegram group](https://github.com/CTO-DRS/DRS-AI-Web/discussions) for live help
+  - 🔍 Search [existing issues](https://github.com/CTO-DRS/DRS-AI-Web/issues?q=is%3Aissue) to see if it's been discussed before
 
 # Comment to post when a user opens their first PR
 newPRWelcomeComment: |
@@ -16,19 +16,19 @@ newPRWelcomeComment: |
 
   A maintainer will review it soon. In the meantime, please make sure you've:
   - [ ] Run `npm start` for the affected service and verified `/health` returns 200
-  - [ ] Followed the [coding standards](https://github.com/CTO-DRS/DRS-AI/blob/main/CONTRIBUTING.md#coding-standards)
-  - [ ] Used [conventional commit messages](https://github.com/CTO-DRS/DRS-AI/blob/main/CONTRIBUTING.md#commit-message-convention)
+  - [ ] Followed the [coding standards](https://github.com/CTO-DRS/DRS-AI-Web/blob/main/CONTRIBUTING.md#coding-standards)
+  - [ ] Used [conventional commit messages](https://github.com/CTO-DRS/DRS-AI-Web/blob/main/CONTRIBUTING.md#commit-message-convention)
   - [ ] Not committed any secrets or `node_modules/`
 
-  Feel free to ask questions in our [Telegram dev group](https://github.com/CTO-DRS/DRS-AI/discussions)!
+  Feel free to ask questions in our [Telegram dev group](https://github.com/CTO-DRS/DRS-AI-Web/discussions)!
 
 # Comment to post when a user's first PR is merged
 firstPRMergeComment: |
   🚀 Congratulations! Your first PR to **DRS AI** has been merged!
 
-  You're now officially a [DRS AI contributor](https://github.com/CTO-DRS/DRS-AI/graphs/contributors). Welcome to the community!
+  You're now officially a [DRS AI contributor](https://github.com/CTO-DRS/DRS-AI-Web/graphs/contributors). Welcome to the community!
 
   🌟 What's next?
   - ⭐ Star the repo if you haven't already
-  - 💬 Tell us what you want to work on next in our [Discussions](https://github.com/CTO-DRS/DRS-AI/discussions)
-  - 🐛 Pick up an issue labelled [`good first issue`](https://github.com/CTO-DRS/DRS-AI/labels/good%20first%20issue)
+  - 💬 Tell us what you want to work on next in our [Discussions](https://github.com/CTO-DRS/DRS-AI-Web/discussions)
+  - 🐛 Pick up an issue labelled [`good first issue`](https://github.com/CTO-DRS/DRS-AI-Web/labels/good%20first%20issue)

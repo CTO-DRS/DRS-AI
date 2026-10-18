@@ -14,12 +14,12 @@
 
 <div class="drx-badges" markdown>
 
-[![Version](https://img.shields.io/badge/version-1.0.0-6366f1?style=flat-square)](https://github.com/CTO-DRS/DRS-AI/releases)
-[![License: MIT](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square)](https://github.com/CTO-DRS/DRS-AI/blob/main/LICENSE)
-[![CI](https://img.shields.io/github/actions/workflow/status/CTO-DRS/DRS-AI/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/CTO-DRS/DRS-AI/actions/workflows/ci.yml)
-[![Docker](https://img.shields.io/github/actions/workflow/status/CTO-DRS/DRS-AI/docker.yml?branch=main&style=flat-square&label=Docker)](https://github.com/CTO-DRS/DRS-AI/actions/workflows/docker.yml)
-[![Services](https://img.shields.io/badge/services-40+-8b5cf6?style=flat-square)](https://github.com/CTO-DRS/DRS-AI)
-[![API endpoints](https://img.shields.io/badge/API%20endpoints-400+-10b981?style=flat-square)](https://github.com/CTO-DRS/DRS-AI/blob/main/docs/api-reference.md)
+[![Version](https://img.shields.io/badge/version-1.0.0-6366f1?style=flat-square)](https://github.com/CTO-DRS/DRS-AI-Web/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square)](https://github.com/CTO-DRS/DRS-AI-Web/blob/main/LICENSE)
+[![CI](https://img.shields.io/github/actions/workflow/status/CTO-DRS/DRS-AI-Web/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/CTO-DRS/DRS-AI-Web/actions/workflows/ci.yml)
+[![Docker](https://img.shields.io/github/actions/workflow/status/CTO-DRS/DRS-AI-Web/docker.yml?branch=main&style=flat-square&label=Docker)](https://github.com/CTO-DRS/DRS-AI-Web/actions/workflows/docker.yml)
+[![Services](https://img.shields.io/badge/services-40+-8b5cf6?style=flat-square)](https://github.com/CTO-DRS/DRS-AI-Web)
+[![API endpoints](https://img.shields.io/badge/API%20endpoints-400+-10b981?style=flat-square)](https://github.com/CTO-DRS/DRS-AI-Web/blob/main/docs/api-reference.md)
 
 </div>
 
@@ -113,9 +113,8 @@ Train across organizations without sharing raw data. Includes secure aggregation
 
 ```bash
 # Clone the repository
-git clone https://github.com/CTO-DRS/DRS-AI.git
-cd DRS-AI
-
+git clone https://github.com/CTO-DRS/DRS-AI-Web.git
+cd DRS-AI-Web
 # Configure
 cp .env.example .env
 sed -i "s|JWT_SECRET=.*|JWT_SECRET=$(openssl rand -hex 32)|" .env
@@ -182,23 +181,23 @@ DRS AI is organized into **5 tiers**:
 - 🧩 [Plugin Development](plugin-development.md) — extend the platform
 - 🔒 [Security](security.md) — threat model, hardening, compliance
 - 🛠️ [Troubleshooting](troubleshooting.md) — common issues solved
-- 🔄 [Changelog](https://github.com/CTO-DRS/DRS-AI/blob/main/CHANGELOG.md) — version history
+- 🔄 [Changelog](https://github.com/CTO-DRS/DRS-AI-Web/blob/main/CHANGELOG.md) — version history
 
 ---
 
 ## 🤝 Community
 
-- 💬 [GitHub Discussions](https://github.com/CTO-DRS/DRS-AI/discussions) — questions & ideas
-- 🐛 [Issues](https://github.com/CTO-DRS/DRS-AI/issues) — bug reports & feature requests
-- 🔒 [Security Advisories](https://github.com/CTO-DRS/DRS-AI/security/advisories/new) — report vulnerabilities
+- 💬 [GitHub Discussions](https://github.com/CTO-DRS/DRS-AI-Web/discussions) — questions & ideas
+- 🐛 [Issues](https://github.com/CTO-DRS/DRS-AI-Web/issues) — bug reports & feature requests
+- 🔒 [Security Advisories](https://github.com/CTO-DRS/DRS-AI-Web/security/advisories/new) — report vulnerabilities
 - 🌐 [Homepage](https://drs.xo.je)
-- 📧 [Email](mailto:CTO-DRS@users.noreply.github.com)
+- 📧 [Email](mailto:cto.drs@gmail.com)
 
 ---
 
 ## 📄 License
 
-DRS AI is licensed under the [MIT License](https://github.com/CTO-DRS/DRS-AI/blob/main/LICENSE).
+DRS AI is licensed under the [MIT License](https://github.com/CTO-DRS/DRS-AI-Web/blob/main/LICENSE).
 
 ---
 

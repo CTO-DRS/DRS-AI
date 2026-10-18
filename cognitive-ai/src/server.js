@@ -147,7 +147,7 @@ class CognitiveAIService {
           `,
           contact: {
             name: 'DRS Technologies',
-            email: 'support@drs-tech.com',
+            email: 'cto.drs@gmail.com',
           },
           license: {
             name: 'MIT',
