@@ -1,0 +1,26 @@
+{
+  "name": "mcp-hub",
+  "version": "1.0.0",
+  "description": "DRS AI MCP (Model Context Protocol) Hub - connects external MCP servers and exposes DRS AI as an MCP server",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2",
+    "helmet": "^8.0.0",
+    "ioredis": "^5.4.1",
+    "winston": "^3.15.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.10.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  }
+}

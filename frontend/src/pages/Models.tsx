@@ -3,6 +3,7 @@ import { Cpu, Download, Trash2, Check } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { chatService } from '@/services/api';
 import { Model } from '@/types';
 import { toast } from 'sonner';
@@ -10,6 +11,8 @@ import { toast } from 'sonner';
 export default function Models() {
   const [models, setModels] = useState<Model[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [pullName, setPullName] = useState('');
+  const [activeModel, setActiveModel] = useState<string | null>(null);
 
   useEffect(() => {
     loadModels();
@@ -19,11 +22,42 @@ export default function Models() {
     try {
       setIsLoading(true);
       const response = await chatService.getModels();
-      setModels(response.data.models);
+      setModels(response.data.data.models || []);
     } catch (error) {
       toast.error('Failed to load models');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const useModel = (model: Model) => {
+    setActiveModel(model.id);
+    localStorage.setItem('selectedModel', model.id);
+    toast.success(`${model.name} selected as active model`);
+  };
+
+  const pullModel = async () => {
+    if (!pullName.trim()) return;
+    try {
+      setIsLoading(true);
+      await chatService.pullModel(pullName.trim());
+      toast.success(`Model ${pullName} pulled successfully`);
+      setPullName('');
+      await loadModels();
+    } catch (error) {
+      toast.error('Failed to pull model');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const deleteModel = async (model: Model) => {
+    try {
+      await chatService.deleteModel(model.id);
+      toast.success(`Model ${model.name} deleted`);
+      await loadModels();
+    } catch (error) {
+      toast.error('Failed to delete model');
     }
   };
 
@@ -39,6 +73,19 @@ export default function Models() {
         <p className="text-muted-foreground mt-2">
           Manage your local AI models
         </p>
+      </div>
+
+      <div className="flex gap-2 max-w-md">
+        <Input
+          value={pullName}
+          onChange={(e) => setPullName(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && pullModel()}
+          placeholder="model name e.g. llama3.2:3b"
+        />
+        <Button onClick={pullModel} disabled={isLoading || !pullName.trim()}>
+          <Download className="w-4 h-4 mr-2" />
+          Pull
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -94,15 +141,33 @@ export default function Models() {
               </div>
 
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="flex-1">
+                <Button
+                  variant={activeModel === model.id ? 'default' : 'outline'}
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => useModel(model)}
+                >
                   <Check className="w-4 h-4 mr-2" />
-                  Use
+                  {activeModel === model.id ? 'Active' : 'Use'}
                 </Button>
-                <Button variant="outline" size="sm" className="flex-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => {
+                    setPullName(model.name);
+                    toast.info(`Click Pull to update ${model.name}`);
+                  }}
+                >
                   <Download className="w-4 h-4 mr-2" />
                   Update
                 </Button>
-                <Button variant="outline" size="sm" className="text-destructive">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-destructive"
+                  onClick={() => deleteModel(model)}
+                >
                   <Trash2 className="w-4 h-4" />
                 </Button>
               </div>

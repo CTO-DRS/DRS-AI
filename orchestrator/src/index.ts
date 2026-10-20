@@ -5,6 +5,8 @@ import dotenv from 'dotenv';
 
 import agentRoutes from './routes/agents';
 import taskRoutes from './routes/tasks';
+import teamRoutes from './routes/teams';
+import toolRoutes from './routes/tools';
 import taskService from './services/taskService';
 import logger from './utils/logger';
 
@@ -36,6 +38,8 @@ app.get('/health', (req, res) => {
 // Routes
 app.use('/agents', agentRoutes);
 app.use('/tasks', taskRoutes);
+app.use('/teams', teamRoutes);
+app.use('/tools', toolRoutes);
 
 // Error handling
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

@@ -67,7 +67,8 @@ export class OllamaService {
   private baseURL: string;
 
   constructor() {
-    this.baseURL = process.env.OLLAMA_URL || 'http://localhost:11434';
+    // Support both OLLAMA_URL and OLLAMA_HOST env names (compose uses OLLAMA_HOST)
+    this.baseURL = process.env.OLLAMA_URL || process.env.OLLAMA_HOST || 'http://localhost:11434';
     this.client = axios.create({
       baseURL: this.baseURL,
       timeout: 300000, // 5 minutes for long generations

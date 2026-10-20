@@ -38,7 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string, twoFactorCode?: string) => {
     try {
       const response = await authService.login(email, password, twoFactorCode);
-      const { user, tokens } = response.data;
+      const { user, tokens } = response.data.data;
       
       localStorage.setItem('tokens', JSON.stringify(tokens));
       setUser(user);
@@ -66,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const tokens: AuthTokens = JSON.parse(tokensStr);
     try {
       const response = await authService.refreshToken(tokens.refreshToken);
-      localStorage.setItem('tokens', JSON.stringify(response.data.tokens));
+      localStorage.setItem('tokens', JSON.stringify(response.data.data.tokens));
     } catch (error) {
       localStorage.removeItem('tokens');
       throw error;

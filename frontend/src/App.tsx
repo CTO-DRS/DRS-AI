@@ -13,6 +13,9 @@ import Projects from '@/pages/Projects';
 import Analytics from '@/pages/Analytics';
 import Settings from '@/pages/Settings';
 import AdminDashboard from '@/pages/AdminDashboard';
+import Skills from '@/pages/Skills';
+import Teams from '@/pages/Teams';
+import Prompts from '@/pages/Prompts';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import './App.css';
 
@@ -31,6 +34,9 @@ function App() {
               }>
                 <Route index element={<Navigate to="/chat" replace />} />
                 <Route path="chat" element={<Chat />} />
+                <Route path="teams" element={<Teams />} />
+                <Route path="skills" element={<Skills />} />
+                <Route path="prompts" element={<Prompts />} />
                 <Route path="projects" element={<Projects />} />
                 <Route path="files" element={<Files />} />
                 <Route path="voice" element={<Voice />} />

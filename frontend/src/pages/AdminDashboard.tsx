@@ -25,9 +25,9 @@ export default function AdminDashboard() {
         adminService.getActivity()
       ]);
 
-      setHealth(healthRes.data);
-      setUsers(usersRes.data.users);
-      setActivity(activityRes.data.activity);
+      setHealth(healthRes.data.data);
+      setUsers(usersRes.data.data.users);
+      setActivity(activityRes.data.data.activity);
     } catch (error) {
       toast.error('Failed to load admin data');
     } finally {

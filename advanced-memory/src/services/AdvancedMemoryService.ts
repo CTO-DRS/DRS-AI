@@ -809,7 +809,7 @@ export class AdvancedMemoryService {
       `INSERT INTO knowledge_graph_nodes (memory_id, label, type, properties, embedding)
        VALUES ($1, $2, $3, $4, $5)
        ON CONFLICT DO NOTHING`,
-      [memoryId, label, type, JSON.stringify(properties), `[${embedding.join(',')}]`]
+      [mmemoryId, label, type, JSON.stringify(properties), `[${embedding.join(',')}]`]
     );
   }
 

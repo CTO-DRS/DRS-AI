@@ -8,12 +8,18 @@ import {
   BarChart3, 
   Settings, 
   Shield,
-  Sparkles
+  Sparkles,
+  Users,
+  Zap,
+  BookMarked
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const navItems = [
   { path: '/chat', icon: MessageSquare, label: 'Chat' },
+  { path: '/teams', icon: Users, label: 'Agent Teams' },
+  { path: '/skills', icon: Zap, label: 'Skills' },
+  { path: '/prompts', icon: BookMarked, label: 'Prompts' },
   { path: '/projects', icon: FolderOpen, label: 'Projects' },
   { path: '/files', icon: FileText, label: 'Files' },
   { path: '/voice', icon: Mic, label: 'Voice' },

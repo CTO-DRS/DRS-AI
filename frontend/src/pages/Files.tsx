@@ -41,7 +41,7 @@ export default function Files() {
     try {
       setIsUploading(true);
       const response = await fileService.upload(file);
-      setUploadedFiles(prev => [...prev, response.data]);
+      setUploadedFiles(prev => [...prev, response.data.data]);
       toast.success(`Uploaded ${file.name}`);
     } catch (error) {
       toast.error(`Failed to upload ${file.name}`);

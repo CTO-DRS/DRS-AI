@@ -16,7 +16,7 @@ export default function Analytics() {
   const loadStats = async () => {
     try {
       const response = await adminService.getStats();
-      setStats(response.data);
+      setStats(response.data.data);
     } catch (error) {
       toast.error('Failed to load analytics');
     } finally {

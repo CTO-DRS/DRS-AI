@@ -1,22 +1,27 @@
 import { useEffect, useRef, useState } from 'react';
-import { Send, Plus, Trash2, Bot, User } from 'lucide-react';
+import { Send, Plus, Trash2, Bot, User, Square, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { useChat } from '@/contexts/ChatContext';
+import MarkdownLite from '@/components/MarkdownLite';
 import { format } from 'date-fns';
 
 export default function Chat() {
   const {
     conversations,
     messages,
-    isLoading,
+    isStreaming,
     selectedModel,
     availableModels,
+    useRag,
+    setUseRag,
     loadConversations,
     loadConversation,
     sendMessage,
+    stopStreaming,
     createConversation,
     deleteConversation,
     setSelectedModel,
@@ -46,7 +51,7 @@ export default function Chat() {
       {/* Conversations Sidebar */}
       <div className="w-64 border-r border-border bg-card flex flex-col">
         <div className="p-4 border-b border-border">
-          <Button onClick={createConversation} className="w-full">
+          <Button onClick={() => createConversation()} className="w-full">
             <Plus className="w-4 h-4 mr-2" />
             New Chat
           </Button>
@@ -101,6 +106,13 @@ export default function Chat() {
               ))}
             </SelectContent>
           </Select>
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
+              <Database className="w-4 h-4" />
+              <span>RAG</span>
+              <Switch checked={useRag} onCheckedChange={setUseRag} />
+            </label>
+          </div>
         </div>
 
         {/* Messages */}
@@ -143,10 +155,14 @@ export default function Chat() {
                       : 'bg-muted'
                   }`}
                 >
-                  <p className="whitespace-pre-wrap">{message.content}</p>
-                  {message.metadata && (
+                  {message.role === 'user' ? (
+                    <p className="whitespace-pre-wrap">{message.content}</p>
+                  ) : (
+                    <MarkdownLite content={message.content} />
+                  )}
+                  {message.metadata && (message.metadata.model || message.metadata.tokens) && (
                     <p className="text-xs opacity-70 mt-2">
-                      {message.metadata.model} • {message.metadata.tokens} tokens
+                      {message.metadata.model}{message.metadata.tokens ? ` • ${message.metadata.tokens} tokens` : ''}
                     </p>
                   )}
                 </div>
@@ -165,11 +181,17 @@ export default function Chat() {
               onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
               placeholder="Type your message..."
               className="flex-1"
-              disabled={isLoading}
+              disabled={isStreaming}
             />
-            <Button onClick={handleSend} disabled={isLoading || !input.trim()}>
-              <Send className="w-4 h-4" />
-            </Button>
+            {isStreaming ? (
+              <Button onClick={stopStreaming} variant="destructive">
+                <Square className="w-4 h-4" />
+              </Button>
+            ) : (
+              <Button onClick={handleSend} disabled={!input.trim()}>
+                <Send className="w-4 h-4" />
+              </Button>
+            )}
           </div>
         </div>
       </div>
