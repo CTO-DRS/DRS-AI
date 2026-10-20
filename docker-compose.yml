@@ -89,6 +89,15 @@ services:
       - FILES_SERVICE_URL=http://files:3005
       - VOICE_SERVICE_URL=http://voice:3006
       - DASHBOARD_SERVICE_URL=http://dashboard:3007
+      - HYBRID_RAG_URL=http://hybrid-rag:3022
+      - WORKFLOW_ENGINE_URL=http://workflow-engine:3011
+      - AUTO_BUILDER_URL=http://auto-builder:3018
+      - CODE_INTERPRETER_URL=http://code-interpreter:3014
+      - MULTI_MODEL_URL=http://multi-model:3017
+      - ADVANCED_MEMORY_URL=http://advanced-memory:3016
+      - LLM_GUARDRAIL_URL=http://llm-guardrail:3021
+      - MCP_HUB_URL=http://mcp-hub:3044
+      - SKILLS_SERVICE_URL=http://skills:3045
     depends_on:
       - redis
       - postgres
@@ -129,6 +138,8 @@ services:
       - OLLAMA_MODEL=llama3.2:3b
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - MEMORY_SERVICE_URL=http://memory:3004
+      - RAG_SERVICE_URL=http://hybrid-rag:3022
     depends_on:
       - ollama
       - redis
@@ -151,6 +162,10 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - OLLAMA_HOST=http://ollama:11434
+      - ROUTER_SERVICE_URL=http://model-router:3002
+      - MEMORY_SERVICE_URL=http://memory:3004
+      - CODE_INTERPRETER_URL=http://code-interpreter:3014
+      - SKILLS_SERVICE_URL=http://skills:3045
     depends_on:
       - redis
       - postgres
@@ -931,10 +946,50 @@ services:
     ports:
       - "8080:80"
     environment:
-      - REACT_APP_API_URL=http://localhost:3000
-      - REACT_APP_WS_URL=ws://localhost:3000
+      - VITE_API_URL=http://localhost:3000/api/v1
     depends_on:
       - gateway
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # ============================================
+  # Agent Platform (ported from OpenDrSai)
+  # ============================================
+
+  mcp-hub:
+    build: ./mcp-hub
+    ports:
+      - "3044:3044"
+    environment:
+      - NODE_ENV=production
+      - PORT=3044
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_URL=redis://redis:6379
+      - ORCHESTRATOR_URL=http://agent-orchestrator:3003
+    depends_on:
+      - redis
+      - agent-orchestrator
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  skills:
+    build: ./skills
+    ports:
+      - "3045:3045"
+    environment:
+      - NODE_ENV=production
+      - PORT=3045
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_URL=redis://redis:6379
+      - SKILLS_DIR=/app/data/skills
+    volumes:
+      - skills_data:/app/data/skills
+    depends_on:
+      - redis
     networks:
       - drs-network
     restart: unless-stopped
@@ -1011,6 +1066,7 @@ volumes:
   ipfs_data:
   minio_data:
   qdrant_data:
+  skills_data:
 
 # ============================================
 # Networks
