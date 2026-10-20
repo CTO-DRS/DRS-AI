@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 
 import memoryRoutes from './routes/memories';
 import conversationRoutes from './routes/conversations';
+import promptRoutes from './routes/prompts';
 import memoryService from './services/memoryService';
 import { initVectorExtension } from './utils/db';
 import logger from './utils/logger';
@@ -29,6 +30,7 @@ app.get('/health', async (req, res) => {
 
 app.use('/memories', memoryRoutes);
 app.use('/conversations', conversationRoutes);
+app.use('/prompts', promptRoutes);
 
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   logger.error('Unhandled error:', err);

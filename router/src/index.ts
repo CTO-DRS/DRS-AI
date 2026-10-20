@@ -7,6 +7,7 @@ import { WebSocketServer } from 'ws';
 
 import modelRoutes from './routes/models';
 import chatRoutes from './routes/chat';
+import openaiRoutes from './routes/openai';
 import ollamaService from './services/ollamaService';
 import logger from './utils/logger';
 
@@ -43,6 +44,8 @@ app.get('/health', async (req, res) => {
 // Routes
 app.use('/models', modelRoutes);
 app.use('/chat', chatRoutes);
+// OpenAI-compatible API (any OpenAI SDK can use baseURL http://<host>:3002/v1)
+app.use('/v1', openaiRoutes);
 
 // WebSocket for streaming
 wss.on('connection', (ws, req) => {

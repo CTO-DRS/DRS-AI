@@ -7,7 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Planned
+### Added — Agent Platform (feature merge from OpenDrSai)
+
+#### New Services
+- **MCP Hub** (`mcp-hub/`, port 3044) — Model Context Protocol client + server:
+  - Client: connect external MCP servers over stdio (spawned process) or Streamable HTTP (JSON-RPC 2.0), aggregate their tools, invoke them (`GET /tools`, `POST /tools/call`)
+  - Server mode: the platform tool registry exposed as a standard MCP endpoint (`POST /mcp` — initialize / tools/list / tools/call), usable from Claude Desktop, Cursor, OpenDrSai, ...
+- **Skills** (`skills/`, port 3045) — SKILL.md skills library ported from OpenDrSai:
+  - YAML-frontmatter skill format with native parser (name/description/version/tags/tools)
+  - Marketplace + enable/disable + CRUD (`/skills`, `/skills/marketplace`)
+  - 4 bundled skills seeded automatically: web-research, code-review, doc-writer, meeting-notes
+  - Teams inject enabled skill bodies into agent system prompts
+
+#### Model Router (3002)
+- **OpenAI-compatible API** — `GET /v1/models`, `POST /v1/chat/completions` with streaming (OpenAI chunk format) and tool/function-calling passthrough; any OpenAI SDK works via `baseURL http://<host>:3002/v1` (or gateway `/api/openai/v1`)
+- **Function calling** on the internal chat API (`tools` parameter passthrough to Ollama)
+- **RAG in the chat path** — `useRag: true` retrieves documents from hybrid-rag and injects them as cited context before generation
+- **Conversation write-back** — chat turns are persisted to the memory service (auto-creates the conversation when `conversationId` is absent), so the sidebar history finally fills up
+- Fixed `OLLAMA_HOST` env var being ignored (router pointed at localhost inside containers)
+
+#### Agent Orchestrator (3003)
+- **Agent Teams** — multi-agent orchestration ported from OpenDrSai's group chats:
+  - `round_robin`, `selector` (LLM speaker selection), `handoff` (Swarm-style control transfer)
+  - `POST /teams/:id/run` streams the whole conversation over SSE; every run is persisted
+  - Optional tool use (`enableTools`) and skill injection (`skills: [...]`) per team
+- **Tool registry + agentic tool loop** — 6 built-in tools (`web_search`, `http_fetch`, `calculator`, `current_datetime`, `memory_search`, `code_execute`) with JSON-schema definitions, Ollama function-calling loop, custom webhook tools (`/tools`, `/tools/execute`, `/tools/run`)
+- **Human-in-the-loop approvals (HITL)** — `POST /tasks/:id/request-approval` puts a task in `awaiting_approval`; `POST /tasks/:id/approve` resumes it, `POST /tasks/:id/reject` cancels it
+
+#### Memory (3004)
+- **Prompt library** — CRUD for prompt templates with `{{variable}}` extraction and a render endpoint (`/prompts`, `/prompts/:id/render`)
+
+#### Gateway (3000)
+- 11 new proxy routes: `/api/v1/rag`, `/workflows`, `/builder`, `/interpreter`, `/multi-model`, `/advanced-memory`, `/guardrail`, `/mcp`, `/skills`, `/teams`, `/agent-tools`, plus the OpenAI-compatible surface at `/api/openai` — RAG, workflows, guardrail, MCP and skills are finally reachable through the gateway
+
+#### Frontend
+- **Fixed login, chat and analytics being broken** — response envelope unwrapping (`{success, data}`) corrected in AuthContext, ChatContext, Analytics, AdminDashboard, Files, Models
+- **Streaming chat** — token-by-token SSE rendering with stop button, full conversation history sent with every message, markdown rendering (code blocks, lists, links), RAG toggle
+- **New pages** — Agent Teams (create/run teams, live transcript), Skills (marketplace, install SKILL.md, toggle), Prompts (library with variable rendering)
+- Models page: pull/delete wired up, active-model selection
+
+### Fixed
+- `advanced-memory` knowledge-graph inserts failed (`emoryId` typo)
+- docker-compose injected `REACT_APP_API_URL` while the frontend reads `VITE_API_URL` (and the value missed the `/api/v1` prefix)
+
+### Unreleased — Planned
 - Multi-cloud federation (AWS / GCP / Azure)
 - GPU multi-tenant quota with billing
 - Edge / IoT gateway service
