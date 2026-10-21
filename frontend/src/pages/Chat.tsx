@@ -10,8 +10,12 @@ import {
   Copy,
   Check,
   Download,
+  Mic,
+  RefreshCw,
+  Search,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -20,6 +24,7 @@ import { useT } from '@/i18n';
 import { MarkdownMessage } from '@/components/chat/MarkdownMessage';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { voiceService } from '@/services/api';
 
 export default function Chat() {
   const {
@@ -32,6 +37,7 @@ export default function Chat() {
     loadConversations,
     loadConversation,
     sendMessage,
+    regenerate,
     stop,
     createConversation,
     deleteConversation,
@@ -42,8 +48,11 @@ export default function Chat() {
   const t = useT();
   const [input, setInput] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [isRecording, setIsRecording] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
   useEffect(() => {
     loadConversations();
@@ -109,22 +118,86 @@ export default function Chat() {
     }
   }, [messages, t]);
 
+  /* ------------------------- Voice input (STT) ------------------------- */
+
+  const stopRecording = useCallback(() => {
+    try {
+      mediaRecorderRef.current?.stop();
+    } catch { /* already stopped */ }
+    // Release the microphone immediately.
+    mediaRecorderRef.current?.stream?.getTracks().forEach((track) => track.stop());
+    setIsRecording(false);
+  }, []);
+
+  const startRecording = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      const audioChunks: Blob[] = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) audioChunks.push(event.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach((track) => track.stop());
+        const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+        try {
+          const response = await voiceService.transcribe(audioBlob);
+          const text: string = response.data?.text ?? response.data?.data?.text ?? '';
+          if (text) {
+            setInput((prev) => (prev ? `${prev} ${text}` : text));
+          } else {
+            toast.error(t('chat.transcribeFailed'));
+          }
+        } catch {
+          toast.error(t('chat.transcribeFailed'));
+        }
+      };
+
+      mediaRecorderRef.current = mediaRecorder;
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch {
+      toast.error(t('chat.micDenied'));
+    }
+  }, [t]);
+
+  useEffect(() => () => stopRecording(), [stopRecording]);
+
   const suggestions = [t('chat.sugg1'), t('chat.sugg2'), t('chat.sugg3'), t('chat.sugg4')];
+  const filteredConversations = conversations.filter((conv) => {
+    const q = search.trim().toLowerCase();
+    if (!q) return true;
+    return (conv.title || '').toLowerCase().includes(q);
+  });
+  // Regenerate is offered on the trailing assistant reply when idle.
+  const lastMessage = messages[messages.length - 1];
+  const canRegenerate = !isStreaming && !isLoading && lastMessage?.role === 'assistant' && !!lastMessage.content;
 
   return (
     <div className="flex h-[calc(100vh-8rem)]">
       {/* Conversations Sidebar */}
       <div className="w-64 border-e border-border bg-card flex flex-col">
-        <div className="p-4 border-b border-border">
+        <div className="p-4 border-b border-border space-y-2">
           <Button onClick={createConversation} className="w-full">
             <Plus className="w-4 h-4 me-2" />
             {t('chat.newChat')}
           </Button>
+          <div className="relative">
+            <Search className="w-3.5 h-3.5 absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t('chat.searchConversations')}
+              className="h-9 ps-9 text-sm"
+            />
+          </div>
         </div>
 
         <ScrollArea className="flex-1">
           <div className="p-2 space-y-1">
-            {conversations.map((conv) => (
+            {filteredConversations.map((conv) => (
               <div
                 key={conv.id}
                 className="group flex items-center justify-between p-3 rounded-lg hover:bg-accent cursor-pointer"
@@ -272,6 +345,17 @@ export default function Chat() {
                           )}
                         </button>
                       )}
+                      {/* Regenerate — only on the trailing assistant reply */}
+                      {!isWaiting && isLast && message.role === 'assistant' && canRegenerate && (
+                        <button
+                          onClick={regenerate}
+                          title={t('chat.regenerate')}
+                          aria-label={t('chat.regenerate')}
+                          className="opacity-0 group-hover:opacity-70 hover:!opacity-100 transition-opacity text-muted-foreground"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -281,7 +365,7 @@ export default function Chat() {
           </div>
         </ScrollArea>
 
-        {/* Input — multiline (Shift+Enter for newline, Enter to send) */}
+        {/* Input — multiline (Shift+Enter for newline, Enter to send) + voice */}
         <div className="p-4 border-t border-border">
           <div className="max-w-3xl mx-auto flex gap-2 items-end">
             <Textarea
@@ -289,11 +373,21 @@ export default function Chat() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={t('chat.placeholder')}
+              placeholder={isRecording ? t('chat.recording') : t('chat.placeholder')}
               className="flex-1 min-h-[44px] max-h-40 resize-none"
               rows={1}
               disabled={isLoading}
             />
+            <Button
+              onClick={isRecording ? stopRecording : startRecording}
+              variant={isRecording ? 'destructive' : 'outline'}
+              title={isRecording ? t('chat.recording') : t('chat.voiceInput')}
+              aria-label={isRecording ? t('chat.recording') : t('chat.voiceInput')}
+              className={`h-11 ${isRecording ? 'animate-pulse' : ''}`}
+              disabled={isLoading}
+            >
+              <Mic className="w-4 h-4" />
+            </Button>
             {isStreaming ? (
               <Button
                 onClick={stop}
