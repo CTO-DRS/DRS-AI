@@ -13,6 +13,8 @@ import {
   Wrench,
   BookOpen,
   Globe,
+  Network,
+  Send,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -38,7 +40,7 @@ import {
 } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
-import { agentsService } from '@/services/api';
+import { agentsService, a2aService } from '@/services/api';
 import { useT } from '@/i18n';
 import { onLiveEvent, type LiveEvent } from '@/hooks/useLiveEvents';
 import { toast } from 'sonner';
@@ -81,6 +83,21 @@ interface McpServer {
   status?: string;
 }
 interface McpTool { name?: string; description?: string }
+
+interface A2aAgentRow {
+  id: string;
+  name: string;
+  endpoint: string;
+  description?: string;
+  lastProbeStatus?: string;
+  isEnabled?: boolean;
+  cardCache?: { name?: string; description?: string; version?: string; protocolVersion?: string } | null;
+}
+interface A2aResult {
+  kind?: string;
+  state?: string;
+  text?: string;
+}
 
 const STATUS_KEYS: Record<string, string> = {
   pending: 'agents.statusPending',
@@ -148,6 +165,20 @@ export default function Agents() {
   const [mcpTesting, setMcpTesting] = useState<string | null>(null);
   const [mcpTools, setMcpTools] = useState<Record<string, McpTool[]>>({});
 
+  /* ----------------- A2A peers ---------------- */
+  const [a2aAgents, setA2aAgents] = useState<A2aAgentRow[]>([]);
+  const [loadingA2a, setLoadingA2a] = useState(true);
+  const [a2aOpen, setA2aOpen] = useState(false);
+  const [a2aName, setA2aName] = useState('');
+  const [a2aEndpoint, setA2aEndpoint] = useState('');
+  const [a2aDesc, setA2aDesc] = useState('');
+  const [a2aCreating, setA2aCreating] = useState(false);
+  const [a2aBusy, setA2aBusy] = useState<string | null>(null);
+  const [a2aMsgTarget, setA2aMsgTarget] = useState<A2aAgentRow | null>(null);
+  const [a2aMsgText, setA2aMsgText] = useState('');
+  const [a2aSending, setA2aSending] = useState(false);
+  const [a2aLastResult, setA2aLastResult] = useState<A2aResult | null>(null);
+
   const loadTeams = useCallback(async () => {
     setLoadingTeams(true);
     try {
@@ -200,14 +231,27 @@ export default function Agents() {
     }
   }, [t]);
 
+  const loadA2a = useCallback(async () => {
+    setLoadingA2a(true);
+    try {
+      const res = await a2aService.listAgents();
+      setA2aAgents(res.data?.data?.agents ?? res.data?.agents ?? []);
+    } catch {
+      toast.error(t('agents.loadFailed'));
+    } finally {
+      setLoadingA2a(false);
+    }
+  }, [t]);
+
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect -- mount-time data fetch; each loader owns its loading flag */
     loadTeams();
     loadRuns();
     loadApprovals();
     loadMcp();
+    loadA2a();
     /* eslint-enable react-hooks/set-state-in-effect */
-  }, [loadTeams, loadRuns, loadApprovals, loadMcp]);
+  }, [loadTeams, loadRuns, loadApprovals, loadMcp, loadA2a]);
 
   // Live refresh: the WS hub re-broadcasts orchestrator events as DOM events
   // (see useLiveEvents) — keep the approval inbox and run list fresh.
@@ -365,6 +409,73 @@ export default function Agents() {
     }
   };
 
+  /* --------------- A2A actions --------------- */
+
+  const handleRegisterA2a = async () => {
+    if (!a2aName.trim() || !a2aEndpoint.trim()) return;
+    setA2aCreating(true);
+    try {
+      await a2aService.registerAgent({
+        name: a2aName.trim(),
+        endpoint: a2aEndpoint.trim(),
+        description: a2aDesc.trim() || undefined,
+      });
+      setA2aOpen(false);
+      setA2aName('');
+      setA2aEndpoint('');
+      setA2aDesc('');
+      await loadA2a();
+      toast.success(t('common.save'));
+    } catch (error: unknown) {
+      const msg = (error as { response?: { data?: { error?: { message?: string } } } })
+        ?.response?.data?.error?.message;
+      toast.error(msg || t('agents.actionFailed'));
+    } finally {
+      setA2aCreating(false);
+    }
+  };
+
+  const handleProbeA2a = async (id: string) => {
+    setA2aBusy(id);
+    try {
+      const res = await a2aService.probeAgent(id);
+      const ok = res.data?.data?.ok;
+      toast[ok ? 'success' : 'error'](ok ? t('a2a.reachable') : t('a2a.unreachable'));
+      await loadA2a();
+    } catch {
+      toast.error(t('a2a.unreachable'));
+    } finally {
+      setA2aBusy(null);
+    }
+  };
+
+  const handleDeleteA2a = async (id: string) => {
+    try {
+      await a2aService.deleteAgent(id);
+      await loadA2a();
+    } catch {
+      toast.error(t('agents.actionFailed'));
+    }
+  };
+
+  const handleSendA2a = async () => {
+    if (!a2aMsgTarget || !a2aMsgText.trim()) return;
+    setA2aSending(true);
+    try {
+      const res = await a2aService.sendMessage(a2aMsgTarget.id, a2aMsgText.trim());
+      const result: A2aResult = res.data?.data?.result ?? {};
+      setA2aLastResult(result);
+      setA2aMsgText('');
+      toast.success(t('a2a.sent'));
+    } catch (error: unknown) {
+      const msg = (error as { response?: { data?: { error?: { message?: string } } } })
+        ?.response?.data?.error?.message;
+      toast.error(msg || t('agents.actionFailed'));
+    } finally {
+      setA2aSending(false);
+    }
+  };
+
   const agentName = (id: string) => agents.find((a) => a.id === id)?.name ?? id;
 
   return (
@@ -392,6 +503,10 @@ export default function Agents() {
           <TabsTrigger value="mcp" className="flex items-center gap-2">
             <Server className="w-4 h-4" />
             {t('agents.tabMcp')}
+          </TabsTrigger>
+          <TabsTrigger value="a2a" className="flex items-center gap-2">
+            <Network className="w-4 h-4" />
+            {t('a2a.tab')}
           </TabsTrigger>
         </TabsList>
 
@@ -671,7 +786,183 @@ export default function Agents() {
             </div>
           )}
         </TabsContent>
+
+        {/* ------------------------------ A2A ------------------------------ */}
+        <TabsContent value="a2a" className="space-y-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Network className="w-4 h-4" /> {t('a2a.cardTitle')}
+              </CardTitle>
+              <CardDescription>{t('a2a.cardDesc')}</CardDescription>
+            </CardHeader>
+          </Card>
+
+          <div className="flex items-center justify-between">
+            <Button onClick={() => setA2aOpen(true)}>
+              <Plus className="w-4 h-4 me-2" />
+              {t('a2a.add')}
+            </Button>
+            <Button variant="outline" size="sm" onClick={loadA2a}>
+              <RefreshCw className="w-4 h-4 me-2" />
+              {t('common.refresh')}
+            </Button>
+          </div>
+
+          {loadingA2a ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : a2aAgents.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center text-muted-foreground">
+                {t('a2a.empty')}
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2">
+              {a2aAgents.map((agent) => (
+                <Card key={agent.id}>
+                  <CardHeader className="pb-2">
+                    <div className="flex items-start justify-between">
+                      <div className="min-w-0">
+                        <CardTitle className="text-base truncate">{agent.name}</CardTitle>
+                        <CardDescription className="mt-1 truncate text-[11px]" dir="ltr">
+                          {agent.endpoint}
+                        </CardDescription>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        title={t('common.delete')}
+                        onClick={() => handleDeleteA2a(agent.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <StatusBadge status={agent.lastProbeStatus === 'reachable' ? 'connected' : agent.lastProbeStatus ? 'disconnected' : undefined} />
+                      {agent.cardCache?.version && (
+                        <Badge variant="outline" className="text-[10px]">v{agent.cardCache.version}</Badge>
+                      )}
+                    </div>
+                    {agent.cardCache?.description && (
+                      <p className="text-xs text-muted-foreground line-clamp-2">{agent.cardCache.description}</p>
+                    )}
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1"
+                        disabled={a2aBusy === agent.id}
+                        onClick={() => handleProbeA2a(agent.id)}
+                      >
+                        {a2aBusy === agent.id ? (
+                          <Loader2 className="w-4 h-4 me-2 animate-spin" />
+                        ) : (
+                          <RefreshCw className="w-4 h-4 me-2" />
+                        )}
+                        {t('a2a.probe')}
+                      </Button>
+                      <Button size="sm" className="flex-1" onClick={() => { setA2aMsgTarget(agent); setA2aLastResult(null); }}>
+                        <Send className="w-4 h-4 me-2" />
+                        {t('a2a.send')}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {a2aLastResult && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Globe className="w-4 h-4" /> {t('a2a.lastResult')}
+                  {a2aLastResult.state && <StatusBadge status={a2aLastResult.state === 'completed' ? 'completed' : 'running'} />}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <pre className="whitespace-pre-wrap text-xs bg-muted/40 rounded-lg p-3 max-h-64 overflow-auto">
+                  {a2aLastResult.text || t('a2a.noText')}
+                </pre>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
       </Tabs>
+
+      {/* --------------------- A2A send-message dialog --------------------- */}
+      <Dialog open={Boolean(a2aMsgTarget)} onOpenChange={(open) => !open && setA2aMsgTarget(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>
+              {t('a2a.sendTo')} {a2aMsgTarget?.name}
+            </DialogTitle>
+            <DialogDescription>{t('a2a.sendHint')}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Textarea
+              value={a2aMsgText}
+              onChange={(e) => setA2aMsgText(e.target.value)}
+              placeholder={t('a2a.messagePlaceholder')}
+              rows={6}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setA2aMsgTarget(null)}>
+              {t('common.cancel')}
+            </Button>
+            <Button onClick={handleSendA2a} disabled={a2aSending || !a2aMsgText.trim()}>
+              {a2aSending ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : <Send className="w-4 h-4 me-2" />}
+              {t('a2a.send')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* --------------------- A2A register dialog ------------------------ */}
+      <Dialog open={a2aOpen} onOpenChange={setA2aOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{t('a2a.add')}</DialogTitle>
+            <DialogDescription>{t('a2a.addHint')}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>{t('a2a.name')}</Label>
+              <Input value={a2aName} onChange={(e) => setA2aName(e.target.value)} maxLength={100} />
+            </div>
+            <div className="space-y-2">
+              <Label>{t('a2a.endpoint')}</Label>
+              <Input
+                value={a2aEndpoint}
+                onChange={(e) => setA2aEndpoint(e.target.value)}
+                placeholder="https://agent.example.com"
+                dir="ltr"
+              />
+              <p className="text-xs text-muted-foreground">{t('a2a.endpointHint')}</p>
+            </div>
+            <div className="space-y-2">
+              <Label>{t('agents.teamDescription')}</Label>
+              <Input value={a2aDesc} onChange={(e) => setA2aDesc(e.target.value)} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setA2aOpen(false)}>
+              {t('common.cancel')}
+            </Button>
+            <Button onClick={handleRegisterA2a} disabled={a2aCreating || !a2aName.trim() || !a2aEndpoint.trim()}>
+              {a2aCreating && <Loader2 className="w-4 h-4 me-2 animate-spin" />}
+              {t('common.save')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* ------------------------- Create team dialog ------------------------ */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
