@@ -5,7 +5,17 @@ import dotenv from 'dotenv';
 
 import agentRoutes from './routes/agents';
 import taskRoutes from './routes/tasks';
+import teamRoutes from './routes/teams';
+import planRoutes from './routes/plans';
+import approvalRoutes from './routes/approvals';
+import mcpRoutes from './routes/mcp';
+import memoryRoutes from './routes/memory';
+import toolRoutes from './routes/tools';
 import taskService from './services/taskService';
+import approvalService from './services/approvalService';
+import persistence from './services/persistence';
+import eventBus from './services/eventBus';
+import { testConnection, syncDatabase } from './database';
 import logger from './utils/logger';
 
 dotenv.config();
@@ -25,17 +35,37 @@ app.use((req, res, next) => {
 });
 
 // Health check
-app.get('/health', (req, res) => {
-  res.json({
+app.get('/health', async (req, res) => {
+  const health: Record<string, any> = {
     status: 'healthy',
     service: 'orchestrator',
+    version: '2.0.0',
+    features: ['teams', 'planner', 'approvals', 'mcp', 'memory', 'web-search', 'structured-output', 'persistence'],
     timestamp: new Date().toISOString()
-  });
+  };
+
+  try {
+    const { default: sequelize } = await import('./database');
+    await sequelize.authenticate();
+    health.database = 'connected';
+  } catch {
+    health.database = 'disconnected';
+    health.status = 'degraded';
+  }
+
+  const statusCode = health.status === 'healthy' ? 200 : 503;
+  res.status(statusCode).json(health);
 });
 
 // Routes
 app.use('/agents', agentRoutes);
 app.use('/tasks', taskRoutes);
+app.use('/teams', teamRoutes);
+app.use('/plans', planRoutes);
+app.use('/approvals', approvalRoutes);
+app.use('/mcp', mcpRoutes);
+app.use('/memory', memoryRoutes);
+app.use('/tools', toolRoutes);
 
 // Error handling
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -63,8 +93,8 @@ app.use((req, res) => {
 // Start server
 app.listen(PORT, () => {
   logger.info(`=================================`);
-  logger.info(`DRS AI Orchestrator Service`);
-  logger.info(`Version: 1.0.0`);
+  logger.info(`DRS AI Orchestrator Service v2`);
+  logger.info(`Features: teams | planner | approvals | MCP | memory | web-search | structured-output`);
   logger.info(`Port: ${PORT}`);
   logger.info(`=================================`);
 });
@@ -77,5 +107,25 @@ setInterval(async () => {
     logger.error('Queue processing error:', error);
   }
 }, 1000);
+
+// Periodic approval expiry sweep (every 10 minutes)
+setInterval(async () => {
+  try {
+    await approvalService.expireStale();
+  } catch (error) {
+    logger.error('Approval expiry sweep failed:', error);
+  }
+}, 10 * 60 * 1000);
+
+// Boot: connect DB, sync models, recover queued tasks
+(async () => {
+  try {
+    await testConnection();
+    await syncDatabase();
+    await persistence.recoverQueuedTasks();
+  } catch (error: any) {
+    logger.error(`Boot persistence init failed: ${error.message}. Redis-only mode active.`);
+  }
+})();
 
 export default app;

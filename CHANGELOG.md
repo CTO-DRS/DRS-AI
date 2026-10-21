@@ -7,6 +7,108 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — drSai-parity upgrades (agent framework capabilities merged from OpenDrSai)
+
+#### Orchestrator v2 — agent teams, planning, HITL & MCP
+- **Multi-agent Teams** (`POST /api/v1/teams`) — drSai group-chat engine parity:
+  `round_robin` and `selector` (LLM speaker-selection) strategies, per-round transcript
+  persistence, `TERMINATE` phrase auto-termination, max-rounds ceiling, cooperative run
+  stop, full run history in Postgres.
+- **LLM Task Planner** (`POST /api/v1/tasks/:id/plan`) — decomposes a task into
+  agent-typed steps (drSai TaskPlanner), draft → approve → execute lifecycle,
+  subtask execution with plan context, result aggregation.
+- **Human-in-the-loop Approvals** (`/api/v1/approvals`) — drSai approval_guard parity:
+  tasks/plans/MCP tool calls can park in `awaiting_approval` until a user decides;
+  24h expiry sweep; approve → auto-resume execution.
+- **MCP client** (`/api/v1/mcp`) — Model Context Protocol support for `stdio` and
+  `http` transports (JSON-RPC 2.0, initialize/tools/list/tools/call), server registry,
+  tool cache, connection probe, optional approval gating on tool calls.
+- **Durable persistence** — tasks/teams/plans/approvals/MCP servers mirrored to
+  Postgres (Redis stays the hot queue); automatic task recovery on restart;
+  Redis-miss fallback reads.
+- **Agent knowledge memory** (`/api/v1/knowledge`, drSai ListMemory/RAGFlowMemory
+  parity) — text/Markdown ingestion with paragraph-aware chunking (~1200 chars,
+  150 overlap), BM25-lite multilingual retrieval (Unicode tokenization incl.
+  Arabic, IDF weighting, exact-substring boost), per-document enable/disable,
+  retrieval preview endpoint; retrieved chunks are injected into team-run system
+  context (drSai `memory=[...]` pattern) and counted in run metadata.
+- **Keyless web search tool** (`/api/v1/tools/web-search`, drSai web_search/
+  deepsearch parity) — DuckDuckGo HTML scraping (no API key), result titles/
+  snippets/URLs with DDG-redirect resolution, HTML entity decoding, graceful
+  degradation (runs continue when the network is unavailable),
+  `WEB_SEARCH_ENABLED`/`WEB_SEARCH_REGION` env controls; opt-in per team run.
+- **Structured output** (drSai structured_output parity) — `jsonOutput` run flag
+  instructs the first speaker to converge on a single JSON object; the final
+  result is JSON-extracted (direct parse → fenced block → balance scan) and
+  stored in run `meta.structured`.
+
+#### Model Router — multi-provider fallback chain
+- **Provider presets** (drSai provider_presets parity): OpenAI, Anthropic, DeepSeek,
+  OpenRouter, Gemini (OpenAI-compatible), Groq, custom — `GET/POST/DELETE /api/v1/providers`,
+  connection test with model-list cache (`POST /api/v1/providers/:id/test`).
+- **Automatic fallback**: Ollama first; on failure/missing model, route to the first
+  enabled provider serving the model (or explicit `provider/model` syntax).
+  Works for both streaming and non-streaming chat/generate.
+
+#### Auth — API keys (machine-to-machine)
+- `drsk_...` API keys (SHA-256 stored, prefix display, scopes, expiry, revoke) —
+  `POST/GET/DELETE /api/v1/auth/apikeys` + internal `/apikeys/validate`.
+- Gateway accepts `X-API-Key` on any protected route with a 60s validation cache.
+
+#### Gateway — real-time event hub
+- **WebSocket hub** (`/ws`) replaces the echo stub: Redis pub/sub fan-out of
+  orchestrator events (tasks, approvals, plan progress, team transcripts) to
+  authenticated clients (JWT via `?token=` or `auth` message), heartbeat liveness.
+- SSE-safe compression filter (streams no longer buffered); `X-API-Key` CORS header.
+- **Env fixes**: proxy now honors `ROUTER_SERVICE_URL`/`ORCHESTRATOR_URL`; DB/Redis
+  env aliases fixed across auth/orchestrator/memory/gateway (docker deployment bug).
+
+#### Skills service (NEW, port 3044)
+- **SKILL.md convention** (drSai Skills Square parity): upload `.tar.gz`/`.zip`/inline
+  skill packages with YAML frontmatter (name/description/version/tags/author),
+  catalog search by tag/query/owner, download as tar.gz, share tokens (7-day),
+  tags index, usage stats, and `GET /api/v1/skills/:id/context` for agent prompt
+  injection. Path-traversal-safe extraction; boot-time re-index from disk.
+
+#### Frontend
+- **i18n + RTL**: ar/en/fr/de with instant switching, RTL layout for Arabic,
+  localized nav/auth/chat/header.
+- **Streaming chat**: SSE token streaming with Stop button and graceful
+  non-streaming fallback; Markdown rendering (GFM: code blocks, tables, links).
+- **Agent Teams console** (`/agents`): new page managing orchestrator v2 —
+  create/run/stop/delete teams (round-robin & selector strategies, agent picker),
+  recent-run transcripts, HITL approval inbox (approve/reject with pending badge),
+  and MCP server registry (stdio/http add, connection test, tool discovery).
+- **Knowledge Base page** (`/knowledge`): document ingestion (paste text/
+  Markdown, live size meter), metadata list with chunk counts, enable/disable
+  switches, delete, and a retrieval preview that shows exactly which chunks a
+  query would surface (score-labeled) — localized in all 4 languages.
+- **Run enrichment options**: the team-run dialog gains Knowledge-memory /
+  Web-search / JSON-output toggles; run cards show badges for retrieved memory
+  chunks, web result counts and structured-JSON results.
+- **Chat UX upgrades**: per-message copy button, one-click Markdown export of the
+  conversation, multiline auto-resizing composer (Enter to send, Shift+Enter for
+  newline), and localized suggested-prompt chips on the empty state.
+- **Login & Settings fully localized** in all 4 languages; Settings language
+  selector now wired to the live i18n provider (persists + RTL flip).
+- **Route-level code splitting** (`React.lazy` + `Suspense`): initial bundle
+  reduced from ~785 kB to ~500 kB (−36 %); every page loads on demand.
+- **Live events (WebSocket)**: the frontend connects to the gateway WS hub
+  (`/ws`, JWT `?token=` auth, auto-reconnect with capped backoff, client
+  keepalive). High-signal events surface as localized toasts (approval
+  requested, team run completed/failed, plan completed); every event is
+  re-broadcast to the app, and the Agents console auto-refreshes its
+  approval inbox and run list in real time.
+- **Voice input in chat**: mic button records audio (MediaRecorder), sends it
+  to the voice service STT endpoint and inserts the transcript into the
+  composer (recording pulse state, mic-release on stop/unmount, localized
+  errors).
+- **Regenerate reply**: re-runs the last user prompt (drops the previous
+  assistant reply, shares the same streaming + fallback path) via a hover
+  action on the trailing message.
+- **Conversation search**: instant client-side filter over the sidebar
+  conversation list.
+
 ### Planned
 - Multi-cloud federation (AWS / GCP / Azure)
 - GPU multi-tenant quota with billing

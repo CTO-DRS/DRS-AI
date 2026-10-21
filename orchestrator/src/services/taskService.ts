@@ -3,6 +3,9 @@ import { Task, TaskResult, TaskStatus, TaskPriority } from '../types';
 import { agentRegistry } from '../agents';
 import logger from '../utils/logger';
 import redis from '../utils/redis';
+import persistence from './persistence';
+import eventBus from './eventBus';
+import approvalService from './approvalService';
 
 const TASK_QUEUE = 'drs:tasks';
 const TASK_PREFIX = 'drs:task:';
@@ -14,39 +17,95 @@ export class TaskService {
     type: string = 'auto',
     priority: TaskPriority = 'normal',
     context?: Record<string, any>,
-    parentTaskId?: string
+    parentTaskId?: string,
+    requireApproval: boolean = false
   ): Promise<Task> {
     const task: Task = {
       id: uuidv4(),
       type,
       input,
       context,
-      status: 'pending',
+      status: requireApproval ? 'awaiting_approval' : 'pending',
       priority,
       createdAt: new Date(),
       userId,
-      parentTaskId
+      parentTaskId,
+      requireApproval
     };
 
     // Store task in Redis
     await redis.setex(
       `${TASK_PREFIX}${task.id}`,
-      86400, // 24 hours
+      86400, // 24 hours (hot cache; Postgres keeps the durable copy)
       JSON.stringify(task)
     );
 
-    // Add to queue
-    await redis.lpush(TASK_QUEUE, task.id);
+    // Mirror to Postgres (durable)
+    await persistence.upsertTask(task);
 
-    logger.info(`Task ${task.id} created for user ${userId}`);
+    if (requireApproval) {
+      // Human-in-the-loop gate: park the task and request sign-off.
+      // It will be queued by POST /approvals/:id/approve.
+      await approvalService.requestApproval({
+        userId,
+        type: 'task_execution',
+        taskId: task.id,
+        payload: {
+          title: 'Task execution requires approval',
+          detail: input.slice(0, 500),
+          meta: { type, priority }
+        }
+      });
+      await eventBus.publish('task.created', { taskId: task.id, status: task.status, requireApproval }, userId);
+      logger.info(`Task ${task.id} created (awaiting approval) for user ${userId}`);
+      return task;
+    }
+
+    // Subtasks (parentTaskId set) are executed by their parent plan/step
+    // directly — queueing them would cause double execution.
+    if (!parentTaskId) {
+      await redis.lpush(TASK_QUEUE, task.id);
+    }
+
+    await eventBus.publish('task.created', { taskId: task.id, status: task.status }, userId);
+    logger.info(`Task ${task.id} created for user ${userId}${parentTaskId ? ' (subtask)' : ''}`);
 
     return task;
   }
 
   async getTask(taskId: string): Promise<Task | null> {
     const data = await redis.get(`${TASK_PREFIX}${taskId}`);
-    if (!data) return null;
-    return JSON.parse(data);
+    if (data) return JSON.parse(data);
+
+    // Redis miss (TTL expired or restart): fall back to Postgres
+    try {
+      const { TaskRecord } = await import('../models');
+      const record = await TaskRecord.findByPk(taskId);
+      if (!record) return null;
+      const task: Task = {
+        id: record.id,
+        type: record.type,
+        input: record.input,
+        context: record.context || undefined,
+        agentId: record.agentId || undefined,
+        status: record.status as TaskStatus,
+        priority: record.priority as Task['priority'],
+        createdAt: record.createdAt,
+        startedAt: undefined,
+        completedAt: undefined,
+        result: record.result as Task['result'],
+        error: record.error || undefined,
+        parentTaskId: record.parentTaskId || undefined,
+        userId: record.userId,
+        requireApproval: record.requireApproval
+      };
+      // Rehydrate the hot cache
+      await redis.setex(`${TASK_PREFIX}${taskId}`, 86400, JSON.stringify(task)).catch(() => {});
+      return task;
+    } catch (error: any) {
+      logger.error(`Postgres fallback for task ${taskId} failed:`, error.message);
+      return null;
+    }
   }
 
   async updateTask(taskId: string, updates: Partial<Task>): Promise<Task | null> {
@@ -60,6 +119,14 @@ export class TaskService {
       86400,
       JSON.stringify(updatedTask)
     );
+
+    await persistence.upsertTask(updatedTask);
+    await eventBus.publish('task.updated', {
+      taskId,
+      status: updatedTask.status,
+      error: updatedTask.error,
+      hasResult: Boolean(updatedTask.result)
+    }, updatedTask.userId);
 
     return updatedTask;
   }
@@ -103,6 +170,16 @@ export class TaskService {
         completedAt: new Date(),
         result
       });
+
+      // Execute subtasks if this task has a plan awaiting execution
+      const { Plan } = await import('../models');
+      const plan = await Plan.findOne({ where: { taskId, status: 'approved' } });
+      if (plan) {
+        const { default: plannerService } = await import('./plannerService');
+        await plannerService.executePlan(plan, taskId).catch((err: Error) =>
+          logger.error(`Plan execution for task ${taskId} failed:`, err)
+        );
+      }
 
       return result;
     } catch (error: any) {
@@ -149,6 +226,7 @@ export class TaskService {
 
   async deleteTask(taskId: string): Promise<boolean> {
     const result = await redis.del(`${TASK_PREFIX}${taskId}`);
+    await persistence.deleteTask(taskId);
     return result > 0;
   }
 

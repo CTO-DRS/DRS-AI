@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+// Shared base URL — also used by the SSE streaming fetch in ChatContext.
+export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -92,6 +93,57 @@ export const adminService = {
   getActivity: () => api.get('/admin/activity'),
   getUsers: () => api.get('/admin/users'),
   updateUser: (id: string, data: any) => api.patch(`/admin/users/${id}`, data)
+};
+
+/** Agent Teams / HITL approvals / MCP — orchestrator v2 via gateway proxy. */
+export const agentsService = {
+  listAgents: () => api.get('/agents'),
+  listTeams: () => api.get('/teams'),
+  createTeam: (data: {
+    name: string;
+    description?: string;
+    agentIds: string[];
+    strategy?: string;
+    maxRounds?: number;
+  }) => api.post('/teams', data),
+  deleteTeam: (id: string) => api.delete(`/teams/${id}`),
+  runTeam: (
+    id: string,
+    input: string,
+    options?: { maxRounds?: number; useMemory?: boolean; useWebSearch?: boolean; jsonOutput?: boolean }
+  ) => api.post(`/teams/${id}/run`, { input, ...options }),
+  listTeamRuns: (id: string) => api.get(`/teams/${id}/runs`),
+  getRun: (runId: string) => api.get(`/teams/runs/${runId}`),
+  stopRun: (runId: string) => api.post(`/teams/runs/${runId}/stop`, {}),
+  listApprovals: (status?: string) =>
+    api.get('/approvals', { params: status ? { status } : undefined }),
+  approve: (id: string) => api.post(`/approvals/${id}/approve`, {}),
+  reject: (id: string, reason?: string) => api.post(`/approvals/${id}/reject`, { reason }),
+  listMcpServers: () => api.get('/mcp/servers'),
+  addMcpServer: (data: { name: string; transport: string; command?: string; url?: string }) =>
+    api.post('/mcp/servers', data),
+  testMcpServer: (id: string) => api.post(`/mcp/servers/${id}/test`, {}),
+  deleteMcpServer: (id: string) => api.delete(`/mcp/servers/${id}`),
+  listMcpTools: (id: string) => api.get(`/mcp/servers/${id}/tools`)
+};
+
+/** Agent knowledge memory (ingest + BM25 retrieval) — orchestrator via gateway. */
+export const knowledgeService = {
+  ingest: (data: { title: string; content: string; source?: string }) =>
+    api.post('/knowledge/documents', data),
+  list: () => api.get('/knowledge/documents'),
+  get: (id: string) => api.get(`/knowledge/documents/${id}`),
+  toggle: (id: string, enabled: boolean) =>
+    api.post(`/knowledge/documents/${id}/toggle`, { enabled }),
+  delete: (id: string) => api.delete(`/knowledge/documents/${id}`),
+  search: (query: string, topK = 5) => api.post('/knowledge/search', { query, topK })
+};
+
+/** Built-in agent tools (keyless web search + status) — orchestrator via gateway. */
+export const toolsService = {
+  status: () => api.get('/tools/status'),
+  webSearch: (query: string, maxResults = 5) =>
+    api.post('/tools/web-search', { query, maxResults })
 };
 
 export default api;

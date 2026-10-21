@@ -10,6 +10,7 @@ import { requestContext } from './middleware/requestContext';
 import { requestLogger, errorLogger } from './middleware/logging';
 import { defaultRateLimiter } from './middleware/rateLimiter';
 import proxyRoutes from './routes/proxy';
+import WsHub from './services/wsHub';
 import logger from './utils/logger';
 import redis from './utils/redis';
 
@@ -38,10 +39,19 @@ app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:80',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID', 'X-API-Key']
 }));
 
-app.use(compression());
+// Compression — never buffer SSE streams (drSai streaming parity)
+app.use(compression({
+  filter: (req, res) => {
+    const contentType = res.getHeader('Content-Type');
+    if (contentType && String(contentType).includes('text/event-stream')) {
+      return false;
+    }
+    return compression.filter(req, res);
+  }
+}));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
@@ -93,6 +103,7 @@ app.get('/api/status', (req: Request, res: Response) => {
         auth: process.env.AUTH_SERVICE_URL ? 'configured' : 'not configured',
         router: process.env.ROUTER_SERVICE_URL ? 'configured' : 'not configured',
         orchestrator: process.env.ORCHESTRATOR_URL ? 'configured' : 'not configured',
+        skills: process.env.SKILLS_SERVICE_URL ? 'configured' : 'not configured',
         memory: process.env.MEMORY_SERVICE_URL ? 'configured' : 'not configured',
         files: process.env.FILES_SERVICE_URL ? 'configured' : 'not configured',
         voice: process.env.VOICE_SERVICE_URL ? 'configured' : 'not configured',
@@ -109,37 +120,8 @@ app.get('/api/status', (req: Request, res: Response) => {
 // Proxy routes
 app.use('/', proxyRoutes);
 
-// WebSocket handling
-wss.on('connection', (ws, req) => {
-  logger.info(`WebSocket connection established: ${req.url}`);
-  
-  ws.on('message', (message) => {
-    try {
-      const data = JSON.parse(message.toString());
-      logger.debug('WebSocket message received:', data);
-      
-      // Echo back for now - will be handled by specific services
-      ws.send(JSON.stringify({
-        type: 'ack',
-        timestamp: new Date().toISOString()
-      }));
-    } catch (error) {
-      logger.error('WebSocket message error:', error);
-      ws.send(JSON.stringify({
-        type: 'error',
-        message: 'Invalid message format'
-      }));
-    }
-  });
-
-  ws.on('close', () => {
-    logger.info('WebSocket connection closed');
-  });
-
-  ws.on('error', (error) => {
-    logger.error('WebSocket error:', error);
-  });
-});
+// WebSocket handling — real-time event hub (Redis pub/sub → clients)
+const wsHub = new WsHub(wss);
 
 // Error handling
 app.use(errorLogger);
@@ -189,6 +171,8 @@ const gracefulShutdown = async (signal: string) => {
   wss.close(() => {
     logger.info('WebSocket server closed');
   });
+
+  wsHub.close();
 
   await redis.quit();
   logger.info('Redis connection closed');

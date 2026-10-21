@@ -65,6 +65,70 @@ const services: ServiceConfig[] = [
     requiresAuth: true
   },
   {
+    path: '/api/v1/teams',
+    target: process.env.ORCHESTRATOR_URL || 'http://localhost:3003',
+    changeOrigin: true,
+    pathRewrite: { '^/api/v1/teams': '/teams' },
+    requiresAuth: true
+  },
+  {
+    path: '/api/v1/plans',
+    target: process.env.ORCHESTRATOR_URL || 'http://localhost:3003',
+    changeOrigin: true,
+    pathRewrite: { '^/api/v1/plans': '/plans' },
+    requiresAuth: true
+  },
+  {
+    path: '/api/v1/approvals',
+    target: process.env.ORCHESTRATOR_URL || 'http://localhost:3003',
+    changeOrigin: true,
+    pathRewrite: { '^/api/v1/approvals': '/approvals' },
+    requiresAuth: true
+  },
+  {
+    path: '/api/v1/mcp',
+    target: process.env.ORCHESTRATOR_URL || 'http://localhost:3003',
+    changeOrigin: true,
+    pathRewrite: { '^/api/v1/mcp': '/mcp' },
+    requiresAuth: true
+  },
+  {
+    // Agent knowledge memory (orchestrator /memory) — distinct from the
+    // legacy conversation memory microservice at /api/v1/memory.
+    path: '/api/v1/knowledge',
+    target: process.env.ORCHESTRATOR_URL || 'http://localhost:3003',
+    changeOrigin: true,
+    pathRewrite: { '^/api/v1/knowledge': '/memory' },
+    requiresAuth: true
+  },
+  {
+    // Built-in agent tools (web search, status) from the orchestrator.
+    path: '/api/v1/tools',
+    target: process.env.ORCHESTRATOR_URL || 'http://localhost:3003',
+    changeOrigin: true,
+    pathRewrite: { '^/api/v1/tools': '/tools' },
+    requiresAuth: true
+  },
+  {
+    path: '/api/v1/skills',
+    target: process.env.SKILLS_SERVICE_URL || 'http://localhost:3044',
+    changeOrigin: true,
+    pathRewrite: { '^/api/v1/skills': '' },
+    requiresAuth: true
+  },
+  {
+    // Alias used by skill share links (SKILLS_PUBLIC_PATH default)
+    path: '/api/skills',
+    target: process.env.SKILLS_SERVICE_URL || 'http://localhost:3044',
+    changeOrigin: true,
+    pathRewrite: { '^/api/skills': '' },
+    requiresAuth: false,
+    rateLimit: {
+      windowMs: 60 * 1000,
+      max: 60
+    }
+  },
+  {
     path: '/api/v1/memory',
     target: process.env.MEMORY_SERVICE_URL || 'http://localhost:3004',
     changeOrigin: true,
