@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+// Shared base URL — also used by the SSE streaming fetch in ChatContext.
+export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
 
 const api = axios.create({
   baseURL: API_URL,

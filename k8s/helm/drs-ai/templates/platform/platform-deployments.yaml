@@ -27,3 +27,9 @@ multi-region-replication, oauth-oidc, gpu-mig
 {{ include "drs-ai.microservice" (dict "name" $hyphen "port" $svc.port "replicas" (default 1 $svc.replicas) "resources" $svc.resources "env" $svc.env "gpu" (default false $svc.gpu) "root" $) }}
 {{- end -}}
 {{- end -}}
+
+{{/* Skills service (SKILL.md convention) */}}
+{{- if .Values.skillsService.enabled }}
+---
+{{ include "drs-ai.microservice" (dict "name" "skills" "port" .Values.skillsService.port "replicas" (default 1 .Values.skillsService.replicas) "resources" .Values.skillsService.resources "env" .Values.skillsService.env "gpu" false "root" .) }}
+{{- end }}

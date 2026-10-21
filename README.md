@@ -68,6 +68,15 @@ DRS AI is organized into 5 tiers: **Clients** → **Gateway** → **AI OS Servic
 - **Code Interpreter** - Safe Python code execution with data analysis
 - **Voice Commands** - Speech-to-text and text-to-speech integration
 
+### Agent Framework (drSai-parity)
+- **Multi-Agent Teams** - Round-robin & LLM-selector group chats with transcripts
+- **Task Planner** - LLM task decomposition into agent-executed steps
+- **Human-in-the-loop** - Approval gates for tasks, plans and tool calls
+- **MCP Support** - Model Context Protocol clients (stdio + http)
+- **Multi-Provider LLMs** - Ollama first, OpenAI/Anthropic/DeepSeek/OpenRouter/Groq fallback
+- **API Keys** - Machine-to-machine authentication (`drsk_...`)
+- **Real-time Events** - WebSocket hub streaming tasks/approvals/teams progress
+
 ### Integration & Automation
 - **Telegram Bot** - Full-featured Telegram integration
 - **Workflow Engine** - Visual workflow builder with cron scheduling
@@ -130,6 +139,7 @@ DRS AI is organized into 5 tiers: **Clients** → **Gateway** → **AI OS Servic
 | Advanced Memory | 3016 | Enhanced RAG |
 | Multi-Model | 3017 | Model Intelligence |
 | Auto Builder | 3018 | App Generation |
+| Skills | 3044 | SKILL.md Skill Packages & Marketplace |
 | **Frontend & Monitoring** |||
 | Frontend | 8080 | React Web UI |
 | Grafana | 3008 | Monitoring Dashboard |

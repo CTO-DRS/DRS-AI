@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import taskService from '../services/taskService';
+import plannerService from '../services/plannerService';
 import logger from '../utils/logger';
 
 const router = Router();
@@ -18,7 +19,7 @@ router.post('/', async (req, res) => {
       });
     }
 
-    const { input, type = 'auto', priority = 'normal', context, agentId } = req.body;
+    const { input, type = 'auto', priority = 'normal', context, agentId, requireApproval = false } = req.body;
 
     if (!input) {
       return res.status(400).json({
@@ -35,18 +36,22 @@ router.post('/', async (req, res) => {
       input,
       type,
       priority,
-      context
+      context,
+      undefined,
+      Boolean(requireApproval)
     );
 
-    // Execute task asynchronously
     if (agentId) {
       task.agentId = agentId;
     }
 
-    // Start execution without waiting
-    taskService.executeTask(task.id).catch(error => {
-      logger.error(`Async task execution failed for ${task.id}:`, error);
-    });
+    // Human-in-the-loop: task stays parked until POST /approvals/:id/approve
+    if (!requireApproval) {
+      // Start execution without waiting
+      taskService.executeTask(task.id).catch(error => {
+        logger.error(`Async task execution failed for ${task.id}:`, error);
+      });
+    }
 
     res.status(201).json({
       success: true,
@@ -142,6 +147,47 @@ router.get('/', async (req, res) => {
         message: error.message
       }
     });
+  }
+});
+
+// Generate an execution plan for a task (LLM decomposition)
+router.post('/:id/plan', async (req, res) => {
+  try {
+    const userId = req.headers['x-user-id'] as string;
+    if (!userId) {
+      return res.status(401).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } });
+    }
+
+    const task = await taskService.getTask(req.params.id);
+    if (!task) {
+      return res.status(404).json({ success: false, error: { code: 'TASK_NOT_FOUND', message: `Task ${req.params.id} not found` } });
+    }
+    if (task.userId !== userId) {
+      return res.status(403).json({ success: false, error: { code: 'FORBIDDEN', message: 'Access denied' } });
+    }
+
+    const plan = await plannerService.createPlan(task);
+    res.status(201).json({ success: true, data: { plan } });
+  } catch (error: any) {
+    logger.error('Plan generation failed:', error);
+    res.status(500).json({ success: false, error: { code: 'PLAN_FAILED', message: error.message } });
+  }
+});
+
+// Get the latest plan of a task
+router.get('/:id/plan', async (req, res) => {
+  try {
+    const userId = req.headers['x-user-id'] as string;
+    if (!userId) {
+      return res.status(401).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } });
+    }
+    const plan = await plannerService.getPlanByTask(req.params.id, userId);
+    if (!plan) {
+      return res.status(404).json({ success: false, error: { code: 'PLAN_NOT_FOUND', message: 'No plan for this task' } });
+    }
+    res.json({ success: true, data: { plan } });
+  } catch (error: any) {
+    res.status(error.statusCode || 500).json({ success: false, error: { code: 'PLAN_FETCH_FAILED', message: error.message } });
   }
 });
 

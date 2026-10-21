@@ -7,6 +7,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — drSai-parity upgrades (agent framework capabilities merged from OpenDrSai)
+
+#### Orchestrator v2 — agent teams, planning, HITL & MCP
+- **Multi-agent Teams** (`POST /api/v1/teams`) — drSai group-chat engine parity:
+  `round_robin` and `selector` (LLM speaker-selection) strategies, per-round transcript
+  persistence, `TERMINATE` phrase auto-termination, max-rounds ceiling, cooperative run
+  stop, full run history in Postgres.
+- **LLM Task Planner** (`POST /api/v1/tasks/:id/plan`) — decomposes a task into
+  agent-typed steps (drSai TaskPlanner), draft → approve → execute lifecycle,
+  subtask execution with plan context, result aggregation.
+- **Human-in-the-loop Approvals** (`/api/v1/approvals`) — drSai approval_guard parity:
+  tasks/plans/MCP tool calls can park in `awaiting_approval` until a user decides;
+  24h expiry sweep; approve → auto-resume execution.
+- **MCP client** (`/api/v1/mcp`) — Model Context Protocol support for `stdio` and
+  `http` transports (JSON-RPC 2.0, initialize/tools/list/tools/call), server registry,
+  tool cache, connection probe, optional approval gating on tool calls.
+- **Durable persistence** — tasks/teams/plans/approvals/MCP servers mirrored to
+  Postgres (Redis stays the hot queue); automatic task recovery on restart;
+  Redis-miss fallback reads.
+
+#### Model Router — multi-provider fallback chain
+- **Provider presets** (drSai provider_presets parity): OpenAI, Anthropic, DeepSeek,
+  OpenRouter, Gemini (OpenAI-compatible), Groq, custom — `GET/POST/DELETE /api/v1/providers`,
+  connection test with model-list cache (`POST /api/v1/providers/:id/test`).
+- **Automatic fallback**: Ollama first; on failure/missing model, route to the first
+  enabled provider serving the model (or explicit `provider/model` syntax).
+  Works for both streaming and non-streaming chat/generate.
+
+#### Auth — API keys (machine-to-machine)
+- `drsk_...` API keys (SHA-256 stored, prefix display, scopes, expiry, revoke) —
+  `POST/GET/DELETE /api/v1/auth/apikeys` + internal `/apikeys/validate`.
+- Gateway accepts `X-API-Key` on any protected route with a 60s validation cache.
+
+#### Gateway — real-time event hub
+- **WebSocket hub** (`/ws`) replaces the echo stub: Redis pub/sub fan-out of
+  orchestrator events (tasks, approvals, plan progress, team transcripts) to
+  authenticated clients (JWT via `?token=` or `auth` message), heartbeat liveness.
+- SSE-safe compression filter (streams no longer buffered); `X-API-Key` CORS header.
+- **Env fixes**: proxy now honors `ROUTER_SERVICE_URL`/`ORCHESTRATOR_URL`; DB/Redis
+  env aliases fixed across auth/orchestrator/memory/gateway (docker deployment bug).
+
+#### Skills service (NEW, port 3044)
+- **SKILL.md convention** (drSai Skills Square parity): upload `.tar.gz`/`.zip`/inline
+  skill packages with YAML frontmatter (name/description/version/tags/author),
+  catalog search by tag/query/owner, download as tar.gz, share tokens (7-day),
+  tags index, usage stats, and `GET /api/v1/skills/:id/context` for agent prompt
+  injection. Path-traversal-safe extraction; boot-time re-index from disk.
+
+#### Frontend
+- **i18n + RTL**: ar/en/fr/de with instant switching, RTL layout for Arabic,
+  localized nav/auth/chat/header.
+- **Streaming chat**: SSE token streaming with Stop button and graceful
+  non-streaming fallback; Markdown rendering (GFM: code blocks, tables, links).
+
 ### Planned
 - Multi-cloud federation (AWS / GCP / Azure)
 - GPU multi-tenant quota with billing

@@ -7,6 +7,7 @@ import { WebSocketServer } from 'ws';
 
 import modelRoutes from './routes/models';
 import chatRoutes from './routes/chat';
+import providerRoutes from './routes/providers';
 import ollamaService from './services/ollamaService';
 import logger from './utils/logger';
 
@@ -43,6 +44,7 @@ app.get('/health', async (req, res) => {
 // Routes
 app.use('/models', modelRoutes);
 app.use('/chat', chatRoutes);
+app.use('/providers', providerRoutes);
 
 // WebSocket for streaming
 wss.on('connection', (ws, req) => {

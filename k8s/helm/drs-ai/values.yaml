@@ -115,6 +115,21 @@ aiOsServices:
   autoBuilder:    { enabled: true,  port: 3018, replicas: 1 }
 
 # ============================================
+# Skills Service (SKILL.md convention, drSai parity)
+# ============================================
+
+skillsService:
+  enabled: true
+  port: 3044
+  replicas: 1
+  resources:
+    requests: { cpu: 100m, memory: 128Mi }
+    limits: { cpu: 500m, memory: 512Mi }
+  env:
+    SKILLS_DIR: /app/data/skills
+    SKILLS_PUBLIC_PATH: /api/skills
+
+# ============================================
 # Advanced Infrastructure (6)
 # ============================================
 

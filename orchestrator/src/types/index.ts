@@ -26,9 +26,18 @@ export interface Task {
   parentTaskId?: string;
   subTasks?: string[];
   userId: string;
+  /** Human-in-the-loop gate: when true the task parks in awaiting_approval */
+  requireApproval?: boolean;
 }
 
-export type TaskStatus = 'pending' | 'queued' | 'running' | 'completed' | 'failed' | 'cancelled';
+export type TaskStatus =
+  | 'pending'
+  | 'queued'
+  | 'running'
+  | 'awaiting_approval'
+  | 'completed'
+  | 'failed'
+  | 'cancelled';
 export type TaskPriority = 'low' | 'normal' | 'high' | 'urgent';
 
 export interface TaskResult {
@@ -39,6 +48,8 @@ export interface TaskResult {
     tokensUsed?: number;
     executionTime?: number;
     agentId?: string;
+    planId?: string;
+    steps?: number;
   };
 }
 
@@ -53,6 +64,36 @@ export interface ExecutionPlan {
   steps: ExecutionStep[];
   parallel: boolean;
   dependencies: Map<string, string[]>;
+}
+
+/** Persisted plan (drSai TaskPlanner style) */
+export interface TaskPlan {
+  id: string;
+  taskId: string;
+  summary: string;
+  status: 'draft' | 'approved' | 'executing' | 'completed' | 'failed';
+  steps: Array<{
+    id: string;
+    description: string;
+    agentType: string;
+    status: TaskStatus;
+    result?: string;
+    mcp?: { serverId: string; tool: string; args: Record<string, any> };
+  }>;
+}
+
+/** Human-in-the-loop approval (drSai approval_guard style) */
+export interface ApprovalRequest {
+  id: string;
+  userId: string;
+  taskId?: string;
+  type: 'task_execution' | 'dangerous_action' | 'mcp_tool_call' | 'plan_execution';
+  payload: { title: string; detail?: string; action?: string; meta?: Record<string, any> };
+  status: 'pending' | 'approved' | 'rejected' | 'expired';
+  decidedBy?: string;
+  decidedAt?: Date;
+  expiresAt?: Date;
+  createdAt: Date;
 }
 
 export interface ExecutionStep {
@@ -71,6 +112,30 @@ export interface AgentMessage {
   type: 'request' | 'response' | 'broadcast';
   timestamp: Date;
   metadata?: any;
+}
+
+/** Multi-agent team (drSai group-chat style) */
+export interface Team {
+  id: string;
+  name: string;
+  description?: string;
+  agentIds: string[];
+  strategy: 'round_robin' | 'selector';
+  maxRounds: number;
+  selectorModel?: string;
+  terminatePhrase: string;
+  createdBy: string;
+  isActive: boolean;
+}
+
+export interface TeamRunResult {
+  id: string;
+  teamId: string;
+  status: string;
+  rounds: number;
+  transcript: Array<{ round: number; agentId: string; agentName: string; content: string; timestamp: string }>;
+  result?: string;
+  error?: string;
 }
 
 export interface Workflow {

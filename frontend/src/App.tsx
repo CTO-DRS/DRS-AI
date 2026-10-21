@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@/components/theme-provider';
+import { I18nProvider } from '@/i18n';
 import { Toaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ChatProvider } from '@/contexts/ChatContext';
@@ -19,31 +20,33 @@ import './App.css';
 function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="drs-theme">
-      <AuthProvider>
-        <ChatProvider>
-          <Router>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/" element={
-                <ProtectedRoute>
-                  <Layout />
-                </ProtectedRoute>
-              }>
-                <Route index element={<Navigate to="/chat" replace />} />
-                <Route path="chat" element={<Chat />} />
-                <Route path="projects" element={<Projects />} />
-                <Route path="files" element={<Files />} />
-                <Route path="voice" element={<Voice />} />
-                <Route path="models" element={<Models />} />
-                <Route path="analytics" element={<Analytics />} />
-                <Route path="settings" element={<Settings />} />
-                <Route path="admin" element={<AdminDashboard />} />
-              </Route>
-            </Routes>
-          </Router>
-          <Toaster />
-        </ChatProvider>
-      </AuthProvider>
+      <I18nProvider>
+        <AuthProvider>
+          <ChatProvider>
+            <Router>
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/" element={
+                  <ProtectedRoute>
+                    <Layout />
+                  </ProtectedRoute>
+                }>
+                  <Route index element={<Navigate to="/chat" replace />} />
+                  <Route path="chat" element={<Chat />} />
+                  <Route path="projects" element={<Projects />} />
+                  <Route path="files" element={<Files />} />
+                  <Route path="voice" element={<Voice />} />
+                  <Route path="models" element={<Models />} />
+                  <Route path="analytics" element={<Analytics />} />
+                  <Route path="settings" element={<Settings />} />
+                  <Route path="admin" element={<AdminDashboard />} />
+                </Route>
+              </Routes>
+            </Router>
+            <Toaster />
+          </ChatProvider>
+        </AuthProvider>
+      </I18nProvider>
     </ThemeProvider>
   );
 }
