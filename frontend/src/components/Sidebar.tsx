@@ -11,23 +11,25 @@ import {
   Sparkles
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useT } from '@/i18n';
 
 const navItems = [
-  { path: '/chat', icon: MessageSquare, label: 'Chat' },
-  { path: '/projects', icon: FolderOpen, label: 'Projects' },
-  { path: '/files', icon: FileText, label: 'Files' },
-  { path: '/voice', icon: Mic, label: 'Voice' },
-  { path: '/models', icon: Cpu, label: 'Models' },
-  { path: '/analytics', icon: BarChart3, label: 'Analytics' },
-  { path: '/settings', icon: Settings, label: 'Settings' },
+  { path: '/chat', icon: MessageSquare, labelKey: 'nav.chat' },
+  { path: '/projects', icon: FolderOpen, labelKey: 'nav.projects' },
+  { path: '/files', icon: FileText, labelKey: 'nav.files' },
+  { path: '/voice', icon: Mic, labelKey: 'nav.voice' },
+  { path: '/models', icon: Cpu, labelKey: 'nav.models' },
+  { path: '/analytics', icon: BarChart3, labelKey: 'nav.analytics' },
+  { path: '/settings', icon: Settings, labelKey: 'nav.settings' },
 ];
 
 export default function Sidebar() {
   const { user } = useAuth();
+  const t = useT();
   const isAdmin = user?.role === 'admin';
 
   return (
-    <aside className="w-64 bg-card border-r border-border flex flex-col">
+    <aside className="w-64 bg-card border-e border-border flex flex-col">
       <div className="p-6 border-b border-border">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
@@ -54,7 +56,7 @@ export default function Sidebar() {
             }
           >
             <item.icon className="w-5 h-5" />
-            <span>{item.label}</span>
+            <span>{t(item.labelKey)}</span>
           </NavLink>
         ))}
 
@@ -70,7 +72,7 @@ export default function Sidebar() {
             }
           >
             <Shield className="w-5 h-5" />
-            <span>Admin</span>
+            <span>{t('nav.admin')}</span>
           </NavLink>
         )}
       </nav>

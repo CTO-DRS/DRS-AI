@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import dotenv from 'dotenv';
 import { testConnection, syncDatabase } from './database';
 import authRoutes from './routes/auth';
+import apiKeyRoutes from './routes/apiKeys';
 import logger from './utils/logger';
 
 dotenv.config();
@@ -35,6 +36,7 @@ app.get('/health', async (req, res) => {
 
 // Routes
 app.use('/', authRoutes);
+app.use('/apikeys', apiKeyRoutes);
 
 // Error handling
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

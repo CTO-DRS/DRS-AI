@@ -83,8 +83,13 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - AUTH_SERVICE_URL=http://auth:3001
+      - ROUTER_SERVICE_URL=http://model-router:3002
       - MODEL_ROUTER_URL=http://model-router:3002
+      - ORCHESTRATOR_URL=http://agent-orchestrator:3003
       - AGENT_ORCHESTRATOR_URL=http://agent-orchestrator:3003
+      - SKILLS_SERVICE_URL=http://skills:3044
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost}
       - MEMORY_SERVICE_URL=http://memory:3004
       - FILES_SERVICE_URL=http://files:3005
       - VOICE_SERVICE_URL=http://voice:3006
@@ -106,9 +111,12 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=${POSTGRES_DB}
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
     depends_on:
@@ -147,9 +155,13 @@ services:
       - REDIS_PORT=6379
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=${POSTGRES_DB}
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - ROUTER_SERVICE_URL=http://model-router:3002
+      - PLANNER_MODEL=${PLANNER_MODEL:-llama3.2}
       - OLLAMA_HOST=http://ollama:11434
     depends_on:
       - redis
@@ -871,6 +883,30 @@ services:
     restart: unless-stopped
 
   # ============================================
+  # Skills Service (SKILL.md convention, drSai parity)
+  # ============================================
+
+  skills:
+    build: ./skills
+    ports:
+      - "3044:3044"
+    environment:
+      - NODE_ENV=production
+      - PORT=3044
+      - SKILLS_DIR=/app/data/skills
+      - SKILLS_PUBLIC_URL=${SKILLS_PUBLIC_URL:-}
+      - SKILLS_PUBLIC_PATH=/api/skills
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    volumes:
+      - skills-data:/app/data/skills
+    depends_on:
+      - redis
+    networks:
+      - drs-network
+    restart: unless-stopped
+
+  # ============================================
   # Phase 38: GPU MIG / Time-Slicing Service
   # ============================================
 
@@ -1016,6 +1052,8 @@ volumes:
 # Networks
 # ============================================
 
+  skills-data:
+    driver: local
 networks:
   drs-network:
     driver: bridge
