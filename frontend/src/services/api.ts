@@ -76,15 +76,17 @@ export const fileService = {
 };
 
 export const voiceService = {
-  transcribe: (audioBlob: Blob) => {
+  capabilities: () => api.get('/voice/capabilities'),
+  transcribe: (audioBlob: Blob, language?: string) => {
     const formData = new FormData();
     formData.append('audio', audioBlob);
+    if (language) formData.append('language', language);
     return api.post('/voice/stt', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
   },
-  synthesize: (text: string) =>
-    api.post('/voice/tts', { text }, { responseType: 'blob' })
+  synthesize: (text: string, voice?: string) =>
+    api.post('/voice/tts', { text, voice }, { responseType: 'blob' })
 };
 
 export const adminService = {
@@ -127,10 +129,32 @@ export const agentsService = {
   listMcpTools: (id: string) => api.get(`/mcp/servers/${id}/tools`)
 };
 
+/** A2A (Agent-to-Agent) protocol — orchestrator v2 via gateway proxy. */
+export const a2aService = {
+  listAgents: () => api.get('/a2a/agents'),
+  registerAgent: (data: { name: string; endpoint: string; description?: string }) =>
+    api.post('/a2a/agents', data),
+  probeAgent: (id: string) => api.post(`/a2a/agents/${id}/probe`, {}),
+  toggleAgent: (id: string, enabled: boolean) => api.post(`/a2a/agents/${id}/toggle`, { enabled }),
+  deleteAgent: (id: string) => api.delete(`/a2a/agents/${id}`),
+  sendMessage: (agentId: string, text: string, contextId?: string) =>
+    api.post('/a2a/message', { agentId, text, contextId }),
+  listTeams: () => api.get('/a2a/teams'),
+  delegateToTeam: (teamId: string, text: string, useMemory = true) =>
+    api.post('/a2a/inbox', { teamId, text, useMemory })
+};
+
 /** Agent knowledge memory (ingest + BM25 retrieval) — orchestrator via gateway. */
 export const knowledgeService = {
   ingest: (data: { title: string; content: string; source?: string }) =>
     api.post('/knowledge/documents', data),
+  upload: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/knowledge/documents/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  },
   list: () => api.get('/knowledge/documents'),
   get: (id: string) => api.get(`/knowledge/documents/${id}`),
   toggle: (id: string, enabled: boolean) =>
