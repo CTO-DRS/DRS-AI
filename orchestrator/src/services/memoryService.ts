@@ -1,4 +1,5 @@
 import { KnowledgeDoc, KnowledgeChunk } from '../models';
+import { inflateSync } from 'zlib';
 import logger from '../utils/logger';
 
 /**
@@ -15,6 +16,10 @@ import logger from '../utils/logger';
  *    key — mirroring RAGFlow's `keyword=True` hybrid mode. When an external
  *    RAGFlow instance is configured (RAGFLOW_URL/RAGFLOW_TOKEN), retrieval
  *    is delegated there instead (vector + keyword fusion).
+ *  - File ingestion (`extractTextFromFile`) accepts text-like formats and
+ *    performs dependency-free PDF text extraction (zlib inflate on
+ *    FlateDecode streams + BT/ET text-operator parsing), the same class of
+ *    lightweight extraction drSai does in its document loaders.
  */
 
 const CHUNK_SIZE = 1200;
@@ -100,6 +105,109 @@ interface ScoredChunk {
 export interface MemoryHit extends ScoredChunk {}
 
 /* ------------------------------------------------------------------ */
+/* File text extraction (dependency-free)                              */
+/* ------------------------------------------------------------------ */
+
+const TEXT_EXTENSIONS = new Set([
+  'txt', 'md', 'markdown', 'csv', 'tsv', 'json', 'jsonl', 'html', 'htm', 'xml',
+  'yaml', 'yml', 'ini', 'cfg', 'env', 'log', 'sql',
+  'py', 'js', 'ts', 'tsx', 'jsx', 'css', 'scss', 'go', 'rs', 'java', 'c', 'cpp', 'h', 'sh', 'rb', 'php'
+]);
+
+/**
+ * Best-effort PDF text extraction with zero dependencies: inflate every
+ * FlateDecode stream, then pull strings out of the page text operators
+ * (Tj / TJ). Works for most text-based PDFs; scanned/image PDFs produce
+ * a clear error instead of silent garbage.
+ */
+function extractPdfText(buffer: Buffer): string {
+  const raw = buffer.toString('latin1');
+  const textPieces: string[] = [];
+
+  const streamRegex = /stream\r?\n?([\s\S]*?)endstream/g;
+  let match: RegExpExecArray | null;
+  while ((match = streamRegex.exec(raw)) !== null) {
+    let decoded: string;
+    const streamBody = match[1];
+    try {
+      // Buffer.from on latin1 chars, then inflate (FlateDecode is zlib-wrapped
+      // deflate). Non-inflatable streams fall back to their raw text.
+      const bytes = Buffer.from(streamBody, 'latin1');
+      decoded = inflateSync(bytes).toString('utf8');
+    } catch {
+      decoded = streamBody;
+    }
+    if (!/BT|Tj|TJ/.test(decoded)) continue;
+
+    // (string) Tj  |  [(s1) (s2)] TJ  — unescape PDF string escapes.
+    const textOpRegex = /\((?:\\.|[^\\()])*\)/g;
+    let op: RegExpExecArray | null;
+    const lineParts: string[] = [];
+    while ((op = textOpRegex.exec(decoded)) !== null) {
+      const s = op[0]
+        .slice(1, -1)
+        .replace(/\\([nrtbf()\\])/g, (_m, c: string) => {
+          switch (c) {
+            case 'n': return '\n';
+            case 'r': return '';
+            case 't': return '\t';
+            default: return c;
+          }
+        })
+        .replace(/\\([0-7]{1,3})/g, (_m, oct: string) => String.fromCharCode(parseInt(oct, 8)));
+      if (s) lineParts.push(s);
+    }
+    if (lineParts.length) textPieces.push(lineParts.join(''));
+  }
+
+  const text = textPieces.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+  if (!text || text.replace(/\s+/g, '').length < 20) {
+    throw Object.assign(
+      new Error('No extractable text layer found in the PDF (likely a scanned/image document)'),
+      { statusCode: 422 }
+    );
+  }
+  return text;
+}
+
+/** Extract indexable text from an uploaded file buffer. */
+export function extractTextFromFile(originalName: string, buffer: Buffer): { text: string; mimeType: string } {
+  const ext = (originalName.split('.').pop() || '').toLowerCase();
+
+  if (ext === 'pdf' || buffer.subarray(0, 4).toString('latin1') === '%PDF') {
+    return { text: extractPdfText(buffer), mimeType: 'application/pdf' };
+  }
+
+  if (TEXT_EXTENSIONS.has(ext) || !ext) {
+    let text = buffer.toString('utf8');
+    if (ext === 'html' || ext === 'htm' || ext === 'xml') {
+      // Strip tags/scripts/styles, decode the few entities that matter.
+      text = text
+        .replace(/<(script|style)[\s\S]*?<\/\1>/gi, ' ')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'");
+    }
+    return { text, mimeType: ext ? `text/${ext === 'md' || ext === 'markdown' ? 'markdown' : ext}` : 'text/plain' };
+  }
+
+  // Last resort: try utf8 and require it to look like mostly-printable text.
+  const guess = buffer.toString('utf8');
+  const printable = (guess.match(/[\p{L}\p{N}\p{P}\s]/gu) || []).length / Math.max(guess.length, 1);
+  if (printable > 0.85) {
+    return { text: guess, mimeType: 'text/plain' };
+  }
+  throw Object.assign(
+    new Error(`Unsupported file type ".${ext}" — supported: text, markdown, csv, json, html, code files, pdf`),
+    { statusCode: 415 }
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* Service                                                             */
 /* ------------------------------------------------------------------ */
 
@@ -140,6 +248,22 @@ class MemoryService {
       sizeBytes,
       isEnabled: true
     } as any);
+  }
+
+  /** Ingest an uploaded file: extract text, chunk + persist. */
+  async ingestFile(data: {
+    userId: string;
+    originalName: string;
+    buffer: Buffer;
+  }): Promise<KnowledgeDoc> {
+    const { text, mimeType } = extractTextFromFile(data.originalName, data.buffer);
+    return this.ingestDocument({
+      userId: data.userId,
+      title: data.originalName,
+      content: text,
+      source: 'upload',
+      mimeType
+    });
   }
 
   async listDocuments(userId: string): Promise<KnowledgeDoc[]> {

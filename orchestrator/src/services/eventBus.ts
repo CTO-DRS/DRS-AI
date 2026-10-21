@@ -24,7 +24,8 @@ export type OrchestratorEventType =
   | 'teamrun.progress'
   | 'teamrun.completed'
   | 'teamrun.failed'
-  | 'mcp.tool_called';
+  | 'mcp.tool_called'
+  | 'a2a.message';
 
 export interface OrchestratorEvent {
   type: OrchestratorEventType;
