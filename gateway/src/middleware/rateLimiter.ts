@@ -20,6 +20,34 @@ export const createRateLimiter = (options: {
   const max = options.max || 100;
   const keyPrefix = options.keyPrefix || 'ratelimit';
 
+  // express-rate-limit v7 expects a promise-based `increment` returning
+  // { totalHits, resetTime }; v6 expected callback-style `incr`.
+  // Implement both so the store works regardless of the installed version —
+  // a missing method makes v7 throw inside async middleware, which express 4
+  // cannot forward (unhandled rejection) and every request hangs forever.
+  const store = {
+    increment: async (key: string) => {
+      const multi = redis.multi();
+      multi.incr(key);
+      multi.pexpire(key, windowMs);
+      const results = await multi.exec();
+      const totalHits = (results?.[0]?.[1] as number) || 1;
+      return { totalHits, resetTime: new Date(Date.now() + windowMs) };
+    },
+    incr: (key: string, cb: (err: unknown, hits?: number, resetTime?: Date) => void) => {
+      (store as { increment: (k: string) => Promise<{ totalHits: number; resetTime: Date }> })
+        .increment(key)
+        .then((r) => cb(null, r.totalHits, r.resetTime))
+        .catch((err) => cb(err));
+    },
+    decrement: (key: string) => {
+      redis.decr(key);
+    },
+    resetKey: (key: string) => {
+      redis.del(key);
+    }
+  };
+
   return rateLimit({
     windowMs,
     max,
@@ -39,21 +67,7 @@ export const createRateLimiter = (options: {
         }
       });
     },
-    store: {
-      incr: async (key) => {
-        const multi = redis.multi();
-        multi.incr(key);
-        multi.pexpire(key, windowMs);
-        const results = await multi.exec();
-        return results?.[0]?.[1] as number || 1;
-      },
-      decrement: (key) => {
-        redis.decr(key);
-      },
-      resetKey: (key) => {
-        redis.del(key);
-      }
-    } as any
+    store: store as any
   });
 };
 

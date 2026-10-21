@@ -5,6 +5,8 @@ import compression from 'compression';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
+import path from 'path';
+import fs from 'fs';
 
 import { requestContext } from './middleware/requestContext';
 import { requestLogger, errorLogger } from './middleware/logging';
@@ -122,6 +124,29 @@ app.use('/', proxyRoutes);
 
 // WebSocket handling — real-time event hub (Redis pub/sub → clients)
 const wsHub = new WsHub(wss);
+
+// Same-origin SPA serving — when STATIC_DIR points at the built frontend,
+// the gateway serves the UI on this very port so a single public endpoint
+// (e.g. a sandbox preview proxy) exposes the whole application without CORS.
+const STATIC_DIR = process.env.STATIC_DIR;
+if (STATIC_DIR && fs.existsSync(path.join(STATIC_DIR, 'index.html'))) {
+  app.use(express.static(STATIC_DIR, { index: 'index.html', maxAge: '1h' }));
+  // SPA fallback for client-side routes (/chat, /agents, /knowledge, ...).
+  // API, WS and health paths fall through to their own handlers/404.
+  app.get('*', (req, res, next) => {
+    const p = req.path;
+    if (
+      p.startsWith('/api') ||
+      p.startsWith('/ws') ||
+      p === '/health' ||
+      p === '/api/status'
+    ) {
+      return next();
+    }
+    res.sendFile(path.join(STATIC_DIR, 'index.html'));
+  });
+  logger.info(`Serving SPA from ${STATIC_DIR}`);
+}
 
 // Error handling
 app.use(errorLogger);
