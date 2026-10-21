@@ -71,6 +71,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   selector now wired to the live i18n provider (persists + RTL flip).
 - **Route-level code splitting** (`React.lazy` + `Suspense`): initial bundle
   reduced from ~785 kB to ~500 kB (−36 %); every page loads on demand.
+- **Live events (WebSocket)**: the frontend connects to the gateway WS hub
+  (`/ws`, JWT `?token=` auth, auto-reconnect with capped backoff, client
+  keepalive). High-signal events surface as localized toasts (approval
+  requested, team run completed/failed, plan completed); every event is
+  re-broadcast to the app, and the Agents console auto-refreshes its
+  approval inbox and run list in real time.
+- **Voice input in chat**: mic button records audio (MediaRecorder), sends it
+  to the voice service STT endpoint and inserts the transcript into the
+  composer (recording pulse state, mic-release on stop/unmount, localized
+  errors).
+- **Regenerate reply**: re-runs the last user prompt (drops the previous
+  assistant reply, shares the same streaming + fallback path) via a hover
+  action on the trailing message.
+- **Conversation search**: instant client-side filter over the sidebar
+  conversation list.
 
 ### Planned
 - Multi-cloud federation (AWS / GCP / Azure)

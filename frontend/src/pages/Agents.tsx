@@ -38,6 +38,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { agentsService } from '@/services/api';
 import { useT } from '@/i18n';
+import { onLiveEvent, type LiveEvent } from '@/hooks/useLiveEvents';
 import { toast } from 'sonner';
 
 /* ---------- Minimal shapes (backend envelope { success, data }) ---------- */
@@ -201,6 +202,20 @@ export default function Agents() {
     loadMcp();
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [loadTeams, loadRuns, loadApprovals, loadMcp]);
+
+  // Live refresh: the WS hub re-broadcasts orchestrator events as DOM events
+  // (see useLiveEvents) — keep the approval inbox and run list fresh.
+  useEffect(() => {
+    const off = onLiveEvent((event: LiveEvent) => {
+      if (event.type === 'approval.requested' || event.type === 'approval.decided') {
+        loadApprovals();
+      }
+      if (event.type === 'teamrun.completed' || event.type === 'teamrun.failed') {
+        loadRuns();
+      }
+    });
+    return off;
+  }, [loadApprovals, loadRuns]);
 
   /* ---------------- Team actions ---------------- */
 

@@ -16,6 +16,8 @@ interface ChatContextType {
   loadConversations: () => Promise<void>;
   loadConversation: (id: string) => Promise<void>;
   sendMessage: (content: string) => Promise<void>;
+  /** Re-runs the last user prompt (drops the previous assistant reply). */
+  regenerate: () => Promise<void>;
   /** Aborts the in-flight stream; partial content is kept. */
   stop: () => void;
   createConversation: () => Promise<void>;
@@ -207,6 +209,57 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  /**
+   * Shared turn runner: streams the assistant reply (SSE) with a graceful
+   * fallback to the non-streaming endpoint. Used by sendMessage + regenerate.
+   */
+  const executeTurn = async (
+    history: Array<{ role: string; content: string }>,
+    assistantId: string,
+    conversationId: string | undefined,
+    fallbackContent: string
+  ) => {
+    setIsLoading(true);
+    isStreamingRef.current = true;
+    setIsStreaming(true);
+
+    let streamed = false;
+    try {
+      const result = await streamChat(history, assistantId);
+      streamed = true;
+      if (result === 'aborted') {
+        // User pressed Stop — keep the partial content.
+        toast.info(t('chat.streamingStopped'));
+      }
+    } catch {
+      // Fall back to the plain (non-streaming) POST.
+      try {
+        const response = await chatService.sendMessage(fallbackContent, selectedModel, conversationId);
+        setMessages(prev =>
+          prev.map(m =>
+            m.id === assistantId
+              ? { ...m, content: response.data.message.content, metadata: response.data.message.metadata }
+              : m
+          )
+        );
+        streamed = true;
+      } catch {
+        toast.error(t('chat.sendFailed'));
+        // Remove the empty assistant placeholder on total failure.
+        setMessages(prev => prev.filter(m => m.id !== assistantId));
+      }
+    } finally {
+      isStreamingRef.current = false;
+      setIsStreaming(false);
+      setIsLoading(false);
+      // Keep persistence behavior unchanged: refresh the sidebar when this
+      // message may have created a new conversation server-side.
+      if (streamed && !conversationId) {
+        await loadConversations();
+      }
+    }
+  };
+
   const sendMessage = async (content: string) => {
     if (!content.trim()) return;
     if (isStreamingRef.current) return;
@@ -232,45 +285,41 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       .map(m => ({ role: m.role as string, content: m.content }));
 
     setMessages(prev => [...prev, userMessage, assistantMessage]);
-    setIsLoading(true);
-    isStreamingRef.current = true;
-    setIsStreaming(true);
+    await executeTurn(history, assistantId, conversationId, content);
+  };
 
-    let streamed = false;
-    try {
-      const result = await streamChat(history, assistantId);
-      streamed = true;
-      if (result === 'aborted') {
-        // User pressed Stop — keep the partial content.
-        toast.info(t('chat.streamingStopped'));
-      }
-    } catch {
-      // Fall back to the plain (non-streaming) POST.
-      try {
-        const response = await chatService.sendMessage(content, selectedModel, conversationId);
-        setMessages(prev =>
-          prev.map(m =>
-            m.id === assistantId
-              ? { ...m, content: response.data.message.content, metadata: response.data.message.metadata }
-              : m
-          )
-        );
-        streamed = true;
-      } catch {
-        toast.error(t('chat.sendFailed'));
-        // Remove the empty assistant placeholder on total failure.
-        setMessages(prev => prev.filter(m => m.id !== assistantId));
-      }
-    } finally {
-      isStreamingRef.current = false;
-      setIsStreaming(false);
-      setIsLoading(false);
-      // Keep persistence behavior unchanged: refresh the sidebar when this
-      // message may have created a new conversation server-side.
-      if (streamed && !conversationId) {
-        await loadConversations();
+  /** Drop the trailing assistant reply and re-run the last user prompt. */
+  const regenerate = async () => {
+    if (isStreamingRef.current) return;
+
+    let lastAssistantIdx = -1;
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === 'assistant') {
+        lastAssistantIdx = i;
+        break;
       }
     }
+    // Need at least one user message before the assistant reply.
+    if (lastAssistantIdx < 1) return;
+    const lastUser = messages[lastAssistantIdx - 1];
+    if (lastUser.role !== 'user' || !lastUser.content.trim()) return;
+
+    const baseMessages = messages.slice(0, lastAssistantIdx); // ends with the user prompt
+    const assistantId = (Date.now() + 1).toString();
+    const assistantMessage: Message = {
+      id: assistantId,
+      role: 'assistant',
+      content: '',
+      timestamp: new Date()
+    };
+
+    const conversationId = currentConversation?.id;
+    const history = baseMessages
+      .filter(m => m.role === 'user' || m.role === 'assistant')
+      .map(m => ({ role: m.role as string, content: m.content }));
+
+    setMessages([...baseMessages, assistantMessage]);
+    await executeTurn(history, assistantId, conversationId, lastUser.content);
   };
 
   const createConversation = async () => {
@@ -309,6 +358,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       loadConversations,
       loadConversation,
       sendMessage,
+      regenerate,
       stop,
       createConversation,
       deleteConversation,

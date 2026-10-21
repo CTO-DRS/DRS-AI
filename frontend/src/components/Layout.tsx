@@ -1,8 +1,15 @@
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import { useAuth } from '@/contexts/AuthContext';
+import { useLiveEvents } from '@/hooks/useLiveEvents';
 
 export default function Layout() {
+  const { isAuthenticated } = useAuth();
+  // Real-time orchestrator events (approvals, team runs, plans) via the
+  // gateway WS hub — toasts + DOM re-broadcast for interested pages.
+  useLiveEvents(isAuthenticated);
+
   return (
     <div className="flex h-screen bg-background">
       <Sidebar />
