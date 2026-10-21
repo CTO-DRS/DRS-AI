@@ -161,6 +161,7 @@ interface TeamRunAttributes {
   transcript: TeamMessage[];
   result?: string;
   rounds: number;
+  meta?: Record<string, any>;
   error?: string;
   startedAt?: Date;
   completedAt?: Date;
@@ -179,6 +180,7 @@ export class TeamRun extends Model<TeamRunAttributes, TeamRunCreation> implement
   public transcript!: TeamMessage[];
   public result?: string;
   public rounds!: number;
+  public meta?: Record<string, any>;
   public error?: string;
   public startedAt?: Date;
   public completedAt?: Date;
@@ -196,6 +198,7 @@ TeamRun.init(
     transcript: { type: DataTypes.JSONB, allowNull: false, defaultValue: [] },
     result: { type: DataTypes.TEXT, allowNull: true },
     rounds: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+    meta: { type: DataTypes.JSONB, allowNull: true },
     error: { type: DataTypes.TEXT, allowNull: true },
     startedAt: { type: DataTypes.DATE, allowNull: true, field: 'started_at' },
     completedAt: { type: DataTypes.DATE, allowNull: true, field: 'completed_at' },
@@ -390,4 +393,68 @@ McpServer.init(
   }
 );
 
-export default { TaskRecord, Team, TeamRun, Plan, Approval, McpServer };
+/* ------------------------------------------------------------------ */
+/* KnowledgeDoc — agent memory document (drSai ListMemory parity)      */
+/* ------------------------------------------------------------------ */
+
+export interface KnowledgeChunk {
+  index: number;
+  text: string;
+}
+
+interface KnowledgeDocAttributes {
+  id: string;
+  userId: string;
+  title: string;
+  source: string;
+  mimeType: string;
+  content: string;
+  chunks: KnowledgeChunk[];
+  chunkCount: number;
+  sizeBytes: number;
+  isEnabled: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+type KnowledgeDocCreation = Optional<
+  KnowledgeDocAttributes,
+  'id' | 'createdAt' | 'updatedAt' | 'source' | 'mimeType' | 'chunks' | 'chunkCount' | 'sizeBytes' | 'isEnabled'
+>;
+
+export class KnowledgeDoc
+  extends Model<KnowledgeDocAttributes, KnowledgeDocCreation>
+  implements KnowledgeDocAttributes
+{
+  public id!: string;
+  public userId!: string;
+  public title!: string;
+  public source!: string;
+  public mimeType!: string;
+  public content!: string;
+  public chunks!: KnowledgeChunk[];
+  public chunkCount!: number;
+  public sizeBytes!: number;
+  public isEnabled!: boolean;
+  public createdAt!: Date;
+  public updatedAt!: Date;
+}
+
+KnowledgeDoc.init(
+  {
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    userId: { type: DataTypes.UUID, allowNull: false, field: 'user_id' },
+    title: { type: DataTypes.STRING(200), allowNull: false },
+    source: { type: DataTypes.STRING(50), allowNull: false, defaultValue: 'paste' },
+    mimeType: { type: DataTypes.STRING(100), allowNull: false, defaultValue: 'text/markdown', field: 'mime_type' },
+    content: { type: DataTypes.TEXT, allowNull: false },
+    chunks: { type: DataTypes.JSONB, allowNull: false, defaultValue: [] },
+    chunkCount: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0, field: 'chunk_count' },
+    sizeBytes: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0, field: 'size_bytes' },
+    isEnabled: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true, field: 'is_enabled' },
+    ...TIMESTAMP_FIELDS
+  },
+  { sequelize, tableName: 'orchestrator_knowledge_docs' }
+);
+
+export default { TaskRecord, Team, TeamRun, Plan, Approval, McpServer, KnowledgeDoc };

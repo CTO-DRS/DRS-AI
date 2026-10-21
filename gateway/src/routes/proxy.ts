@@ -93,6 +93,23 @@ const services: ServiceConfig[] = [
     requiresAuth: true
   },
   {
+    // Agent knowledge memory (orchestrator /memory) — distinct from the
+    // legacy conversation memory microservice at /api/v1/memory.
+    path: '/api/v1/knowledge',
+    target: process.env.ORCHESTRATOR_URL || 'http://localhost:3003',
+    changeOrigin: true,
+    pathRewrite: { '^/api/v1/knowledge': '/memory' },
+    requiresAuth: true
+  },
+  {
+    // Built-in agent tools (web search, status) from the orchestrator.
+    path: '/api/v1/tools',
+    target: process.env.ORCHESTRATOR_URL || 'http://localhost:3003',
+    changeOrigin: true,
+    pathRewrite: { '^/api/v1/tools': '/tools' },
+    requiresAuth: true
+  },
+  {
     path: '/api/v1/skills',
     target: process.env.SKILLS_SERVICE_URL || 'http://localhost:3044',
     changeOrigin: true,

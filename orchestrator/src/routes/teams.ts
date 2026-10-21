@@ -88,12 +88,20 @@ router.post('/:id/run', async (req, res) => {
     const userId = getUserId(req);
     if (!userId) return unauthorized(res);
 
-    const { input, maxRounds } = req.body;
+    const { input, maxRounds, useMemory, useWebSearch, jsonOutput } = req.body;
     if (!input) {
       return res.status(400).json({ success: false, error: { code: 'MISSING_INPUT', message: 'input is required' } });
     }
 
-    const run = await teamService.runTeam({ teamId: req.params.id, userId, input, maxRoundsOverride: maxRounds });
+    const run = await teamService.runTeam({
+      teamId: req.params.id,
+      userId,
+      input,
+      maxRoundsOverride: maxRounds,
+      useMemory: useMemory !== false,
+      useWebSearch: Boolean(useWebSearch),
+      jsonOutput: Boolean(jsonOutput)
+    });
     res.json({ success: true, data: { run } });
   } catch (error: any) {
     logger.error('Team run failed:', error);

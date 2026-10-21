@@ -9,6 +9,8 @@ import teamRoutes from './routes/teams';
 import planRoutes from './routes/plans';
 import approvalRoutes from './routes/approvals';
 import mcpRoutes from './routes/mcp';
+import memoryRoutes from './routes/memory';
+import toolRoutes from './routes/tools';
 import taskService from './services/taskService';
 import approvalService from './services/approvalService';
 import persistence from './services/persistence';
@@ -38,7 +40,7 @@ app.get('/health', async (req, res) => {
     status: 'healthy',
     service: 'orchestrator',
     version: '2.0.0',
-    features: ['teams', 'planner', 'approvals', 'mcp', 'persistence'],
+    features: ['teams', 'planner', 'approvals', 'mcp', 'memory', 'web-search', 'structured-output', 'persistence'],
     timestamp: new Date().toISOString()
   };
 
@@ -62,6 +64,8 @@ app.use('/teams', teamRoutes);
 app.use('/plans', planRoutes);
 app.use('/approvals', approvalRoutes);
 app.use('/mcp', mcpRoutes);
+app.use('/memory', memoryRoutes);
+app.use('/tools', toolRoutes);
 
 // Error handling
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -90,7 +94,7 @@ app.use((req, res) => {
 app.listen(PORT, () => {
   logger.info(`=================================`);
   logger.info(`DRS AI Orchestrator Service v2`);
-  logger.info(`Features: teams | planner | approvals | MCP | persistence`);
+  logger.info(`Features: teams | planner | approvals | MCP | memory | web-search | structured-output`);
   logger.info(`Port: ${PORT}`);
   logger.info(`=================================`);
 });

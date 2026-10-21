@@ -26,6 +26,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Durable persistence** — tasks/teams/plans/approvals/MCP servers mirrored to
   Postgres (Redis stays the hot queue); automatic task recovery on restart;
   Redis-miss fallback reads.
+- **Agent knowledge memory** (`/api/v1/knowledge`, drSai ListMemory/RAGFlowMemory
+  parity) — text/Markdown ingestion with paragraph-aware chunking (~1200 chars,
+  150 overlap), BM25-lite multilingual retrieval (Unicode tokenization incl.
+  Arabic, IDF weighting, exact-substring boost), per-document enable/disable,
+  retrieval preview endpoint; retrieved chunks are injected into team-run system
+  context (drSai `memory=[...]` pattern) and counted in run metadata.
+- **Keyless web search tool** (`/api/v1/tools/web-search`, drSai web_search/
+  deepsearch parity) — DuckDuckGo HTML scraping (no API key), result titles/
+  snippets/URLs with DDG-redirect resolution, HTML entity decoding, graceful
+  degradation (runs continue when the network is unavailable),
+  `WEB_SEARCH_ENABLED`/`WEB_SEARCH_REGION` env controls; opt-in per team run.
+- **Structured output** (drSai structured_output parity) — `jsonOutput` run flag
+  instructs the first speaker to converge on a single JSON object; the final
+  result is JSON-extracted (direct parse → fenced block → balance scan) and
+  stored in run `meta.structured`.
 
 #### Model Router — multi-provider fallback chain
 - **Provider presets** (drSai provider_presets parity): OpenAI, Anthropic, DeepSeek,
@@ -64,6 +79,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   create/run/stop/delete teams (round-robin & selector strategies, agent picker),
   recent-run transcripts, HITL approval inbox (approve/reject with pending badge),
   and MCP server registry (stdio/http add, connection test, tool discovery).
+- **Knowledge Base page** (`/knowledge`): document ingestion (paste text/
+  Markdown, live size meter), metadata list with chunk counts, enable/disable
+  switches, delete, and a retrieval preview that shows exactly which chunks a
+  query would surface (score-labeled) — localized in all 4 languages.
+- **Run enrichment options**: the team-run dialog gains Knowledge-memory /
+  Web-search / JSON-output toggles; run cards show badges for retrieved memory
+  chunks, web result counts and structured-JSON results.
 - **Chat UX upgrades**: per-message copy button, one-click Markdown export of the
   conversation, multiline auto-resizing composer (Enter to send, Shift+Enter for
   newline), and localized suggested-prompt chips on the empty state.

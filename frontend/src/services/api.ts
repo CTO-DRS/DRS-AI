@@ -107,8 +107,11 @@ export const agentsService = {
     maxRounds?: number;
   }) => api.post('/teams', data),
   deleteTeam: (id: string) => api.delete(`/teams/${id}`),
-  runTeam: (id: string, input: string, maxRounds?: number) =>
-    api.post(`/teams/${id}/run`, { input, maxRounds }),
+  runTeam: (
+    id: string,
+    input: string,
+    options?: { maxRounds?: number; useMemory?: boolean; useWebSearch?: boolean; jsonOutput?: boolean }
+  ) => api.post(`/teams/${id}/run`, { input, ...options }),
   listTeamRuns: (id: string) => api.get(`/teams/${id}/runs`),
   getRun: (runId: string) => api.get(`/teams/runs/${runId}`),
   stopRun: (runId: string) => api.post(`/teams/runs/${runId}/stop`, {}),
@@ -122,6 +125,25 @@ export const agentsService = {
   testMcpServer: (id: string) => api.post(`/mcp/servers/${id}/test`, {}),
   deleteMcpServer: (id: string) => api.delete(`/mcp/servers/${id}`),
   listMcpTools: (id: string) => api.get(`/mcp/servers/${id}/tools`)
+};
+
+/** Agent knowledge memory (ingest + BM25 retrieval) — orchestrator via gateway. */
+export const knowledgeService = {
+  ingest: (data: { title: string; content: string; source?: string }) =>
+    api.post('/knowledge/documents', data),
+  list: () => api.get('/knowledge/documents'),
+  get: (id: string) => api.get(`/knowledge/documents/${id}`),
+  toggle: (id: string, enabled: boolean) =>
+    api.post(`/knowledge/documents/${id}/toggle`, { enabled }),
+  delete: (id: string) => api.delete(`/knowledge/documents/${id}`),
+  search: (query: string, topK = 5) => api.post('/knowledge/search', { query, topK })
+};
+
+/** Built-in agent tools (keyless web search + status) — orchestrator via gateway. */
+export const toolsService = {
+  status: () => api.get('/tools/status'),
+  webSearch: (query: string, maxResults = 5) =>
+    api.post('/tools/web-search', { query, maxResults })
 };
 
 export default api;
