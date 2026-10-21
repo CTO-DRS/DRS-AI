@@ -457,4 +457,68 @@ KnowledgeDoc.init(
   { sequelize, tableName: 'orchestrator_knowledge_docs' }
 );
 
-export default { TaskRecord, Team, TeamRun, Plan, Approval, McpServer, KnowledgeDoc };
+/* ------------------------------------------------------------------ */
+/* A2aAgent — remote A2A (Agent-to-Agent) peer (drSai A2A parity)      */
+/* ------------------------------------------------------------------ */
+
+interface A2aAgentAttributes {
+  id: string;
+  name: string;
+  endpoint: string;
+  description?: string;
+  /** Cached `/.well-known/agent.json` card from the remote peer. */
+  cardCache?: Record<string, any>;
+  lastProbeAt?: Date;
+  lastProbeStatus?: string;
+  isEnabled: boolean;
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+type A2aAgentCreation = Optional<
+  A2aAgentAttributes,
+  'id' | 'createdAt' | 'updatedAt' | 'description' | 'cardCache' | 'lastProbeAt' | 'lastProbeStatus' | 'isEnabled'
+>;
+
+export class A2aAgent extends Model<A2aAgentAttributes, A2aAgentCreation> implements A2aAgentAttributes {
+  public id!: string;
+  public name!: string;
+  public endpoint!: string;
+  public description?: string;
+  public cardCache?: Record<string, any>;
+  public lastProbeAt?: Date;
+  public lastProbeStatus?: string;
+  public isEnabled!: boolean;
+  public createdBy!: string;
+  public createdAt!: Date;
+  public updatedAt!: Date;
+}
+
+A2aAgent.init(
+  {
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    name: { type: DataTypes.STRING(100), allowNull: false },
+    endpoint: { type: DataTypes.STRING(1000), allowNull: false },
+    description: { type: DataTypes.TEXT, allowNull: true },
+    cardCache: { type: DataTypes.JSONB, allowNull: true, field: 'card_cache' },
+    lastProbeAt: { type: DataTypes.DATE, allowNull: true, field: 'last_probe_at' },
+    lastProbeStatus: { type: DataTypes.STRING(20), allowNull: true, field: 'last_probe_status' },
+    isEnabled: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true, field: 'is_enabled' },
+    createdBy: { type: DataTypes.UUID, allowNull: false, field: 'created_by' },
+    ...TIMESTAMP_FIELDS
+  },
+  {
+    sequelize,
+    tableName: 'orchestrator_a2a_agents',
+    validate: {
+      validEndpoint() {
+        if (!/^https?:\/\//i.test(this.endpoint)) {
+          throw new Error('endpoint must be an http(s) URL');
+        }
+      }
+    }
+  }
+);
+
+export default { TaskRecord, Team, TeamRun, Plan, Approval, McpServer, KnowledgeDoc, A2aAgent };

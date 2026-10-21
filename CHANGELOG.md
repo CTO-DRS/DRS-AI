@@ -42,6 +42,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   result is JSON-extracted (direct parse → fenced block → balance scan) and
   stored in run `meta.structured`.
 
+### Added — drSai round-3 upgrades (A2A, file ingestion, real voice)
+
+#### Orchestrator — A2A protocol (Agent-to-Agent, drSai A2A parity)
+- **Remote peer registry** (`/api/v1/a2a/agents`) — register A2A-compatible
+  agent servers, probe their `/.well-known/agent.json` card (cached, with
+  reachability status), enable/disable, delete.
+- **Outbound messaging** (`POST /api/v1/a2a/message`) — JSON-RPC 2.0
+  `message/send` with A2A wire format (`params.message.parts[].kind='text'`),
+  task-state normalization (submitted/working/completed/failed), text
+  extraction from artifacts/history/status messages, request timeouts,
+  `a2a.message` events on the WS hub.
+- **Inbound delegation** (`POST /api/v1/a2a/inbox`)
+  — external A2A clients can delegate into a local team run; the result is
+  returned in A2A task shape so generic clients keep working.
+- **Local agent card** (`GET /.well-known/agent.json` on the orchestrator,
+  `A2A_PUBLIC_URL` env) — the platform is itself discoverable as an A2A
+  server advertising team-run/knowledge-search/web-search skills.
+- Frontend: new **A2A Peers** tab in the Agents console (register, probe,
+  delete, message with response viewer) fully localized in ar/en/fr/de.
+
+#### Orchestrator — knowledge file ingestion (RAG upgrade)
+- **File upload** (`POST /api/v1/knowledge/documents/upload`, multipart,
+  10 MB) — dependency-free text extraction for txt/md/csv/tsv/json/yaml/
+  html/xml/logs and 20+ code formats, plus **PDF text extraction** via zlib
+  inflate on FlateDecode streams + BT/ET text-operator parsing (clear 422
+  error for scanned/image PDFs); HTML tag/entity stripping; ingest path is
+  identical to pasted docs (chunk → BM25 index → team-run injection).
+- Frontend Knowledge page: **upload button + drag-and-drop** with chunk
+  count feedback, localized in all four languages.
+
+#### Voice — real voice loop (drSai voice parity, keyless-first)
+- **Browser Web Speech path** (keyless default): live `SpeechRecognition`
+  with interim results in ar/en/fr/de, `speechSynthesis` TTS with voice
+  matching, session history (heard/spoken) with replay.
+- **Server path** (when configured): voice service `/stt` proxies to any
+  OpenAI-compatible `/v1/audio/transcriptions` (Whisper) and `/tts` to
+  `/v1/audio/speech` (tts-1) via `STT_BASE_URL/STT_API_KEY/STT_MODEL` and
+  `TTS_BASE_URL/TTS_API_KEY/TTS_MODEL/TTS_VOICE` env; descriptive 501 when
+  unconfigured; `GET /voice/capabilities` lets the UI pick the best path.
+
 #### Model Router — multi-provider fallback chain
 - **Provider presets** (drSai provider_presets parity): OpenAI, Anthropic, DeepSeek,
   OpenRouter, Gemini (OpenAI-compatible), Groq, custom — `GET/POST/DELETE /api/v1/providers`,

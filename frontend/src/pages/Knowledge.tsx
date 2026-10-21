@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   BookOpen,
   Plus,
@@ -7,6 +7,7 @@ import {
   Search,
   RefreshCw,
   FileText,
+  Upload,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -70,6 +71,9 @@ export default function Knowledge() {
   const [searching, setSearching] = useState(false);
   const [hits, setHits] = useState<SearchHit[] | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [dragOver, setDragOver] = useState(false);
 
   const loadDocs = useCallback(async () => {
     setLoading(true);
@@ -110,6 +114,27 @@ export default function Knowledge() {
     } finally {
       setCreating(false);
     }
+  };
+
+  const uploadFile = async (file: File) => {
+    setUploading(true);
+    try {
+      const res = await knowledgeService.upload(file);
+      const chunks = res.data?.data?.doc?.chunkCount ?? 0;
+      await loadDocs();
+      toast.success(`${t('knowledge.uploaded')} (${t('knowledge.chunks')}: ${chunks})`);
+    } catch (error: unknown) {
+      const msg = (error as { response?: { data?: { error?: { message?: string } } } })
+        ?.response?.data?.error?.message;
+      toast.error(msg ? `${t('knowledge.uploadFailed')}: ${msg}` : t('knowledge.uploadFailed'));
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleFileSelected = (files: FileList | null) => {
+    const file = files?.[0];
+    if (file) uploadFile(file);
   };
 
   const handleSearch = async () => {
@@ -168,6 +193,20 @@ export default function Knowledge() {
           <Button variant="outline" size="icon" onClick={loadDocs} title={t('common.refresh')}>
             <RefreshCw className="w-4 h-4" />
           </Button>
+          <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+            {uploading ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : <Upload className="w-4 h-4 me-2" />}
+            {t('knowledge.upload')}
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            accept=".txt,.md,.markdown,.csv,.tsv,.json,.jsonl,.html,.htm,.xml,.yaml,.yml,.log,.sql,.py,.js,.ts,.tsx,.jsx,.css,.go,.rs,.java,.c,.cpp,.h,.sh,.rb,.php,.pdf"
+            onChange={(e) => {
+              handleFileSelected(e.target.files);
+              e.target.value = '';
+            }}
+          />
           <Button onClick={() => setAddOpen(true)}>
             <Plus className="w-4 h-4 me-2" />
             {t('knowledge.add')}
@@ -176,7 +215,19 @@ export default function Knowledge() {
       </div>
 
       {/* Search / retrieval preview */}
-      <Card>
+      <Card
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragOver(true);
+        }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragOver(false);
+          handleFileSelected(e.dataTransfer.files);
+        }}
+        className={dragOver ? 'border-primary border-dashed' : undefined}
+      >
         <CardHeader>
           <CardTitle className="text-base">{t('knowledge.searchTitle')}</CardTitle>
           <CardDescription>{t('knowledge.searchHint')}</CardDescription>

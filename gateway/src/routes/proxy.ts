@@ -110,6 +110,14 @@ const services: ServiceConfig[] = [
     requiresAuth: true
   },
   {
+    // A2A (Agent-to-Agent) protocol: remote peer registry + messaging.
+    path: '/api/v1/a2a',
+    target: process.env.ORCHESTRATOR_URL || 'http://localhost:3003',
+    changeOrigin: true,
+    pathRewrite: { '^/api/v1/a2a': '/a2a' },
+    requiresAuth: true
+  },
+  {
     path: '/api/v1/skills',
     target: process.env.SKILLS_SERVICE_URL || 'http://localhost:3044',
     changeOrigin: true,

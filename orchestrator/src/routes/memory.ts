@@ -1,7 +1,14 @@
 import { Router, Request, Response } from 'express';
+import multer from 'multer';
 import memoryService from '../services/memoryService';
+import logger from '../utils/logger';
 
 const router = Router();
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 } // 10 MB per file
+});
 
 const getUserId = (req: Request): string => req.headers['x-user-id'] as string;
 
@@ -25,6 +32,31 @@ router.post('/documents', async (req, res) => {
   } catch (error: any) {
     res.status(error.statusCode || 500).json({
       success: false, error: { code: 'MEMORY_INGEST_FAILED', message: error.message }
+    });
+  }
+});
+
+// Ingest an uploaded file (text, markdown, csv, json, html, code, pdf)
+router.post('/documents/upload', upload.single('file'), async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    if (!userId) return unauthorized(res);
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: { code: 'NO_FILE', message: 'No file provided' } });
+    }
+    const doc = await memoryService.ingestFile({
+      userId,
+      originalName: req.file.originalname,
+      buffer: req.file.buffer
+    });
+    res.status(201).json({
+      success: true,
+      data: { doc: { ...doc.toJSON(), content: undefined, chunks: undefined } }
+    });
+  } catch (error: any) {
+    logger.error('Knowledge upload failed:', error.message);
+    res.status(error.statusCode || 500).json({
+      success: false, error: { code: 'MEMORY_UPLOAD_FAILED', message: error.message }
     });
   }
 });
