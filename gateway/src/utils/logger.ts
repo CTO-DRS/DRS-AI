@@ -4,10 +4,26 @@ import path from 'path';
 
 const { combine, timestamp, json, errors, printf } = winston.format;
 
+// JSON.stringify throws on circular structures (e.g. raw axios/node http
+// errors). A throw inside printf aborts the log call and can mask the real
+// error — sanitize Error instances and fall back instead.
+const safeStringify = (value: unknown): string => {
+  try {
+    return JSON.stringify(value, (_key, v) => {
+      if (v instanceof Error) {
+        return { name: v.name, message: v.message, stack: v.stack };
+      }
+      return v;
+    });
+  } catch {
+    return '[unserializable metadata]';
+  }
+};
+
 const consoleFormat = printf(({ level, message, timestamp, ...metadata }) => {
   let msg = `${timestamp} [${level.toUpperCase()}]: ${message}`;
   if (Object.keys(metadata).length > 0) {
-    msg += ` ${JSON.stringify(metadata)}`;
+    msg += ` ${safeStringify(metadata)}`;
   }
   return msg;
 });

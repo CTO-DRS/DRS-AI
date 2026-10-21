@@ -198,6 +198,21 @@ services.forEach((service) => {
         proxyReq.setHeader('X-User-ID', req.user.id);
         proxyReq.setHeader('X-User-Role', req.user.role);
       }
+      // Global express.json()/urlencoded() parsers consume the request stream
+      // before the proxy runs. Without re-writing the buffered body, proxied
+      // POST/PUT/PATCH requests carry a Content-Length but no body — targets
+      // wait forever and the client hangs. Re-send the parsed JSON payload.
+      const contentType = req.headers['content-type'] || '';
+      if (
+        req.body &&
+        contentType.includes('application/json') &&
+        ['POST', 'PUT', 'PATCH', 'DELETE'].includes((req.method || '').toUpperCase())
+      ) {
+        const bodyData = JSON.stringify(req.body);
+        proxyReq.setHeader('Content-Type', 'application/json');
+        proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+        proxyReq.write(bodyData);
+      }
       logger.debug(`Proxying request to ${service.target}${req.path}`);
     },
     onProxyRes: (proxyRes, req, res) => {

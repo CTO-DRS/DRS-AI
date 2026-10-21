@@ -45,7 +45,10 @@ function wsBaseUrl(): string {
   // VITE_API_URL is like http(s)://host:port/api/v1 → ws(s)://host:port/ws
   const api = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
   const origin = api.replace(/\/api\/v1\/?$/, '');
-  return origin.replace(/^http/, 'ws');
+  if (origin) return origin.replace(/^http/, 'ws');
+  // Relative API URL (same-origin deployments behind a reverse proxy):
+  // derive the WebSocket base from the current page origin.
+  return window.location.origin.replace(/^http/, 'ws');
 }
 
 function eventTitle(event: LiveEvent): string {

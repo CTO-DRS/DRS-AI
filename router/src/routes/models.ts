@@ -13,13 +13,13 @@ router.get('/', async (req, res) => {
       data: { models }
     });
   } catch (error: any) {
-    logger.error('Failed to list models:', error);
-    res.status(500).json({
-      success: false,
-      error: {
-        code: 'MODELS_FETCH_FAILED',
-        message: error.message
-      }
+    // Ollama unreachable (e.g. not deployed in this environment) — degrade
+    // gracefully with an empty list so the UI model selector keeps working;
+    // requests fall back to the configured remote provider chain.
+    logger.warn('Ollama unavailable, returning empty model list');
+    res.json({
+      success: true,
+      data: { models: [] }
     });
   }
 });
