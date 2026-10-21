@@ -1,12 +1,24 @@
-import { useEffect, useRef, useState } from 'react';
-import { Send, Plus, Trash2, Bot, User, Square, Loader2 } from 'lucide-react';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import {
+  Send,
+  Plus,
+  Trash2,
+  Bot,
+  User,
+  Square,
+  Loader2,
+  Copy,
+  Check,
+  Download,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useChat } from '@/contexts/ChatContext';
 import { useT } from '@/i18n';
 import { MarkdownMessage } from '@/components/chat/MarkdownMessage';
+import { toast } from 'sonner';
 import { format } from 'date-fns';
 
 export default function Chat() {
@@ -29,7 +41,9 @@ export default function Chat() {
 
   const t = useT();
   const [input, setInput] = useState('');
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     loadConversations();
@@ -40,12 +54,62 @@ export default function Chat() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Auto-resize the textarea up to ~6 rows.
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
+  }, [input]);
+
   const handleSend = async () => {
     if (!input.trim()) return;
     const content = input;
     setInput('');
     await sendMessage(content);
   };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const handleCopy = useCallback(async (id: string, content: string) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 1500);
+    } catch {
+      toast.error(t('chat.copyFailed'));
+    }
+  }, [t]);
+
+  const handleExport = useCallback(() => {
+    if (messages.length === 0) return;
+    try {
+      const lines = [
+        `# DRS AI — ${t('chat.exportChat')}`,
+        `_${format(new Date(), 'PPP p')}_`,
+        '',
+        ...messages.map((m) =>
+          m.role === 'user' ? `**${'👤 User'}:**\n\n${m.content}\n` : `**🤖 Assistant:**\n\n${m.content}\n`
+        ),
+      ];
+      const blob = new Blob([lines.join('\n')], { type: 'text/markdown;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `drs-chat-${format(new Date(), 'yyyy-MM-dd-HHmm')}.md`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error(t('chat.exportFailed'));
+    }
+  }, [messages, t]);
+
+  const suggestions = [t('chat.sugg1'), t('chat.sugg2'), t('chat.sugg3'), t('chat.sugg4')];
 
   return (
     <div className="flex h-[calc(100vh-8rem)]">
@@ -94,8 +158,8 @@ export default function Chat() {
 
       {/* Chat Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Model Selector */}
-        <div className="p-4 border-b border-border flex items-center justify-between">
+        {/* Model selector + export */}
+        <div className="p-4 border-b border-border flex items-center justify-between gap-2">
           <Select value={selectedModel} onValueChange={setSelectedModel}>
             <SelectTrigger className="w-64">
               <SelectValue placeholder={t('chat.selectModel')} />
@@ -108,6 +172,17 @@ export default function Chat() {
               ))}
             </SelectContent>
           </Select>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExport}
+            disabled={messages.length === 0}
+            title={t('chat.exportChat')}
+            aria-label={t('chat.exportChat')}
+          >
+            <Download className="w-4 h-4 me-2" />
+            {t('chat.exportChat')}
+          </Button>
         </div>
 
         {/* Messages */}
@@ -120,6 +195,18 @@ export default function Chat() {
                 <p className="text-muted-foreground mt-2">
                   {t('chat.emptySubtitle')}
                 </p>
+                {/* Suggested prompts */}
+                <div className="mt-6 flex flex-wrap justify-center gap-2">
+                  {suggestions.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setInput(s)}
+                      className="text-sm px-3 py-2 rounded-full border border-border bg-card hover:bg-accent hover:text-accent-foreground transition-colors"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -130,7 +217,7 @@ export default function Chat() {
               return (
                 <div
                   key={message.id}
-                  className={`flex gap-4 ${
+                  className={`group flex gap-4 ${
                     message.role === 'user' ? 'flex-row-reverse' : ''
                   }`}
                 >
@@ -164,11 +251,28 @@ export default function Chat() {
                     ) : (
                       <p className="whitespace-pre-wrap">{message.content}</p>
                     )}
-                    {message.metadata && (
-                      <p className="text-xs opacity-70 mt-2">
-                        {message.metadata.model} • {message.metadata.tokens} tokens
-                      </p>
-                    )}
+                    <div className="flex items-center gap-3 mt-1">
+                      {message.metadata && (
+                        <p className="text-xs opacity-70">
+                          {message.metadata.model} • {message.metadata.tokens} {t('chat.tokens')}
+                        </p>
+                      )}
+                      {/* Copy button — visible on hover */}
+                      {!isWaiting && message.content && (
+                        <button
+                          onClick={() => handleCopy(message.id, message.content)}
+                          title={t('chat.copy')}
+                          aria-label={t('chat.copy')}
+                          className="opacity-0 group-hover:opacity-70 hover:!opacity-100 transition-opacity text-muted-foreground"
+                        >
+                          {copiedId === message.id ? (
+                            <Check className="w-3.5 h-3.5 text-green-500" />
+                          ) : (
+                            <Copy className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
@@ -177,15 +281,17 @@ export default function Chat() {
           </div>
         </ScrollArea>
 
-        {/* Input */}
+        {/* Input — multiline (Shift+Enter for newline, Enter to send) */}
         <div className="p-4 border-t border-border">
-          <div className="max-w-3xl mx-auto flex gap-2">
-            <Input
+          <div className="max-w-3xl mx-auto flex gap-2 items-end">
+            <Textarea
+              ref={textareaRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+              onKeyDown={handleKeyDown}
               placeholder={t('chat.placeholder')}
-              className="flex-1"
+              className="flex-1 min-h-[44px] max-h-40 resize-none"
+              rows={1}
               disabled={isLoading}
             />
             {isStreaming ? (
@@ -194,6 +300,7 @@ export default function Chat() {
                 variant="destructive"
                 title={t('chat.stop')}
                 aria-label={t('chat.stop')}
+                className="h-11"
               >
                 <Square className="w-4 h-4" />
               </Button>
@@ -203,6 +310,7 @@ export default function Chat() {
                 disabled={isLoading || !input.trim()}
                 title={t('chat.sendMessage')}
                 aria-label={t('chat.sendMessage')}
+                className="h-11"
               >
                 <Send className="w-4 h-4" />
               </Button>

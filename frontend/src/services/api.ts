@@ -95,4 +95,33 @@ export const adminService = {
   updateUser: (id: string, data: any) => api.patch(`/admin/users/${id}`, data)
 };
 
+/** Agent Teams / HITL approvals / MCP — orchestrator v2 via gateway proxy. */
+export const agentsService = {
+  listAgents: () => api.get('/agents'),
+  listTeams: () => api.get('/teams'),
+  createTeam: (data: {
+    name: string;
+    description?: string;
+    agentIds: string[];
+    strategy?: string;
+    maxRounds?: number;
+  }) => api.post('/teams', data),
+  deleteTeam: (id: string) => api.delete(`/teams/${id}`),
+  runTeam: (id: string, input: string, maxRounds?: number) =>
+    api.post(`/teams/${id}/run`, { input, maxRounds }),
+  listTeamRuns: (id: string) => api.get(`/teams/${id}/runs`),
+  getRun: (runId: string) => api.get(`/teams/runs/${runId}`),
+  stopRun: (runId: string) => api.post(`/teams/runs/${runId}/stop`, {}),
+  listApprovals: (status?: string) =>
+    api.get('/approvals', { params: status ? { status } : undefined }),
+  approve: (id: string) => api.post(`/approvals/${id}/approve`, {}),
+  reject: (id: string, reason?: string) => api.post(`/approvals/${id}/reject`, { reason }),
+  listMcpServers: () => api.get('/mcp/servers'),
+  addMcpServer: (data: { name: string; transport: string; command?: string; url?: string }) =>
+    api.post('/mcp/servers', data),
+  testMcpServer: (id: string) => api.post(`/mcp/servers/${id}/test`, {}),
+  deleteMcpServer: (id: string) => api.delete(`/mcp/servers/${id}`),
+  listMcpTools: (id: string) => api.get(`/mcp/servers/${id}/tools`)
+};
+
 export default api;

@@ -5,11 +5,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
+import { useT } from '@/i18n';
 import { Sparkles, Loader2 } from 'lucide-react';
 
 export default function Login() {
   const navigate = useNavigate();
   const { login, isAuthenticated } = useAuth();
+  const t = useT();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [twoFactorCode, setTwoFactorCode] = useState('');
@@ -28,8 +30,11 @@ export default function Login() {
     try {
       await login(email, password, requires2FA ? twoFactorCode : undefined);
       navigate('/chat');
-    } catch (error: any) {
-      if (error.response?.data?.error?.message?.includes('Two-factor')) {
+    } catch (error) {
+      const respMessage = (
+        error as { response?: { data?: { error?: { message?: string } } } }
+      )?.response?.data?.error?.message;
+      if (typeof respMessage === 'string' && respMessage.includes('Two-factor')) {
         setRequires2FA(true);
       }
     } finally {
@@ -47,16 +52,16 @@ export default function Login() {
             </div>
           </div>
           <CardTitle className="text-2xl">DRS AI</CardTitle>
-          <CardDescription>Enterprise AI Platform</CardDescription>
+          <CardDescription>{t('auth.tagline')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('auth.email')}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder={t('auth.emailPlaceholder')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -64,11 +69,11 @@ export default function Login() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t('auth.password')}</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="Enter your password"
+                placeholder={t('auth.passwordPlaceholder')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -77,14 +82,16 @@ export default function Login() {
 
             {requires2FA && (
               <div className="space-y-2">
-                <Label htmlFor="2fa">Two-Factor Code</Label>
+                <Label htmlFor="2fa">{t('auth.twoFactorCode')}</Label>
                 <Input
                   id="2fa"
                   type="text"
-                  placeholder="Enter 2FA code"
+                  placeholder={t('auth.twoFactorCodePlaceholder')}
                   value={twoFactorCode}
                   onChange={(e) => setTwoFactorCode(e.target.value)}
                   maxLength={6}
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
                 />
               </div>
             )}
@@ -92,11 +99,11 @@ export default function Login() {
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Signing in...
+                  <Loader2 className="w-4 h-4 me-2 animate-spin" />
+                  {t('auth.signingIn')}
                 </>
               ) : (
-                'Sign In'
+                t('auth.signIn')
               )}
             </Button>
           </form>

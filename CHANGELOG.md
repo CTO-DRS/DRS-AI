@@ -60,6 +60,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   localized nav/auth/chat/header.
 - **Streaming chat**: SSE token streaming with Stop button and graceful
   non-streaming fallback; Markdown rendering (GFM: code blocks, tables, links).
+- **Agent Teams console** (`/agents`): new page managing orchestrator v2 —
+  create/run/stop/delete teams (round-robin & selector strategies, agent picker),
+  recent-run transcripts, HITL approval inbox (approve/reject with pending badge),
+  and MCP server registry (stdio/http add, connection test, tool discovery).
+- **Chat UX upgrades**: per-message copy button, one-click Markdown export of the
+  conversation, multiline auto-resizing composer (Enter to send, Shift+Enter for
+  newline), and localized suggested-prompt chips on the empty state.
+- **Login & Settings fully localized** in all 4 languages; Settings language
+  selector now wired to the live i18n provider (persists + RTL flip).
+- **Route-level code splitting** (`React.lazy` + `Suspense`): initial bundle
+  reduced from ~785 kB to ~500 kB (−36 %); every page loads on demand.
 
 ### Planned
 - Multi-cloud federation (AWS / GCP / Azure)
