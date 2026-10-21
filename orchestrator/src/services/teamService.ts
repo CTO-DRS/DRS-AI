@@ -5,6 +5,8 @@ import { agentRegistry } from '../agents';
 import { Agent } from '../types';
 import logger from '../utils/logger';
 import eventBus from './eventBus';
+import memoryService from './memoryService';
+import webSearchService from './webSearchService';
 
 /**
  * TeamService — multi-agent team orchestration inspired by drSai's
@@ -25,6 +27,12 @@ export interface RunTeamOptions {
   userId: string;
   input: string;
   maxRoundsOverride?: number;
+  /** Inject retrieved knowledge-base chunks into agent context (default true). */
+  useMemory?: boolean;
+  /** Run a keyless web search on the input and inject the results. */
+  useWebSearch?: boolean;
+  /** Ask the team to converge on a single JSON object (drSai structured_output parity). */
+  jsonOutput?: boolean;
 }
 
 export class TeamService {
@@ -106,6 +114,34 @@ export class TeamService {
     } as any);
 
     try {
+      // ---- Context enrichment (drSai memory=[...] + web_search pattern) ----
+      const meta: Record<string, any> = {};
+      let contextBlock = '';
+
+      if (options.useMemory !== false) {
+        const memory = await memoryService.buildMemoryBlock(options.userId, options.input);
+        if (memory) {
+          contextBlock += `${memory.block}\n\n`;
+          meta.memoryChunks = memory.hits;
+        }
+      }
+
+      if (options.useWebSearch) {
+        const web = await webSearchService.buildContextBlock(options.input);
+        if (web) {
+          contextBlock += `${web.block}\n\n`;
+          meta.webResults = web.results;
+        }
+      }
+
+      if (options.jsonOutput) {
+        meta.jsonOutput = true;
+      }
+
+      if (Object.keys(meta).length) {
+        await run.update({ meta } as any);
+      }
+
       const maxRounds = options.maxRoundsOverride || team.maxRounds;
       const transcript: TeamMessage[] = [];
       let nextSpeaker = 0; // index into roster for round-robin
@@ -130,7 +166,10 @@ export class TeamService {
 
         logger.info(`TeamRun ${run.id} round ${round}: ${agentName} (strategy=${team.strategy})`);
 
-        const content = await this.speak(entry.config, options.input, transcript, agentName);
+        const content = await this.speak(entry.config, options.input, transcript, agentName, {
+          contextBlock,
+          jsonOutput: Boolean(options.jsonOutput) && round === 1
+        });
 
         const message: TeamMessage = {
           round,
@@ -167,6 +206,15 @@ export class TeamService {
         completedAt: new Date()
       } as any);
 
+      // Structured output: attempt to extract a JSON object from the result
+      if (options.jsonOutput && finalResult) {
+        const structured = this.extractJson(finalResult);
+        if (structured) {
+          meta.structured = structured;
+          await run.update({ meta } as any);
+        }
+      }
+
       await eventBus.publish('teamrun.completed', {
         runId: run.id,
         teamId: team.id,
@@ -185,12 +233,15 @@ export class TeamService {
 
   /**
    * One agent turn: system prompt from agent config + transcript context.
+   * Optional `contextBlock` (knowledge memory + web results) is injected
+   * into the system message for every speaker, drSai memory-injection style.
    */
   private async speak(
     config: Agent,
     input: string,
     transcript: TeamMessage[],
-    speakerName: string
+    speakerName: string,
+    extras?: { contextBlock?: string; jsonOutput?: boolean }
   ): Promise<string> {
     const isFirstTurn = transcript.length === 0;
 
@@ -199,18 +250,24 @@ export class TeamService {
       content: `[${m.agentName}]: ${m.content}`
     }));
 
-    const turnPrompt = isFirstTurn
+    let turnPrompt = isFirstTurn
       ? input
       : `${input}\n\n(You already heard the other team members above. As ${speakerName}, provide your next contribution. If the task is fully solved or you have nothing meaningful to add, reply with a one-sentence summary followed by the word TERMINATE.)`;
 
+    if (extras?.jsonOutput) {
+      turnPrompt +=
+        `\n\nIMPORTANT: Produce your final answer as a SINGLE valid JSON object. ` +
+        `You may include brief reasoning before the JSON, but the JSON block itself must be parseable.`;
+    }
+
+    const systemPrompt =
+      `${config.systemPrompt}\n\n` +
+      `You are "${speakerName}" working inside a multi-agent team discussion. ` +
+      `Other members' messages appear prefixed with [AgentName]. Be concise and build on their work; do not repeat them.` +
+      (extras?.contextBlock ? `\n\n${extras.contextBlock.trim()}` : '');
+
     const messages = [
-      {
-        role: 'system' as const,
-        content:
-          `${config.systemPrompt}\n\n` +
-          `You are "${speakerName}" working inside a multi-agent team discussion. ` +
-          `Other members' messages appear prefixed with [AgentName]. Be concise and build on their work; do not repeat them.`
-      },
+      { role: 'system' as const, content: systemPrompt },
       ...history,
       { role: 'user' as const, content: turnPrompt }
     ];
@@ -271,6 +328,41 @@ export class TeamService {
       logger.error('Selector model call failed, falling back to round-robin:', error.message);
       return transcript.length % roster.length;
     }
+  }
+
+  /**
+   * Structured-output helper (drSai assistant_base_structured_output.py):
+   * extract the first parseable JSON object/array from a model response.
+   */
+  private extractJson(text: string): Record<string, any> | Array<Record<string, any>> | null {
+    // Direct parse first.
+    try {
+      return JSON.parse(text);
+    } catch {
+      /* fall through */
+    }
+    // Fenced code block ```json ... ```
+    const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (fenced) {
+      try {
+        return JSON.parse(fenced[1].trim());
+      } catch {
+        /* fall through */
+      }
+    }
+    // First {...} or [...] balance scan.
+    for (const [open, close] of [['{', '}'], ['[', ']']] as const) {
+      const start = text.indexOf(open);
+      const end = text.lastIndexOf(close);
+      if (start >= 0 && end > start) {
+        try {
+          return JSON.parse(text.slice(start, end + 1));
+        } catch {
+          /* fall through */
+        }
+      }
+    }
+    return null;
   }
 
   async listRuns(teamId: string | undefined, userId: string): Promise<TeamRun[]> {

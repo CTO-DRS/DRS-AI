@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { 
   MessageSquare, 
   Users,
+  BookOpen,
   FolderOpen, 
   FileText, 
   Mic, 
@@ -17,6 +18,7 @@ import { useT } from '@/i18n';
 const navItems = [
   { path: '/chat', icon: MessageSquare, labelKey: 'nav.chat' },
   { path: '/agents', icon: Users, labelKey: 'nav.agents' },
+  { path: '/knowledge', icon: BookOpen, labelKey: 'nav.knowledge' },
   { path: '/projects', icon: FolderOpen, labelKey: 'nav.projects' },
   { path: '/files', icon: FileText, labelKey: 'nav.files' },
   { path: '/voice', icon: Mic, labelKey: 'nav.voice' },

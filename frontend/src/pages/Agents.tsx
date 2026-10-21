@@ -11,6 +11,8 @@ import {
   StopCircle,
   XCircle,
   Wrench,
+  BookOpen,
+  Globe,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -59,6 +61,7 @@ interface TeamRun {
   status?: string;
   input?: string;
   transcript?: Array<{ agent?: string; content?: string }>;
+  meta?: { memoryChunks?: number; webResults?: number; jsonOutput?: boolean; structured?: unknown };
   createdAt?: string;
 }
 interface Approval {
@@ -118,6 +121,9 @@ export default function Agents() {
   const [runTeam, setRunTeam] = useState<Team | null>(null);
   const [runInput, setRunInput] = useState('');
   const [running, setRunning] = useState(false);
+  const [runUseMemory, setRunUseMemory] = useState(true);
+  const [runUseWebSearch, setRunUseWebSearch] = useState(false);
+  const [runJsonOutput, setRunJsonOutput] = useState(false);
   const [newName, setNewName] = useState('');
   const [newDesc, setNewDesc] = useState('');
   const [newStrategy, setNewStrategy] = useState('round_robin');
@@ -247,7 +253,11 @@ export default function Agents() {
     if (!runTeam || !runInput.trim()) return;
     setRunning(true);
     try {
-      const res = await agentsService.runTeam(runTeam.id, runInput.trim());
+      const res = await agentsService.runTeam(runTeam.id, runInput.trim(), {
+        useMemory: runUseMemory,
+        useWebSearch: runUseWebSearch,
+        jsonOutput: runJsonOutput,
+      });
       const run = res.data?.data?.run ?? res.data?.run;
       toast.success(t('agents.statusRunning'));
       setRunTeam(null);
@@ -469,6 +479,19 @@ export default function Agents() {
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-sm font-medium truncate">{run.input}</p>
                       <div className="flex items-center gap-2 flex-shrink-0">
+                        {typeof run.meta?.memoryChunks === 'number' && (
+                          <Badge variant="outline" className="text-xs gap-1">
+                            <BookOpen className="w-3 h-3" />{run.meta.memoryChunks}
+                          </Badge>
+                        )}
+                        {typeof run.meta?.webResults === 'number' && (
+                          <Badge variant="outline" className="text-xs gap-1">
+                            <Globe className="w-3 h-3" />{run.meta.webResults}
+                          </Badge>
+                        )}
+                        {run.meta?.structured != null && (
+                          <Badge variant="outline" className="text-xs">JSON</Badge>
+                        )}
                         <StatusBadge status={run.status} />
                         {run.status === 'running' && (
                           <Button
@@ -750,6 +773,20 @@ export default function Agents() {
             placeholder={t('agents.runInputPlaceholder')}
             rows={4}
           />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <label className="flex items-center gap-2 text-sm cursor-pointer rounded-md border border-border px-3 py-2 hover:bg-accent/50">
+              <Checkbox checked={runUseMemory} onCheckedChange={(v) => setRunUseMemory(Boolean(v))} />
+              <span className="truncate">{t('agents.runUseMemory')}</span>
+            </label>
+            <label className="flex items-center gap-2 text-sm cursor-pointer rounded-md border border-border px-3 py-2 hover:bg-accent/50">
+              <Checkbox checked={runUseWebSearch} onCheckedChange={(v) => setRunUseWebSearch(Boolean(v))} />
+              <span className="truncate">{t('agents.runUseWebSearch')}</span>
+            </label>
+            <label className="flex items-center gap-2 text-sm cursor-pointer rounded-md border border-border px-3 py-2 hover:bg-accent/50">
+              <Checkbox checked={runJsonOutput} onCheckedChange={(v) => setRunJsonOutput(Boolean(v))} />
+              <span className="truncate">{t('agents.runJsonOutput')}</span>
+            </label>
+          </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setRunTeam(null)}>
               {t('common.cancel')}

@@ -15,6 +15,7 @@ import './App.css';
 // initial bundle small (Chat stays eager as the default landing route).
 const Chat = lazy(() => import('@/pages/Chat'));
 const Agents = lazy(() => import('@/pages/Agents'));
+const Knowledge = lazy(() => import('@/pages/Knowledge'));
 const Models = lazy(() => import('@/pages/Models'));
 const Files = lazy(() => import('@/pages/Files'));
 const Voice = lazy(() => import('@/pages/Voice'));
@@ -51,6 +52,9 @@ function App() {
                   } />
                   <Route path="agents" element={
                     <Suspense fallback={<PageFallback />}><Agents /></Suspense>
+                  } />
+                  <Route path="knowledge" element={
+                    <Suspense fallback={<PageFallback />}><Knowledge /></Suspense>
                   } />
                   <Route path="projects" element={
                     <Suspense fallback={<PageFallback />}><Projects /></Suspense>
