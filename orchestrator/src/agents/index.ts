@@ -91,6 +91,16 @@ export class AgentRegistry {
 
     return null;
   }
+
+  /**
+   * Expose the raw config of a registered agent (used by the
+   * team engine and planner to build model calls directly).
+   */
+  getAgentConfig(id: string): Agent | undefined {
+    const agent = this.agents.get(id);
+    if (!agent) return undefined;
+    return (agent as any).config as Agent;
+  }
 }
 
 export const agentRegistry = new AgentRegistry();
