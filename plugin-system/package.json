@@ -17,11 +17,11 @@
     "winston": "^3.11.0",
     "dotenv": "^16.3.1",
     "ioredis": "^5.3.2",
-    "uuid": "^9.0.1",
+    "uuid": "^14.0.3",
     "axios": "^1.6.2",
     "fs-extra": "^11.2.0",
-    "tar": "^6.2.0",
-    "multer": "^1.4.5-lts.1"
+    "tar": "^7.5.22",
+    "multer": "^2.5.0"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
