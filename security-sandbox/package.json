@@ -1,7 +1,7 @@
 {
   "name": "@cto-drs/security-sandbox",
   "version": "2.0.0",
-  "description": "\ud835\udc6b\ud835\udc79\ud835\udc7a.\ud835\udc7d\ud835\udc70\ud835\udc77. Advanced Security Sandbox - Docker-in-Docker Isolated Execution Environment",
+  "description": "𝑫𝑹𝑺.𝑽𝑰𝑷. Advanced Security Sandbox - Docker-in-Docker Isolated Execution Environment",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -16,8 +16,8 @@
     "helmet": "7.1.0",
     "dockerode": "^4.0.2",
     "tar-stream": "^3.1.6",
-    "uuid": "^9.0.1",
-    "zod": "^3.22.4",
+    "uuid": "^11.1.1",
+    "zod": "^4.6.6",
     "winston": "^3.11.0",
     "ioredis": "^5.3.2",
     "bull": "^4.12.0",
