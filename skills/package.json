@@ -10,15 +10,15 @@
     "smoke": "npm run build && node test/smoke.js"
   },
   "dependencies": {
-    "adm-zip": "^0.5.16",
+    "adm-zip": "^0.6.1",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "helmet": "^7.1.0",
     "ioredis": "^5.3.2",
-    "multer": "^1.4.5-lts.1",
-    "tar": "^7.4.3",
-    "uuid": "^9.0.1",
+    "multer": "^2.3.0",
+    "tar": "^7.5.21",
+    "uuid": "^11.1.1",
     "winston": "^3.11.0"
   },
   "devDependencies": {
