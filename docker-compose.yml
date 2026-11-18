@@ -75,6 +75,9 @@ services:
       - NODE_ENV=production
       - PORT=3000
       - JWT_SECRET=${JWT_SECRET}
+      # CORS origin of the static frontend (e.g. https://drs-ai-eta.vercel.app
+      # when the UI is served from Vercel against this self-hosted backend).
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:80}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - POSTGRES_HOST=postgres
