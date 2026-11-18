@@ -346,11 +346,14 @@ services:
   # Code Interpreter
   code-interpreter:
     build: ./code-interpreter
-    ports:
-      - "3014:3014"
+    # SECURITY (V3): no host port published — reachable only through the
+    # internal network (all execution endpoints require a verified JWT).
+    expose:
+      - "3014"
     environment:
       - NODE_ENV=production
       - PORT=3014
+      - JWT_SECRET=${JWT_SECRET}
       - EXECUTION_TIMEOUT=30000
       - MAX_MEMORY=512
       - REDIS_HOST=redis
@@ -451,11 +454,20 @@ services:
   # Security Sandbox - Docker-in-Docker with syscall monitoring
   security-sandbox:
     build: ./security-sandbox
-    ports:
-      - "3020:3020"
+    # SECURITY (V4): no host port published (was 3020) and privileged mode
+    # removed — the service is reachable only through the internal network and
+    # every management endpoint now requires a verified token or the internal
+    # API key. Production hardening note: front the docker.sock with a
+    # socket-proxy (e.g. tecnativa/docker-socket-proxy) instead of mounting
+    # the raw socket.
+    expose:
+      - "3020"
     environment:
       - NODE_ENV=production
       - PORT=3020
+      - JWT_SECRET=${JWT_SECRET}
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
+      - SANDBOX_ALLOWED_IMAGES=alpine:latest,python:3.11-alpine,node:20-alpine
       - DOCKER_SOCKET=/var/run/docker.sock
       - LOG_LEVEL=info
       - REDIS_HOST=redis
@@ -468,7 +480,6 @@ services:
     networks:
       - drs-network
     restart: unless-stopped
-    privileged: true
 
   # LLM Guardrail & WAF - Prompt Injection Protection
   llm-guardrail:

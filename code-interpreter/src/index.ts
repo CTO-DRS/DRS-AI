@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import dotenv from 'dotenv';
 
 import executeRoutes from './routes/execute';
+import { authenticate } from './middleware/auth';
 import logger from './utils/logger';
 
 dotenv.config();
@@ -20,13 +21,13 @@ app.use((req, res, next) => {
   next();
 });
 
-// Health check
+// Health check (public — kept reachable for Docker/K8s probes)
 app.get('/health', (req, res) => {
   res.json({ status: 'healthy', service: 'code-interpreter', timestamp: new Date().toISOString() });
 });
 
-// Routes
-app.use('/', executeRoutes);
+// Routes — SECURITY (V3): all execution endpoints require a verified token
+app.use('/', authenticate, executeRoutes);
 
 // Error handling
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

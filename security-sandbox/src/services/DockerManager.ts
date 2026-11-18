@@ -19,6 +19,19 @@ export class DockerManager extends EventEmitter {
   private readonly DEFAULT_CPU_LIMIT = 1.0;
   private readonly DEFAULT_TIMEOUT = 300000; // 5 minutes
 
+  /**
+   * SECURITY (V4): sandbox images are restricted to a fixed allowlist. The old
+   * code accepted any `config.image`, so an authenticated caller could spin up
+   * privileged helpers or images with known escape vectors against the
+   * docker.sock-mounted host.
+   */
+  private readonly ALLOWED_IMAGES = new Set<string>(
+    (process.env.SANDBOX_ALLOWED_IMAGES || 'alpine:latest,python:3.11-alpine,node:20-alpine')
+      .split(',')
+      .map((img) => img.trim())
+      .filter(Boolean)
+  );
+
   constructor() {
     super();
     this.docker = new Docker({
@@ -107,10 +120,16 @@ export class DockerManager extends EventEmitter {
     const containerName = `drs-sandbox-${sessionId.substring(0, 8)}`;
 
     try {
+      // SECURITY (V4): enforce the image allowlist before creating anything
+      const requestedImage = config.image || 'alpine:latest';
+      if (!this.ALLOWED_IMAGES.has(requestedImage)) {
+        throw new Error(`Image '${requestedImage}' is not in the sandbox allowlist`);
+      }
+
       // Create container with security constraints
       const container = await this.docker.createContainer({
         name: containerName,
-        Image: config.image || 'alpine:latest',
+        Image: requestedImage,
         Cmd: config.command || ['sh', '-c', 'while true; do sleep 1; done'],
         WorkingDir: '/workspace',
         HostConfig: {
@@ -121,13 +140,19 @@ export class DockerManager extends EventEmitter {
           CpuPeriod: 100000,
           PidsLimit: config.pidsLimit || 100,
           
-          // Security options
+          // Security options — the default Docker seccomp profile applies.
+          // (V4) seccomp:unconfined was removed: it disabled the kernel
+          // syscall filter entirely, which defeats the purpose of a sandbox.
+          // Privileged mode and arbitrary capabilities are never granted;
+          // only the fixed runtime set below may be added.
           SecurityOpt: [
-            'no-new-privileges:true',
-            'seccomp:unconfined' // We'll handle seccomp ourselves
+            'no-new-privileges:true'
           ],
+          Privileged: false,
           CapDrop: ['ALL'],
-          CapAdd: config.capabilities || [],
+          // Only a fixed minimal capability set is granted; any capabilities
+          // requested by the caller in config.capabilities are ignored.
+          CapAdd: ['SETUID', 'SETGID', 'CHOWN', 'NET_BIND_SERVICE'],
           
           // Network isolation
           NetworkMode: 'drs-sandbox-network',

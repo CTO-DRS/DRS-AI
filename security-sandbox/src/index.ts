@@ -28,6 +28,7 @@ import { SyscallMonitor } from './services/SyscallMonitor';
 import { NetworkMonitor } from './services/NetworkMonitor';
 import { BehavioralEngine } from './services/BehavioralEngine';
 import { RateLimiter } from './utils/rateLimiter';
+import { authenticate } from './middleware/auth';
 
 const logger = createLogger('SecuritySandbox');
 const app = express();
@@ -89,8 +90,10 @@ const monitoringController = new MonitoringController(
 const healthController = new HealthController(dockerManager);
 
 // Routes
-app.use('/api/v1/sandbox', sandboxController.router);
-app.use('/api/v1/monitoring', monitoringController.router);
+// SECURITY (V4): sandbox management and monitoring require a verified user
+// token or the internal service key. Health and /metrics remain public.
+app.use('/api/v1/sandbox', authenticate, sandboxController.router);
+app.use('/api/v1/monitoring', authenticate, monitoringController.router);
 app.use('/api/v1/health', healthController.router);
 app.use('/metrics', metricsEndpoint);
 
