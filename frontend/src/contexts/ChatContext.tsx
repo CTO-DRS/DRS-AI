@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from 'react';
 import { Message, Conversation, Model } from '@/types';
-import { chatService, API_URL } from '@/services/api';
+import { chatService, getApiUrl } from '@/services/api';
 import { toast } from 'sonner';
 import { useT } from '@/i18n';
 
@@ -137,7 +137,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     };
 
     try {
-      const response = await fetch(`${API_URL}/chat`, {
+      const response = await fetch(`${getApiUrl()}/chat`, {
         method: 'POST',
         headers: { ...buildAuthHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ model: selectedModel, messages: history, stream: true }),

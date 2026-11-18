@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -106,6 +106,13 @@ export default function Login() {
                 t('auth.signIn')
               )}
             </Button>
+
+            <p className="text-sm text-center text-muted-foreground">
+              {t('auth.noAccount')}{' '}
+              <Link to="/register" className="text-primary underline underline-offset-4">
+                {t('auth.register')}
+              </Link>
+            </p>
           </form>
         </CardContent>
       </Card>

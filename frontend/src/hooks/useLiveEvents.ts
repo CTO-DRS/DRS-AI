@@ -1,3 +1,4 @@
+import { getApiUrl } from '@/services/api';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useT } from '@/i18n';
@@ -42,8 +43,8 @@ function readAccessToken(): string | null {
 }
 
 function wsBaseUrl(): string {
-  // VITE_API_URL is like http(s)://host:port/api/v1 → ws(s)://host:port/ws
-  const api = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+  // Runtime-configurable API URL (http(s)://host:port/api/v1) → ws(s)://host:port/ws
+  const api = getApiUrl();
   const origin = api.replace(/\/api\/v1\/?$/, '');
   if (origin) return origin.replace(/^http/, 'ws');
   // Relative API URL (same-origin deployments behind a reverse proxy):
