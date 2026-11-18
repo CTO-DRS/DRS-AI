@@ -29,7 +29,35 @@ const REFRESH_TOKEN_EXPIRY = '7d';
 const ACCESS_TOKEN_EXPIRY_SECONDS = 900; // 15 minutes
 const REFRESH_TOKEN_EXPIRY_SECONDS = 604800; // 7 days
 
+// SECURITY (#7): brute-force protection — 5 failed attempts within 15 minutes
+// locks the account for the remainder of that window (IP rotation does not
+// help the attacker because the counter is keyed by the account email).
+const MAX_FAILED_ATTEMPTS = 5;
+const FAILED_ATTEMPT_WINDOW_SECONDS = 900; // 15 minutes
+// SECURITY (#10): a verified TOTP code must never be accepted twice — its
+// natural window is 90s, we block replay for 120s after first use.
+const TOTP_REPLAY_TTL_SECONDS = 120;
+
 export class AuthService {
+  private async recordFailedAttempt(email: string): Promise<number> {
+    const key = `login:attempts:${email.toLowerCase()}`;
+    const attempts = await redis.incr(key);
+    if (attempts === 1) {
+      await redis.expire(key, FAILED_ATTEMPT_WINDOW_SECONDS);
+    }
+    return attempts;
+  }
+
+  private async assertNotLocked(email: string): Promise<void> {
+    const key = `login:attempts:${email.toLowerCase()}`;
+    const attempts = parseInt((await redis.get(key)) || '0', 10);
+    if (attempts >= MAX_FAILED_ATTEMPTS) {
+      const ttl = await redis.ttl(key);
+      throw new Error(
+        `Account temporarily locked due to too many failed attempts. Try again in ${Math.max(1, Math.ceil(ttl / 60))} minute(s).`
+      );
+    }
+  }
   async register(data: RegisterData, ipAddress: string, userAgent: string): Promise<{ user: User; tokens: AuthTokens }> {
     const existingUser = await User.findOne({
       where: {
@@ -63,16 +91,26 @@ export class AuthService {
   }
 
   async login(credentials: LoginCredentials, ipAddress: string, userAgent: string): Promise<{ user: User; tokens: AuthTokens }> {
+    // SECURITY (#7): check the lockout before doing anything else — even a
+    // correct password must not bypass an active lockout window.
+    await this.assertNotLocked(credentials.email);
+
     const user = await User.findOne({
       where: { email: credentials.email }
     });
 
     if (!user || !user.isActive) {
+      if (user) {
+        // Only count attempts for accounts that actually exist, so the counter
+        // cannot be used to permanently lock arbitrary unknown addresses.
+        await this.recordFailedAttempt(credentials.email);
+      }
       throw new Error('Invalid credentials');
     }
 
     const isValidPassword = await user.verifyPassword(credentials.password);
     if (!isValidPassword) {
+      await this.recordFailedAttempt(credentials.email);
       await this.logAuditEvent(user.id, 'LOGIN_FAILED', 'user', user.id, { reason: 'invalid_password' }, ipAddress, userAgent);
       throw new Error('Invalid credentials');
     }
@@ -91,14 +129,28 @@ export class AuthService {
       });
 
       if (!isValidToken) {
+        await this.recordFailedAttempt(credentials.email);
         await this.logAuditEvent(user.id, '2FA_FAILED', 'user', user.id, {}, ipAddress, userAgent);
         throw new Error('Invalid two-factor authentication code');
       }
+
+      // SECURITY (#10): reject TOTP codes that were already accepted once —
+      // without this, a code sniffed in flight can be replayed within its window.
+      const replayKey = `2fa:last:${user.id}`;
+      const lastCode = await redis.get(replayKey);
+      if (lastCode === credentials.twoFactorCode) {
+        await this.logAuditEvent(user.id, '2FA_REPLAY', 'user', user.id, {}, ipAddress, userAgent);
+        throw new Error('This code was already used — wait for the next one');
+      }
+      await redis.setex(replayKey, TOTP_REPLAY_TTL_SECONDS, credentials.twoFactorCode);
     }
 
     // Update last login
     user.lastLoginAt = new Date();
     await user.save();
+
+    // Successful login clears the failed-attempt counter
+    await redis.del(`login:attempts:${credentials.email.toLowerCase()}`);
 
     const tokens = await this.generateTokens(user, ipAddress, userAgent);
 
