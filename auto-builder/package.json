@@ -29,7 +29,7 @@
     "decompress": "^4.2.1",
     "simple-git": "^4.0.1",
     "chokidar": "^3.5.3",
-    "glob": "^10.3.10",
+    "glob": "^14.0.6",
     "mustache": "^4.2.0"
   },
   "devDependencies": {
