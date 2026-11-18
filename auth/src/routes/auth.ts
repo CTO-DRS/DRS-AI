@@ -29,7 +29,16 @@ router.post(
   [
     body('email').isEmail().normalizeEmail(),
     body('username').isAlphanumeric().isLength({ min: 3, max: 50 }),
-    body('password').isLength({ min: 8 }),
+    // SECURITY (#10): the old policy accepted any 8-char password. Registration
+    // now requires 10+ characters with at least one letter and one digit.
+    // Existing users are unaffected — this applies at registration only.
+    body('password')
+      .isLength({ min: 10 })
+      .withMessage('Password must be at least 10 characters long')
+      .matches(/[A-Za-z]/)
+      .withMessage('Password must contain at least one letter')
+      .matches(/\d/)
+      .withMessage('Password must contain at least one digit'),
     body('firstName').optional().trim(),
     body('lastName').optional().trim()
   ],

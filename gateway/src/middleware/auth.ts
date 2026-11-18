@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { User } from '../types';
 import logger from '../utils/logger';
+import { redis } from '../utils/redis';
 
 const JWT_SECRET = process.env.JWT_SECRET || (() => {
   if (process.env.NODE_ENV === 'production') {
@@ -134,6 +135,33 @@ export const verifyToken = async (req: Request, res: Response, next: NextFunctio
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
+
+    // SECURITY (#8): the signature check alone made logout cosmetic — a stolen
+    // access token stayed valid until expiry. The auth service writes revoked
+    // tokens to `blacklist:token:<token>` (TTL = remaining validity), so check
+    // it here before accepting the identity. Redis outage fails CLOSED (503):
+    // better a temporary outage than silently honouring revoked tokens.
+    try {
+      const revoked = await redis.get(`blacklist:token:${token}`);
+      if (revoked) {
+        return res.status(401).json({
+          success: false,
+          error: {
+            code: 'TOKEN_REVOKED',
+            message: 'This token has been revoked'
+          }
+        });
+      }
+    } catch (redisError) {
+      logger.error('Revocation check failed (Redis unavailable):', redisError);
+      return res.status(503).json({
+        success: false,
+        error: {
+          code: 'SERVICE_UNAVAILABLE',
+          message: 'Authentication backend temporarily unavailable'
+        }
+      });
+    }
 
     req.user = {
       id: decoded.userId,

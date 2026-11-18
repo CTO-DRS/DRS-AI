@@ -11,11 +11,18 @@ const isAdmin = (req: Request): boolean => ((req.headers['x-user-role'] as strin
 /* --------------------- Server registry --------------------- */
 
 // Register MCP server
+// SECURITY (#6): registration is the code-execution injection point (stdio
+// commands are later spawned inside this container), so it is restricted to
+// administrators and further constrained by the command allowlist in
+// mcpService.registerServer.
 router.post('/servers', async (req, res) => {
   try {
     const userId = getUserId(req);
     if (!userId) {
       return res.status(401).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } });
+    }
+    if (!isAdmin(req)) {
+      return res.status(403).json({ success: false, error: { code: 'FORBIDDEN', message: 'Only administrators can register MCP servers' } });
     }
     const { name, transport, command, args, env, url, headers } = req.body;
     if (!name || !transport) {
@@ -64,9 +71,13 @@ router.post('/servers/:id/test', async (req, res) => {
   }
 });
 
-// Enable / disable
+// Enable / disable — SECURITY (#6): admin-only (controls whether a registered
+// command gets spawned)
 router.post('/servers/:id/toggle', async (req, res) => {
   try {
+    if (!isAdmin(req)) {
+      return res.status(403).json({ success: false, error: { code: 'FORBIDDEN', message: 'Only administrators can toggle MCP servers' } });
+    }
     const server = await mcpService.toggleServer(req.params.id, Boolean(req.body?.enabled));
     if (!server) {
       return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'MCP server not found' } });

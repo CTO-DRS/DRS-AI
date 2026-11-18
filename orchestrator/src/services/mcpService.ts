@@ -37,6 +37,44 @@ export class McpService {
   /* Server registry                                            */
   /* ---------------------------------------------------------- */
 
+  /**
+   * SECURITY (#6): stdio commands are spawned inside the orchestrator
+   * container, so a registered command must be an explicitly allowed launcher
+   * (package runners), must never be a shell, and must not smuggle
+   * direct-code-evaluation flags (`python -c`, `node -e`, ...) or shell
+   * metacharacters through args. Direct-code execution was previously
+   * possible for ANY authenticated user.
+   */
+  private static readonly ALLOWED_COMMANDS = new Set(['npx', 'uvx', 'node', 'python3', 'python', 'pipx']);
+  private static readonly EVAL_FLAGS = new Set(['-c', '-e', '--eval', '--exec', '-m']);
+  private static readonly SHELL_META = /[\n\r;&|`$><]/;
+
+  private validateStdioCommand(command: string, args?: string[]): void {
+    const base = command.trim().split(/[\\/]/).pop() || '';
+    if (!McpService.ALLOWED_COMMANDS.has(base)) {
+      throw Object.assign(
+        new Error(`Command '${base}' is not allowed. Permitted launchers: ${[...McpService.ALLOWED_COMMANDS].join(', ')}`),
+        { statusCode: 400 }
+      );
+    }
+    for (const arg of args || []) {
+      if (McpService.SHELL_META.test(String(arg))) {
+        throw Object.assign(new Error('Arguments must not contain shell metacharacters'), { statusCode: 400 });
+      }
+      if (McpService.EVAL_FLAGS.has(String(arg).trim())) {
+        throw Object.assign(new Error(`Argument '${arg}' (direct code evaluation) is not allowed`), { statusCode: 400 });
+      }
+    }
+  }
+
+  private validateEnv(env?: Record<string, string>): void {
+    for (const [key, value] of Object.entries(env || {})) {
+      if (McpService.SHELL_META.test(key) || McpService.SHELL_META.test(String(value))) {
+        throw Object.assign(new Error('Environment variables must not contain shell metacharacters'), { statusCode: 400 });
+      }
+    }
+  }
+
   async registerServer(data: {
     name: string;
     transport: 'stdio' | 'http';
@@ -52,6 +90,20 @@ export class McpService {
     }
     if (data.transport === 'http' && !data.url) {
       throw Object.assign(new Error('http transport requires a url'), { statusCode: 400 });
+    }
+    if (data.transport === 'stdio' && data.command) {
+      this.validateStdioCommand(data.command, data.args);
+      this.validateEnv(data.env);
+    }
+    if (data.transport === 'http' && data.url) {
+      try {
+        const parsed = new URL(data.url);
+        if (!['http:', 'https:'].includes(parsed.protocol)) {
+          throw new Error('bad protocol');
+        }
+      } catch {
+        throw Object.assign(new Error('URL must be a valid http(s) endpoint'), { statusCode: 400 });
+      }
     }
     return McpServer.create(data as any);
   }
