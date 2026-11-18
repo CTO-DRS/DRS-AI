@@ -77,33 +77,79 @@ router.post('/plot', async (req, res) => {
 });
 
 // Calculate expression
-router.post('/calculate', async (req, res) => {
-  try {
-    const { expression } = req.body;
-    
-    if (!expression) {
-      return res.status(400).json({ success: false, error: { code: 'NO_EXPRESSION', message: 'No expression provided' } });
-    }
-
-    const code = `
+// SECURITY (V3): the user expression is delivered to the interpreter through
+// input.json (never interpolated into the generated source) and is validated
+// against a strict numeric AST whitelist before it is evaluated. This replaces
+// the old bare eval('''${expression}''') which allowed arbitrary code execution.
+const CALC_TEMPLATE = `
+import ast
 import math
 import statistics
 import random
 import numpy as np
 
-# Safe evaluation
-allowed_names = {
-    'abs': abs, 'round': round, 'max': max, 'min': min,
-    'sum': sum, 'len': len, 'range': range,
-    'math': math, 'statistics': statistics, 'random': random,
-    'np': np
-}
+_expr = (input_data or {}).get('expression', '')
+if not _expr or not isinstance(_expr, str) or len(_expr) > 1000:
+    raise ValueError('Invalid expression')
 
-result = eval('''${expression.replace(/'/g, "\\'")}''', {"__builtins__": {}}, allowed_names)
-print(f"Result: {result}")
+allowed_functions = {'abs', 'round', 'max', 'min', 'sum', 'len'}
+allowed_modules = {'math', 'statistics', 'random', 'np'}
+allowed_binops = {ast.Add, ast.Sub, ast.Mult, ast.Div, ast.FloorDiv, ast.Pow, ast.Mod}
+allowed_unaryops = {ast.UAdd, ast.USub}
+_ALLOWED_NODES = (
+    ast.Expression, ast.Constant, ast.Name, ast.Load, ast.Attribute, ast.BinOp,
+    ast.UnaryOp, ast.Call, ast.Tuple, ast.List, ast.keyword
+) + tuple(allowed_binops) + tuple(allowed_unaryops)
+
+def _root_name(node):
+    while isinstance(node, ast.Attribute):
+        node = node.value
+    if isinstance(node, ast.Name):
+        return node.id
+    return None
+
+_tree = ast.parse(_expr, mode='eval')
+for _node in ast.walk(_tree):
+    if not isinstance(_node, _ALLOWED_NODES):
+        raise ValueError(f'Disallowed syntax: {type(_node).__name__}')
+    if isinstance(_node, ast.Constant):
+        if not isinstance(_node.value, (int, float, bool, complex)):
+            raise ValueError('Only numeric constants are allowed')
+    elif isinstance(_node, ast.Name):
+        if _node.id.startswith('_'):
+            raise ValueError('Dunder names are not allowed')
+    elif isinstance(_node, ast.Attribute):
+        if _node.attr.startswith('_') or _root_name(_node) not in allowed_modules:
+            raise ValueError('Disallowed attribute access')
+    elif isinstance(_node, ast.Call):
+        if isinstance(_node.func, ast.Name) and _node.func.id not in allowed_functions:
+            raise ValueError(f'Function not allowed: {_node.func.id}')
+
+_names = {
+    'abs': abs, 'round': round, 'max': max, 'min': min,
+    'sum': sum, 'len': len,
+    'math': math, 'statistics': statistics, 'random': random, 'np': np
+}
+_result = eval(compile(_tree, '<expr>', 'eval'), {"__builtins__": {}}, _names)
+print("Result:", _result)
 `;
 
-    const result = await pythonExecutor.executeCode(code);
+router.post('/calculate', async (req, res) => {
+  try {
+    const { expression } = req.body;
+
+    if (!expression || typeof expression !== 'string' || expression.length > 1000) {
+      return res.status(400).json({ success: false, error: { code: 'NO_EXPRESSION', message: 'A numeric expression (max 1000 chars) is required' } });
+    }
+
+    // SECURITY (V3): the AST whitelist below is the security boundary for this
+    // endpoint (imports are unreachable from the evaluated expression), so the
+    // import hook runs in '*' mode (deny dangerous modules only) to let the
+    // numpy/math stack load its wide internal import graph.
+    const result = await pythonExecutor.executeCode(CALC_TEMPLATE, {
+      inputData: { expression },
+      allowedModules: '*'
+    });
     res.json({ success: true, data: result });
   } catch (error: any) {
     logger.error('Calculation failed:', error);

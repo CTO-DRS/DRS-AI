@@ -202,6 +202,14 @@ services.forEach((service) => {
       if (req.context?.requestId) {
         proxyReq.setHeader('X-Request-ID', req.context.requestId);
       }
+      // SECURITY: identity headers are NEVER trusted from the client. Strip any
+      // client-supplied identity headers first, then re-set them only from the
+      // token-verified identity (req.user is populated by verifyToken / API-key
+      // validation). This prevents X-User-ID spoofing on both authenticated and
+      // public routes.
+      (['X-User-ID', 'X-User-Role', 'X-User-Email', 'X-User-Username'] as const).forEach((h) => {
+        proxyReq.removeHeader(h);
+      });
       if (req.user) {
         proxyReq.setHeader('X-User-ID', req.user.id);
         proxyReq.setHeader('X-User-Role', req.user.role);

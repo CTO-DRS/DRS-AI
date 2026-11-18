@@ -19,7 +19,18 @@ export interface ExecutionResult {
 
 export interface ExecutionOptions {
   timeout?: number;
-  allowedModules?: string[];
+  /**
+   * Import policy:
+   *  - undefined           → default scientific-stdlib allowlist (os/sys blocked)
+   *  - '*'                 → everything EXCEPT the dangerous blocklist below —
+   *                          used only by the AST-gated /calculate endpoint
+   *                          where the expression whitelist is the security
+   *                          boundary and the scientific stack needs a wide
+   *                          internal import graph (io, _ast, bisect, ...)
+   *  - explicit string[]   → that allowlist minus dangerous modules
+   */
+  allowedModules?: string[] | '*';
+  blockedModules?: string[];
   inputData?: any;
 }
 
@@ -38,8 +49,11 @@ export class PythonExecutor {
       // Prepare the code with safety wrappers
       const wrappedCode = this.wrapCode(code, options);
       const scriptPath = path.join(workspacePath, 'script.py');
-      
+
       await fs.writeFile(scriptPath, wrappedCode);
+      // SECURITY (V3): user code lives in its own file; the wrapper execs it
+      // inside try/finally so captured output/error is always flushed.
+      await fs.writeFile(path.join(workspacePath, 'user_code.py'), code);
 
       // Write input data if provided
       if (options.inputData) {
@@ -219,57 +233,102 @@ print("Plot saved as output.png")
   }
 
   private wrapCode(code: string, options: ExecutionOptions): string {
-    const allowedImports = options.allowedModules || [
-      'pandas', 'numpy', 'matplotlib', 'json', 'sys', 'os', 'math', 'random',
+    // SECURITY (V3): os/sys give direct filesystem/process access and are no
+    // longer allowed by default. The hard-dangerous modules are ALWAYS blocked;
+    // see ExecutionOptions.allowedModules for the three import policies.
+    const dangerous = ['subprocess', 'pty', 'ctypes', 'socket', 'shutil'];
+    const defaultAllow = [
+      'pandas', 'numpy', 'matplotlib', 'json', 'math', 'random',
       'datetime', 'collections', 'itertools', 're', 'string', 'hashlib',
       'statistics', 'typing', 'decimal', 'fractions'
     ];
+    const allowAll = options.allowedModules === '*';
+    const allowedImports = (allowAll
+      ? []
+      : ((options.allowedModules as string[] | undefined) || defaultAllow))
+      .filter((m: string) => !dangerous.includes(m));
+    const blocked = [...dangerous, ...(options.blockedModules || [])];
 
     return `
 # Security wrapper
-import sys
 import builtins
+import io as _io
+import sys as _sys   # captured BEFORE the import hook is installed
+import os as _os     # captured BEFORE the import hook is installed (paths only)
+import json
 
-# Restrict imports
-original_import = builtins.__import__
+# Workspace path resolved from THIS script so input/output files work
+# regardless of the process cwd (the old wrapper used bare relative paths).
+_WS = _os.path.dirname(_os.path.abspath(__file__))
 
-def safe_import(name, *args, **kwargs):
-    allowed = [${allowedImports.map(m => `'${m}'`).join(', ')}]
-    if name.split('.')[0] not in allowed:
-        raise ImportError(f"Import of '{name}' is not allowed")
-    return original_import(name, *args, **kwargs)
+# Restrict imports — the original import hook is captured inside a closure so
+# that user code can never reach it again (the old wrapper left
+# original_import reachable as a module global, which was a trivial bypass).
+_BLOCKED = frozenset([${blocked.map(m => `'${m}'`).join(', ')}])
+_ALL_ALLOWED = ${allowAll ? 'True' : 'False'}
+_ALLOWED = None if _ALL_ALLOWED else frozenset([${allowedImports.map(m => `'${m}'`).join(', ')}])
 
-builtins.__import__ = safe_import
+def _make_safe_import(_original_import, _blocked, _allowed, _all_allowed):
+    def safe_import(name, *args, **kwargs):
+        top = name.split('.')[0]
+        if top in _blocked:
+            raise ImportError(f"Import of '{name}' is not allowed")
+        if not _all_allowed and top not in _allowed:
+            raise ImportError(f"Import of '{name}' is not allowed")
+        return _original_import(name, *args, **kwargs)
+    return safe_import
 
-# Redirect output
-import io
-sys.stdout = io.StringIO()
-sys.stderr = io.StringIO()
+builtins.__import__ = _make_safe_import(builtins.__import__, _BLOCKED, _ALLOWED, _ALL_ALLOWED)
+del _make_safe_import
 
-# Load input data if available
+# Redirect output using the pre-captured module references
+_captured_out = _io.StringIO()
+_captured_err = _io.StringIO()
+_ORIG_STDOUT = _sys.__stdout__
+_ORIG_STDERR = _sys.__stderr__
+_sys.stdout = _captured_out
+_sys.stderr = _captured_err
+
+# Drop the module handles so user code cannot reach sys/os/io through globals
+del _sys, _io, _os, builtins
+
+# Load input data if available (absolute path)
 try:
-    with open('input.json', 'r') as f:
-        input_data = json.load(f)
-except:
+    with open(_WS + '/input.json', 'r') as _f:
+        input_data = json.load(_f)
+except Exception:
     input_data = None
 
-# User code
-${code}
-
-# Print captured output
-output = sys.stdout.getvalue()
-error = sys.stderr.getvalue()
-if output:
-    print(output)
-if error:
-    print("ERROR:", error, file=sys.__stderr__)
+# User code — kept in a separate file so arbitrary multi-line strings and
+# indentation survive intact. The wrapper ALWAYS reports the captured output
+# and any user exception back through the real stdout (python-shell's message
+# pipe): the original wrapper printed to the redirected sys.stdout, so the
+# service never received any output at all, and an uncaught exception
+# swallowed the captured error too.
+_USER_ERROR = None
+try:
+    exec(compile(open(_WS + '/user_code.py').read(), 'user_code.py', 'exec'))
+except BaseException as _e:
+    _USER_ERROR = type(_e).__name__ + ((': ' + str(_e)) if str(_e) else '')
+finally:
+    output = _captured_out.getvalue()
+    error = _captured_err.getvalue()
+    _parts = []
+    if output:
+        _parts.append(output)
+    if error:
+        _parts.append(error)
+    if _USER_ERROR:
+        _parts.append('ERROR: ' + _USER_ERROR)
+    if _parts:
+        print(chr(10).join(_parts), file=_ORIG_STDOUT)
 `;
   }
 
   private async collectOutputFiles(workspacePath: string): Promise<string[]> {
     try {
       const files = await fs.readdir(workspacePath);
-      return files.filter(f => f !== 'script.py' && f !== 'input.json');
+      return files.filter(f => f !== 'script.py' && f !== 'input.json' && f !== 'user_code.py');
     } catch {
       return [];
     }

@@ -23,6 +23,20 @@ class Session extends Model<SessionAttributes, SessionCreationAttributes> implem
   public expiresAt!: Date;
   public createdAt!: Date;
   public lastActivityAt!: Date;
+
+  /**
+   * SECURITY (V2): the raw refresh-token JWT is stored in `token` for
+   * revocation lookups, but it must NEVER leave the server. This override
+   * strips it (and the owner reference) from every serialized response,
+   * including GET /sessions.
+   */
+  public toJSON(): Record<string, unknown> {
+    const values = { ...this.get() } as Record<string, unknown>;
+    delete values.token;
+    delete values.user_id;
+    delete values.userId;
+    return values;
+  }
 }
 
 Session.init(

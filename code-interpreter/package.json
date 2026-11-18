@@ -19,7 +19,8 @@
     "multer": "^2.3.0",
     "fs-extra": "^11.2.0",
     "csv-parser": "^3.0.0",
-    "json2csv": "^5.0.7"
+    "json2csv": "^5.0.7",
+    "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
@@ -29,6 +30,7 @@
     "@types/multer": "^1.4.11",
     "@types/fs-extra": "^11.0.4",
     "typescript": "^5.3.3",
-    "ts-node-dev": "^2.0.0"
+    "ts-node-dev": "^2.0.0",
+    "@types/jsonwebtoken": "^9.0.5"
   }
 }

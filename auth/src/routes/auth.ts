@@ -2,8 +2,11 @@ import { Router, Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import authService from '../services/authService';
 import logger from '../utils/logger';
+import { authenticate, optionalAuthenticate, AuthedRequest } from '../middleware/authenticate';
 
 const router = Router();
+
+const getAuthedUserId = (req: Request): string | undefined => (req as AuthedRequest).userId;
 
 const handleValidationErrors = (req: Request, res: Response, next: Function) => {
   const errors = validationResult(req);
@@ -96,13 +99,13 @@ router.post(
   }
 );
 
-// Logout
-router.post('/logout', async (req: Request, res: Response) => {
+// Logout — identity comes from the verified token, never from a header
+router.post('/logout', optionalAuthenticate, async (req: Request, res: Response) => {
   try {
     const authHeader = req.headers.authorization;
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.substring(7);
-      const userId = req.headers['x-user-id'] as string;
+      const userId = getAuthedUserId(req);
       if (userId) {
         await authService.logout(userId, token);
       }
@@ -157,9 +160,9 @@ router.post('/refresh', async (req: Request, res: Response) => {
 });
 
 // Setup 2FA
-router.post('/2fa/setup', async (req: Request, res: Response) => {
+router.post('/2fa/setup', authenticate, async (req: Request, res: Response) => {
   try {
-    const userId = req.headers['x-user-id'] as string;
+    const userId = getAuthedUserId(req);
     if (!userId) {
       return res.status(401).json({
         success: false,
@@ -189,9 +192,9 @@ router.post('/2fa/setup', async (req: Request, res: Response) => {
 });
 
 // Verify and enable 2FA
-router.post('/2fa/verify', async (req: Request, res: Response) => {
+router.post('/2fa/verify', authenticate, async (req: Request, res: Response) => {
   try {
-    const userId = req.headers['x-user-id'] as string;
+    const userId = getAuthedUserId(req);
     const { code } = req.body;
 
     if (!userId) {
@@ -233,9 +236,9 @@ router.post('/2fa/verify', async (req: Request, res: Response) => {
 });
 
 // Disable 2FA
-router.post('/2fa/disable', async (req: Request, res: Response) => {
+router.post('/2fa/disable', authenticate, async (req: Request, res: Response) => {
   try {
-    const userId = req.headers['x-user-id'] as string;
+    const userId = getAuthedUserId(req);
     const { password } = req.body;
 
     if (!userId) {
@@ -267,9 +270,9 @@ router.post('/2fa/disable', async (req: Request, res: Response) => {
 });
 
 // Get current user
-router.get('/me', async (req: Request, res: Response) => {
+router.get('/me', authenticate, async (req: Request, res: Response) => {
   try {
-    const userId = req.headers['x-user-id'] as string;
+    const userId = getAuthedUserId(req);
     if (!userId) {
       return res.status(401).json({
         success: false,
@@ -309,10 +312,10 @@ router.get('/me', async (req: Request, res: Response) => {
   }
 });
 
-// Get user sessions
-router.get('/sessions', async (req: Request, res: Response) => {
+// Get user sessions — responses never include session token material (V2)
+router.get('/sessions', authenticate, async (req: Request, res: Response) => {
   try {
-    const userId = req.headers['x-user-id'] as string;
+    const userId = getAuthedUserId(req);
     if (!userId) {
       return res.status(401).json({
         success: false,
@@ -342,9 +345,9 @@ router.get('/sessions', async (req: Request, res: Response) => {
 });
 
 // Revoke session
-router.delete('/sessions/:sessionId', async (req: Request, res: Response) => {
+router.delete('/sessions/:sessionId', authenticate, async (req: Request, res: Response) => {
   try {
-    const userId = req.headers['x-user-id'] as string;
+    const userId = getAuthedUserId(req);
     const { sessionId } = req.params;
 
     if (!userId) {
